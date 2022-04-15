@@ -14,12 +14,12 @@ const Settings: NavigationFunctionComponent = ({}) => {
 
   const showSheet = () => {
     setShowModal(true);
-    translateY.value = withSpring(height / 2);
+    translateY.value = withSpring(-(height - bottomTabsHeight) / 2);
   };
 
   return (
     <NativeBaseProvider>
-      <Box flex={1} bgColor={'#fff'}>
+      <Box style={styles.root}>
         <View style={styles.container}>
           <Button title={'Sheet'} onPress={showSheet} />
         </View>
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width,
-    height,
+    height: height - bottomTabsHeight,
     justifyContent: 'center',
     alignItems: 'center',
   },

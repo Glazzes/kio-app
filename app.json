@@ -1,4 +1,9 @@
 {
   "name": "kio",
-  "displayName": "kio"
+  "displayName": "kio",
+  "extra": {
+    "eas": {
+      "projectId": "8c7f8b68-a73a-48ca-9a4b-612aaa0ac6c3"
+    }
+  }
 }

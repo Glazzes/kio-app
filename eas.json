@@ -1,0 +1,17 @@
+{
+  "cli": {
+    "version": "0.50.0"
+  },
+  "build": {
+    "dev": {
+      "developmentClient": false,
+      "distribution": "internal",
+      "android": {
+        "node": "16.13.0",
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug",
+        "withoutCredentials": true
+      }
+    }
+  }
+}

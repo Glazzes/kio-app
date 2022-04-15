@@ -1,4 +1,5 @@
 import 'react-native-reanimated';
+import {LogBox} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from './src/enums/screens';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
@@ -6,6 +7,8 @@ import Home from './src/home/Home';
 import Shared from './src/shared/Shared';
 import Notifications from './src/notifications/Notifications';
 import Settings from './src/settings/Settings';
+
+LogBox.ignoreLogs(['ViewPropTypes']);
 
 const tabs = [
   Screens.MY_UNIT,
