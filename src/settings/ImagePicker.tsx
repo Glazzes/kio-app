@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Animated, {
+  cancelAnimation,
   Extrapolate,
   interpolate,
   scrollTo,
@@ -15,6 +16,7 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   withDecay,
+  withTiming,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
@@ -27,6 +29,7 @@ import {
   MediaType,
 } from 'expo-media-library';
 import PickerPicture from './picker/PickerPicture';
+import {snapPoint} from 'react-native-redash';
 
 type ImagePickerProps = {
   translateY: Animated.SharedValue<number>;
@@ -39,7 +42,8 @@ const getAssets = async (): Promise<Asset[]> => {
     const albumAssets = await getAssetsAsync({
       album: album.id,
       mediaType: MediaType.photo,
-      first: 999_999_999,
+      first: 1000,
+      sortBy: 'modificationTime',
     });
 
     assets.push(...albumAssets.assets);
@@ -72,7 +76,7 @@ function keyExtractor(asset: Asset, _: number): string {
 }
 
 function renderItem(info: ListRenderItemInfo<Asset>): React.ReactElement {
-  return <PickerPicture uri={info.item.uri} index={info.index} />;
+  return <PickerPicture asset={info.item} index={info.index} />;
 }
 
 const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
@@ -86,7 +90,8 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   }, [translateY.value]);
 
   const scroll = useDerivedValue<number>(() => {
-    const contentHeight = Math.ceil(assets.length / 3) * (SIZE + PADDING * 2);
+    const contentHeight =
+      Math.ceil(assets.length / 3) * (SIZE + PADDING * 2) + bottomTabsHeight;
     const sy = -1 * translateY.value - actualHeight;
     const contentOffset = contentHeight - actualHeight;
 
@@ -96,17 +101,32 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   const pan = Gesture.Pan()
     .onStart(_ => {
       offset.value = translateY.value;
+      cancelAnimation(translateY);
+      cancelAnimation(scroll);
     })
     .onChange(e => {
       translateY.value = offset.value + e.translationY;
     })
     .onEnd(({velocityY}) => {
-      const contentHeight = Math.ceil(assets.length / 3) * (SIZE + PADDING * 2);
+      const contentHeight =
+        Math.ceil(assets.length / 3) * (SIZE + PADDING * 2) + bottomTabsHeight;
 
-      translateY.value = withDecay({
-        velocity: velocityY,
-        clamp: [-contentHeight, 0],
-      });
+      if (translateY.value <= -height / 2) {
+        translateY.value = withDecay({
+          velocity: velocityY,
+          clamp: [-contentHeight, -height / 2],
+        });
+      } else {
+        const snap = snapPoint(translateY.value, velocityY, [-height / 2, 0]);
+        if (snap === -height / 2) {
+          translateY.value = withDecay({
+            velocity: velocityY,
+            clamp: [-contentHeight, -height / 2],
+          });
+        } else {
+          translateY.value = withTiming(0);
+        }
+      }
     });
 
   const rStyle = useAnimatedStyle(() => {
@@ -155,6 +175,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
           getItemLayout={getItemLayout}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
+          removeClippedSubviews
         />
       </Animated.View>
     </GestureDetector>
@@ -164,7 +185,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
 const styles = StyleSheet.create({
   root: {
     width,
-    height,
+    height: height - bottomTabsHeight,
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

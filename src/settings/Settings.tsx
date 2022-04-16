@@ -1,7 +1,11 @@
 import {View, StyleSheet, Button, Dimensions} from 'react-native';
-import React, {useState} from 'react';
+import React from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {useSharedValue, withSpring} from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import ImagePicker from './ImagePicker';
 import {Box, NativeBaseProvider} from 'native-base';
 
@@ -9,13 +13,19 @@ const {bottomTabsHeight} = Navigation.constantsSync();
 const {width, height} = Dimensions.get('window');
 
 const Settings: NavigationFunctionComponent = ({}) => {
-  const [showModal, setShowModal] = useState<boolean>(false);
   const translateY = useSharedValue<number>(0);
+  const translateModal = useSharedValue<number>(0);
 
   const showSheet = () => {
-    setShowModal(true);
-    translateY.value = withSpring(-(height - bottomTabsHeight) / 2);
+    translateModal.value = -height;
+    translateY.value = withSpring(-height / 2);
   };
+
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{translateY: translateModal.value}],
+    };
+  });
 
   return (
     <NativeBaseProvider>
@@ -23,14 +33,6 @@ const Settings: NavigationFunctionComponent = ({}) => {
         <View style={styles.container}>
           <Button title={'Sheet'} onPress={showSheet} />
         </View>
-        {showModal && (
-          <View
-            style={[
-              StyleSheet.absoluteFillObject,
-              {backgroundColor: 'rgba(0, 0,0, 0.3)'},
-            ]}
-          />
-        )}
         <ImagePicker translateY={translateY} />
       </Box>
     </NativeBaseProvider>
@@ -57,6 +59,14 @@ const styles = StyleSheet.create({
     height: height - bottomTabsHeight,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modal: {
+    position: 'absolute',
+    top: height,
+    left: 0,
+    width,
+    height: height - bottomTabsHeight,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
 });
 

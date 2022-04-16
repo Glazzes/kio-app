@@ -1,3 +1,6 @@
+import Animated from 'react-native-reanimated';
+import {Vector} from 'react-native-redash';
+
 type Point = {x: number; y: number};
 
 const clamp = (right: number, value: number, left: number): number => {
@@ -11,7 +14,42 @@ const inRadius = (center: Point, focal: Point, R: number): boolean => {
   const dy = Math.abs(center.y - focal.y);
 
   const r = Math.sqrt(dx * dx + dy * dy);
-  return R >= r;
+  return r <= R;
 };
 
-export {clamp, inRadius};
+const pinch = (
+  layout: Vector<Animated.SharedValue<number>>,
+  translateOffset: Vector<Animated.SharedValue<number>>,
+  event: {focalX: number; focalY: number; scale: number},
+  originAssign: Animated.SharedValue<boolean>,
+  origin: Vector<Animated.SharedValue<number>>,
+): {translateX: number; translateY: number} => {
+  'worklet';
+  const adjustedFocalX = event.focalX - layout.x.value / 2;
+  const adjustedFocalY = event.focalY - layout.y.value / 2;
+
+  if (originAssign.value) {
+    origin.x.value = adjustedFocalX;
+    origin.y.value = adjustedFocalY;
+    originAssign.value = false;
+  }
+
+  const pinchX = adjustedFocalX - origin.x.value;
+  const pinchY = adjustedFocalY - origin.y.value;
+
+  const translateX =
+    pinchX +
+    origin.x.value +
+    translateOffset.x.value +
+    -1 * event.scale * origin.x.value;
+
+  const translateY =
+    pinchY +
+    origin.y.value +
+    translateOffset.y.value +
+    -1 * event.scale * origin.y.value;
+
+  return {translateX, translateY};
+};
+
+export {clamp, inRadius, pinch};

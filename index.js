@@ -7,6 +7,7 @@ import Home from './src/home/Home';
 import Shared from './src/shared/Shared';
 import Notifications from './src/notifications/Notifications';
 import Settings from './src/settings/Settings';
+import Editor from './src/settings/editor/Editor';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -30,7 +31,7 @@ Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
 );
 
 Navigation.registerComponent(Screens.SETTINGS, () =>
-  gestureHandlerRootHOC(Settings),
+  gestureHandlerRootHOC(Editor),
 );
 
 Navigation.setDefaultOptions({
@@ -57,7 +58,7 @@ const defaultTab = {
   animateBadge: true,
 };
 
-Navigation.events().registerAppLaunchedListener(() => {
+Navigation.events().registerAppLaunchedListener(async () => {
   Navigation.setRoot({
     root: {
       bottomTabs: {

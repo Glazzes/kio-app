@@ -4,10 +4,11 @@ import {Camera} from 'expo-camera';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import emitter from '../../utils/emitter';
 import FastImage from 'react-native-fast-image';
+import {Asset} from 'expo-media-library';
 
 type PickerPictureProps = {
+  asset: Asset;
   index: number;
-  uri: string;
 };
 
 const {width} = Dimensions.get('window');
@@ -15,9 +16,9 @@ const {width} = Dimensions.get('window');
 const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
 
-const PickerPicture: React.FC<PickerPictureProps> = ({index, uri}) => {
+const PickerPicture: React.FC<PickerPictureProps> = ({index, asset}) => {
   const onSelectedPicture = () => {
-    emitter.emit('picture.selected', {uri});
+    emitter.emit('picture.selected', {uri: asset.uri});
   };
 
   useEffect(() => {
@@ -27,27 +28,26 @@ const PickerPicture: React.FC<PickerPictureProps> = ({index, uri}) => {
   });
 
   return (
-    <TouchableWithoutFeedback style={styles.tile} onPress={onSelectedPicture}>
-      {index === 0 ? (
-        <Camera type={'front'} style={styles.camera} />
-      ) : (
-        <FastImage source={{uri}} style={styles.tile} />
-      )}
+    <TouchableWithoutFeedback style={styles.tile}>
+      <FastImage
+        source={{uri: asset.uri}}
+        style={styles.image}
+        resizeMode={'cover'}
+      />
     </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
-  camera: {
-    width: SIZE,
-    heigt: SIZE,
-  },
   tile: {
     width: SIZE,
     height: SIZE,
+    margin: PADDING,
     borderRadius: PADDING,
     overflow: 'hidden',
-    margin: PADDING,
+  },
+  image: {
+    flex: 1,
   },
 });
 
