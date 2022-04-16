@@ -47,6 +47,7 @@ const getAssets = async (): Promise<Asset[]> => {
     });
 
     assets.push(...albumAssets.assets);
+    assets.forEach(a => console.log(a.uri));
   }
 
   return assets;

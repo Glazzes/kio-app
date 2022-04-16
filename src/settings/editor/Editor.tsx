@@ -1,8 +1,7 @@
-import {View, Dimensions, StyleSheet} from 'react-native';
-import React, {useState} from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {View, Dimensions, StyleSheet, Button} from 'react-native';
+import React from 'react';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import SVG, {Path} from 'react-native-svg';
-import FastImage from 'react-native-fast-image';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   cancelAnimation,
@@ -12,13 +11,18 @@ import Animated, {
   withDecay,
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
-import {clamp, pinch} from '../../utils/animations';
+import {clamp, pinch, cropPoint} from '../../utils/animations';
+import ImageEditor from '@react-native-community/image-editor';
 
-type EditorProps = {};
+type EditorProps = {
+  uri: string;
+  width: string;
+  height: string;
+};
 
 const {width, height} = Dimensions.get('window');
 const R = (width / 2) * 0.8;
-const center = {x: width / 2, y: height / 2};
+const center = {x: width / 2, y: height * 0.4};
 const path = [
   'M 0 0',
   `h ${width}`,
@@ -32,8 +36,15 @@ const path = [
 
 const dalmatian = require('./dalmatian.jpg');
 
-const Editor: NavigationFunctionComponent<EditorProps> = ({}) => {
+const Editor: NavigationFunctionComponent<EditorProps> = ({componentId}) => {
   const d = {w: 801, h: 1200};
+  const s = {
+    width: R * 2,
+    height: undefined,
+    maxHeight: undefined,
+    aspectRatio: d.w / d.h,
+  };
+
   const layout = useVector(0, 0);
 
   const translate = useVector(0, 0);
@@ -58,14 +69,24 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({}) => {
   const pan = Gesture.Pan()
     .maxPointers(1)
     .onStart(_ => {
-      offset.x.value = translate.x.value;
-      offset.y.value = translate.y.value;
+      offset.x.value = translation.value.x;
+      offset.y.value = translation.value.y;
       cancelAnimation(translate.x);
       cancelAnimation(translate.y);
     })
     .onChange(e => {
       translate.x.value = offset.x.value + e.translationX;
       translate.y.value = offset.y.value + e.translationY;
+
+      const {originX, originY, size} = cropPoint(
+        {width: d.w, height: d.h},
+        layout,
+        {x: translation.value.x, y: translation.value.y},
+        scale.value,
+        R,
+      );
+
+      console.log(originX, originY, size);
     })
     .onEnd(({velocityX, velocityY}) => {
       translate.x.value = withDecay({velocity: velocityX});
@@ -74,8 +95,8 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({}) => {
 
   const pinchGesture = Gesture.Pinch()
     .onBegin(_ => {
-      offset.x.value = translate.x.value;
-      offset.y.value = translate.y.value;
+      offset.x.value = translation.value.x;
+      offset.y.value = translation.value.y;
       scaleOffset.value = scale.value;
     })
     .onChange(e => {
@@ -99,7 +120,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({}) => {
       originAssign.value = true;
     });
 
-  const gesture = Gesture.Race(pan, pinchGesture);
+  const gesture = Gesture.Exclusive(pan, pinchGesture);
 
   const rStyle = useAnimatedStyle(() => {
     return {
@@ -111,50 +132,63 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({}) => {
     };
   });
 
+  const effectStyles = useAnimatedStyle(() => {
+    return {
+      transform: [{rotateY: `${0}rad`}, {rotateX: `${0}rad`}],
+    };
+  });
+
+  const crop = async () => {
+    const {originX, originY, size} = cropPoint(
+      {width: d.w, height: d.h},
+      layout,
+      {x: translation.value.x, y: translation.value.y},
+      scale.value,
+      R,
+    );
+
+    const uri = await ImageEditor.cropImage(
+      'file:///storage/sdcard0/Descargas/dalmatian.jpg',
+      {
+        offset: {x: originX, y: originY},
+        size: {height: size, width: size},
+        displaySize: {width: 200, height: 200},
+        resizeMode: 'cover',
+      },
+    );
+
+    Navigation.push(componentId, {
+      component: {
+        name: 'Result',
+        passProps: {
+          uri,
+        },
+      },
+    });
+  };
+
   return (
     <View style={styles.root}>
-      <Animated.View style={rStyle}>
-        <FastImage
+      <Animated.View style={[styles.container, rStyle]}>
+        <Animated.Image
           onLayout={e => {
             layout.x.value = e.nativeEvent.layout.width;
             layout.y.value = e.nativeEvent.layout.height;
           }}
           source={dalmatian}
-          style={{
-            width: R * 2,
-            height: undefined,
-            maxHeight: undefined,
-            aspectRatio: d.w / d.h,
-          }}
+          style={[s, effectStyles]}
         />
       </Animated.View>
       <SVG width={width} height={height} style={StyleSheet.absoluteFillObject}>
         <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.4)'} />
       </SVG>
-      <View
-        style={[
-          StyleSheet.absoluteFillObject,
-          {justifyContent: 'center', alignItems: 'center'},
-        ]}>
+      <View style={styles.reflection}>
         <GestureDetector gesture={gesture}>
-          <Animated.View style={rStyle}>
-            <FastImage
-              onLayout={e => {
-                layout.x.value = e.nativeEvent.layout.width;
-                layout.y.value = e.nativeEvent.layout.height;
-              }}
-              source={dalmatian}
-              style={{
-                opacity: 0.3,
-                backgroundColor: 'tomato',
-                width: R * 2,
-                height: undefined,
-                maxHeight: undefined,
-                aspectRatio: d.w / d.h,
-              }}
-            />
-          </Animated.View>
+          <Animated.View style={[s, rStyle]} />
         </GestureDetector>
+      </View>
+      <View style={{position: 'absolute'}}>
+        <Button title="crop" onPress={crop} />
       </View>
     </View>
   );
@@ -177,8 +211,19 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  container: {
+    width,
+    height: height * 0.8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  reflection: {
+    position: 'absolute',
+    width,
+    height: height * 0.8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

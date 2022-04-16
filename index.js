@@ -8,6 +8,7 @@ import Shared from './src/shared/Shared';
 import Notifications from './src/notifications/Notifications';
 import Settings from './src/settings/Settings';
 import Editor from './src/settings/editor/Editor';
+import Result from './src/settings/editor/Result';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -33,6 +34,8 @@ Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
 Navigation.registerComponent(Screens.SETTINGS, () =>
   gestureHandlerRootHOC(Editor),
 );
+
+Navigation.registerComponent('Result', () => Result);
 
 Navigation.setDefaultOptions({
   statusBar: {
