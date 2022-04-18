@@ -16,9 +16,9 @@ const {width} = Dimensions.get('window');
 const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
 
-const PickerPicture: React.FC<PickerPictureProps> = ({index, asset}) => {
+const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
   const onSelectedPicture = () => {
-    emitter.emit('picture.selected', {uri: asset.uri});
+    emitter.emit('picture.selected', asset);
   };
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const PickerPicture: React.FC<PickerPictureProps> = ({index, asset}) => {
   });
 
   return (
-    <TouchableWithoutFeedback style={styles.tile}>
+    <TouchableWithoutFeedback style={styles.tile} onPress={onSelectedPicture}>
       <FastImage
         source={{uri: asset.uri}}
         style={styles.image}

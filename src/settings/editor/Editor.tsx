@@ -1,23 +1,28 @@
-import {View, Dimensions, StyleSheet, Button} from 'react-native';
-import React from 'react';
+import {View, Dimensions, StyleSheet} from 'react-native';
+import React, {useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import SVG, {Path} from 'react-native-svg';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   cancelAnimation,
+  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withDecay,
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
-import {clamp, pinch, cropPoint} from '../../utils/animations';
-import ImageEditor from '@react-native-community/image-editor';
+import {clamp, pinch, set} from '../../utils/animations';
+import {cropPoint} from './utils';
+import {HStack, IconButton, NativeBaseProvider} from 'native-base';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {imageStyles} from './utils';
+import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
+import {Asset} from 'expo-media-library';
+import EffectIndicator from './EffectIndicator';
 
 type EditorProps = {
-  uri: string;
-  width: string;
-  height: string;
+  asset: Asset;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -34,18 +39,17 @@ const path = [
   `a 1 1 0 0 0 ${-R * 2} 0`,
 ];
 
-const dalmatian = require('./dalmatian.jpg');
-
-const Editor: NavigationFunctionComponent<EditorProps> = ({componentId}) => {
-  const d = {w: 801, h: 1200};
-  const s = {
-    width: R * 2,
-    height: undefined,
-    maxHeight: undefined,
-    aspectRatio: d.w / d.h,
-  };
+const Editor: NavigationFunctionComponent<EditorProps> = ({
+  componentId,
+  asset,
+}) => {
+  const [d, setD] = useState({w: asset.width, h: asset.height});
+  const s = useRef(imageStyles(d, R)).current;
 
   const layout = useVector(0, 0);
+
+  const rotateImage = useSharedValue<number>(0);
+  const rotate = useVector(0, 0);
 
   const translate = useVector(0, 0);
   const offset = useVector(0, 0);
@@ -57,14 +61,14 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({componentId}) => {
   const originAssign = useSharedValue<boolean>(true);
 
   const translation = useDerivedValue<{x: number; y: number}>(() => {
-    const offsetX = (layout.x.value * scale.value - R * 2) / 2;
-    const offsetY = (layout.y.value * scale.value - R * 2) / 2;
+    let offsetX = (layout.x.value * scale.value - R * 2) / 2;
+    let offsetY = (layout.y.value * scale.value - R * 2) / 2;
 
     const x = clamp(-offsetX, translate.x.value, offsetX);
     const y = clamp(-offsetY, translate.y.value, offsetY);
 
     return {x, y};
-  }, [translate.x.value, translate.y.value, scale.value]);
+  }, [translate.x.value, translate.y.value, scale.value, rotateImage.value]);
 
   const pan = Gesture.Pan()
     .maxPointers(1)
@@ -77,16 +81,6 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({componentId}) => {
     .onChange(e => {
       translate.x.value = offset.x.value + e.translationX;
       translate.y.value = offset.y.value + e.translationY;
-
-      const {originX, originY, size} = cropPoint(
-        {width: d.w, height: d.h},
-        layout,
-        {x: translation.value.x, y: translation.value.y},
-        scale.value,
-        R,
-      );
-
-      console.log(originX, originY, size);
     })
     .onEnd(({velocityX, velocityY}) => {
       translate.x.value = withDecay({velocity: velocityX});
@@ -132,29 +126,70 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({componentId}) => {
     };
   });
 
-  const effectStyles = useAnimatedStyle(() => {
+  const reflectionStyles = useAnimatedStyle(() => {
+    const bool = rotateImage.value === 0 || rotateImage.value === Math.PI;
+
     return {
-      transform: [{rotateY: `${0}rad`}, {rotateX: `${0}rad`}],
+      height: bool ? layout.y.value : layout.x.value,
+      width: bool ? layout.x.value : layout.y.value,
+      opacity: 0.4,
+      backgroundColor: 'pink',
     };
   });
 
+  const effectStyles = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {rotate: `${rotateImage.value}rad`},
+        {rotateY: `${rotate.y.value}rad`},
+        {rotateX: `${rotate.x.value}rad`},
+      ],
+    };
+  });
+
+  useAnimatedReaction(
+    () => rotateImage.value,
+    value => {
+      scale.value = 1;
+      set(translate, 0);
+      set(offset, 0);
+    },
+  );
+
   const crop = async () => {
+    const actions = [];
+    if (rotate.y.value === Math.PI) {
+      actions.push({flip: FlipType.Horizontal});
+    }
+
+    if (rotate.x.value === Math.PI) {
+      actions.push({flip: FlipType.Vertical});
+    }
+
     const {originX, originY, size} = cropPoint(
-      {width: d.w, height: d.h},
       layout,
-      {x: translation.value.x, y: translation.value.y},
+      translate,
       scale.value,
+      {width: d.w, height: d.h},
       R,
     );
 
-    const uri = await ImageEditor.cropImage(
-      'file:///storage/sdcard0/Descargas/dalmatian.jpg',
-      {
-        offset: {x: originX, y: originY},
-        size: {height: size, width: size},
-        displaySize: {width: 200, height: 200},
-        resizeMode: 'cover',
-      },
+    console.log(originX, originY, size);
+
+    const {uri} = await manipulateAsync(
+      asset.uri,
+      [
+        ...actions,
+        {
+          crop: {
+            originX,
+            originY,
+            height: size,
+            width: size,
+          },
+        },
+      ],
+      {base64: false, compress: 1, format: SaveFormat.PNG},
     );
 
     Navigation.push(componentId, {
@@ -168,29 +203,68 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({componentId}) => {
   };
 
   return (
-    <View style={styles.root}>
-      <Animated.View style={[styles.container, rStyle]}>
-        <Animated.Image
-          onLayout={e => {
-            layout.x.value = e.nativeEvent.layout.width;
-            layout.y.value = e.nativeEvent.layout.height;
-          }}
-          source={dalmatian}
-          style={[s, effectStyles]}
-        />
-      </Animated.View>
-      <SVG width={width} height={height} style={StyleSheet.absoluteFillObject}>
-        <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.4)'} />
-      </SVG>
-      <View style={styles.reflection}>
-        <GestureDetector gesture={gesture}>
-          <Animated.View style={[s, rStyle]} />
-        </GestureDetector>
+    <NativeBaseProvider>
+      <View style={styles.root}>
+        <Animated.View style={[styles.container, rStyle]}>
+          <Animated.Image
+            onLayout={e => {
+              layout.x.value = e.nativeEvent.layout.width;
+              layout.y.value = e.nativeEvent.layout.height;
+            }}
+            resizeMode={'cover'}
+            source={{uri: asset.uri}}
+            style={[s, effectStyles]}
+          />
+        </Animated.View>
+        <SVG
+          width={width}
+          height={height}
+          style={StyleSheet.absoluteFillObject}>
+          <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.4)'} />
+        </SVG>
+        <View style={styles.reflection}>
+          <GestureDetector gesture={gesture}>
+            <Animated.View style={[s, rStyle, reflectionStyles]} />
+          </GestureDetector>
+        </View>
+        <HStack
+          alignSelf={'flex-end'}
+          position={'absolute'}
+          w={'70%'}
+          alignItems={'center'}
+          bottom={5}
+          justifyContent={'space-evenly'}>
+          <EffectIndicator
+            effect={rotateImage}
+            icon={'format-rotate-90'}
+            action={'rotate'}
+          />
+
+          <EffectIndicator
+            effect={rotate.x}
+            icon={'flip-vertical'}
+            action={'flip'}
+          />
+
+          <EffectIndicator
+            effect={rotate.y}
+            icon={'flip-horizontal'}
+            action={'flip'}
+          />
+
+          <IconButton
+            onPress={crop}
+            icon={<MaterialCommunityIcons name="check" size={32} />}
+            bgColor={'#3366ff'}
+            borderRadius={'full'}
+            _icon={{
+              color: '#fff',
+              size: 'lg',
+            }}
+          />
+        </HStack>
       </View>
-      <View style={{position: 'absolute'}}>
-        <Button title="crop" onPress={crop} />
-      </View>
-    </View>
+    </NativeBaseProvider>
   );
 };
 

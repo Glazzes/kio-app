@@ -1,30 +1,34 @@
 import {View, StyleSheet, Button, Dimensions} from 'react-native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
-import ImagePicker from './ImagePicker';
+import {useSharedValue, withSpring} from 'react-native-reanimated';
+import ImagePicker from './picker/ImagePicker';
 import {Box, NativeBaseProvider} from 'native-base';
+import emitter from '../utils/emitter';
+import {Asset} from 'expo-media-library';
+import {Screens} from '../enums/screens';
 
 const {bottomTabsHeight} = Navigation.constantsSync();
 const {width, height} = Dimensions.get('window');
 
-const Settings: NavigationFunctionComponent = ({}) => {
+const Settings: NavigationFunctionComponent = ({componentId}) => {
   const translateY = useSharedValue<number>(0);
-  const translateModal = useSharedValue<number>(0);
 
   const showSheet = () => {
-    translateModal.value = -height;
     translateY.value = withSpring(-height / 2);
   };
 
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{translateY: translateModal.value}],
-    };
+  useEffect(() => {
+    const sub = emitter.addListener('picture.selected', (asset: Asset) => {
+      Navigation.push(componentId, {
+        component: {
+          name: Screens.EDITOR,
+          passProps: {asset},
+        },
+      });
+    });
+
+    return () => sub.remove();
   });
 
   return (

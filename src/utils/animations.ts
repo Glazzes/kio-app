@@ -1,20 +1,16 @@
-import Animated, {Extrapolate, interpolate} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {Vector} from 'react-native-redash';
-
-type Dim = {
-  width: number;
-  height: number;
-};
 
 type Point = {
   x: number;
   y: number;
 };
 
-type CropPoint = {
-  originX: number;
-  originY: number;
-  size: number;
+// simple
+const set = (vector: Vector<Animated.SharedValue<number>>, value: number) => {
+  'worklet';
+  vector.x.value = value;
+  vector.y.value = value;
 };
 
 const clamp = (right: number, value: number, left: number): number => {
@@ -22,42 +18,17 @@ const clamp = (right: number, value: number, left: number): number => {
   return Math.max(right, Math.min(value, left));
 };
 
-// crops from top left of the svg circle
-const cropPoint = (
-  dimensions: Dim,
-  layout: Vector<Animated.SharedValue<number>>,
-  translate: {x: number; y: number},
-  scale: number,
-  R: number,
-): CropPoint => {
+const inRadius = (center: Point, focal: Point, R: number): boolean => {
   'worklet';
-  const offsetX = (layout.x.value * scale - R * 2) / 2;
-  const offsetY = (layout.y.value * scale - R * 2) / 2;
+  const dx = Math.abs(focal.x - center.x);
+  const dy = Math.abs(focal.y - center.y);
 
-  const maxXPercent = Math.abs(1 - (R * 2) / (layout.x.value * scale));
-  const maxYPercent = Math.abs(1 - (R * 2) / (layout.y.value * scale));
-
-  const x = interpolate(
-    translate.x,
-    [-offsetX, offsetX],
-    [maxXPercent, 0],
-    Extrapolate.CLAMP,
-  );
-
-  const y = interpolate(
-    translate.y,
-    [-offsetY, offsetY],
-    [maxYPercent, 0],
-    Extrapolate.CLAMP,
-  );
-
-  const originX = dimensions.width * x;
-  const originY = dimensions.height * y;
-  const size = dimensions.width / scale;
-
-  return {originX, originY, size};
+  const r = Math.sqrt(dx * dx + dy * dy);
+  console.log(R, r);
+  return r <= R;
 };
 
+// gestures
 const pinch = (
   layout: Vector<Animated.SharedValue<number>>,
   translateOffset: Vector<Animated.SharedValue<number>>,
@@ -94,14 +65,4 @@ const pinch = (
   return {translateX, translateY};
 };
 
-const inRadius = (center: Point, focal: Point, R: number): boolean => {
-  'worklet';
-  const dx = Math.abs(focal.x - center.x);
-  const dy = Math.abs(focal.y - center.y);
-
-  const r = Math.sqrt(dx * dx + dy * dy);
-  console.log(R, r);
-  return r <= R;
-};
-
-export {clamp, inRadius, pinch, cropPoint};
+export {clamp, inRadius, pinch, set};

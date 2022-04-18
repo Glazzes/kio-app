@@ -6,8 +6,7 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import Home from './src/home/Home';
 import Shared from './src/shared/Shared';
 import Notifications from './src/notifications/Notifications';
-import Settings from './src/settings/Settings';
-import Editor from './src/settings/editor/Editor';
+import {Settings, Editor} from './src/settings';
 import Result from './src/settings/editor/Result';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
@@ -31,7 +30,12 @@ Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
   gestureHandlerRootHOC(Notifications),
 );
 
+// Settings tab Stack
 Navigation.registerComponent(Screens.SETTINGS, () =>
+  gestureHandlerRootHOC(Settings),
+);
+
+Navigation.registerComponent(Screens.EDITOR, () =>
   gestureHandlerRootHOC(Editor),
 );
 

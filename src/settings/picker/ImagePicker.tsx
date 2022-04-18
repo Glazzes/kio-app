@@ -20,7 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import {clamp} from '../utils/animations';
+import {clamp} from '../../utils/animations';
 import {Box, Text} from 'native-base';
 import {
   Asset,
@@ -28,7 +28,7 @@ import {
   getAssetsAsync,
   MediaType,
 } from 'expo-media-library';
-import PickerPicture from './picker/PickerPicture';
+import PickerPicture from './PickerPicture';
 import {snapPoint} from 'react-native-redash';
 
 type ImagePickerProps = {
@@ -47,7 +47,6 @@ const getAssets = async (): Promise<Asset[]> => {
     });
 
     assets.push(...albumAssets.assets);
-    assets.forEach(a => console.log(a.uri));
   }
 
   return assets;
@@ -91,12 +90,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   }, [translateY.value]);
 
   const scroll = useDerivedValue<number>(() => {
-    const contentHeight =
-      Math.ceil(assets.length / 3) * (SIZE + PADDING * 2) + bottomTabsHeight;
-    const sy = -1 * translateY.value - actualHeight;
-    const contentOffset = contentHeight - actualHeight;
-
-    return clamp(0, sy, contentOffset);
+    return -1 * translateY.value - actualHeight;
   }, [translateY.value]);
 
   const pan = Gesture.Pan()
