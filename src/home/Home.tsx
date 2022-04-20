@@ -10,6 +10,7 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
+import ImageThumbnail from './files/thumnnails/ImageThumbnail';
 
 const Home: NavigationFunctionComponent = ({}) => {
   const translateY = useSharedValue<number>(100);
@@ -23,24 +24,10 @@ const Home: NavigationFunctionComponent = ({}) => {
       translateY.value = offset.value + e.translationY;
     });
 
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      width: 50,
-      height: 50,
-      backgroundColor: 'tomato',
-      transform: [{translateY: translateY.value}],
-    };
-  });
-
   return (
-    <GestureHandlerRootView>
-      <View style={[styles.root]}>
-        <Text>Welcome to home</Text>
-        <GestureDetector gesture={pan}>
-          <Animated.View style={rStyle} />
-        </GestureDetector>
-      </View>
-    </GestureHandlerRootView>
+    <View style={[styles.root]}>
+      <ImageThumbnail />
+    </View>
   );
 };
 

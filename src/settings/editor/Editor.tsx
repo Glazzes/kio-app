@@ -1,5 +1,5 @@
 import {View, Dimensions, StyleSheet} from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useRef} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import SVG, {Path} from 'react-native-svg';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
 import {clamp, pinch, set} from '../../utils/animations';
-import {cropPoint} from './utils';
+import {cropPoint, maxScale} from './utils';
 import {HStack, IconButton, NativeBaseProvider} from 'native-base';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {imageStyles} from './utils';
@@ -43,10 +43,11 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
   componentId,
   asset,
 }) => {
-  const [d, setD] = useState({w: asset.width, h: asset.height});
+  const d = useRef({width: asset.width, height: asset.height}).current;
   const s = useRef(imageStyles(d, R)).current;
 
   const layout = useVector(0, 0);
+  const original = useVector(0, 0);
 
   const rotateImage = useSharedValue<number>(0);
   const rotate = useVector(0, 0);
@@ -68,7 +69,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     const y = clamp(-offsetY, translate.y.value, offsetY);
 
     return {x, y};
-  }, [translate.x.value, translate.y.value, scale.value, rotateImage.value]);
+  }, [translate.x.value, translate.y.value, scale.value]);
 
   const pan = Gesture.Pan()
     .maxPointers(1)
@@ -107,7 +108,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       scale.value = clamp(
         1,
         e.scale * scaleOffset.value,
-        Math.floor(d.h / layout.y.value),
+        maxScale(layout, d, rotateImage.value),
       );
     })
     .onEnd(_ => {
@@ -127,13 +128,9 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
   });
 
   const reflectionStyles = useAnimatedStyle(() => {
-    const bool = rotateImage.value === 0 || rotateImage.value === Math.PI;
-
     return {
-      height: bool ? layout.y.value : layout.x.value,
-      width: bool ? layout.x.value : layout.y.value,
-      opacity: 0.4,
-      backgroundColor: 'pink',
+      height: layout.y.value,
+      width: layout.x.value,
     };
   });
 
@@ -147,15 +144,6 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     };
   });
 
-  useAnimatedReaction(
-    () => rotateImage.value,
-    value => {
-      scale.value = 1;
-      set(translate, 0);
-      set(offset, 0);
-    },
-  );
-
   const crop = async () => {
     const actions = [];
     if (rotate.y.value === Math.PI) {
@@ -166,20 +154,31 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       actions.push({flip: FlipType.Vertical});
     }
 
+    /*
+    d will be inverted if rotation is not 0 or 180 degree, the first time it's fine
+    but at the moment of retuning to this screen dimensions will be inverted again and again
+    so a copy of d it's required because it needs to be inmutable
+    */
     const {originX, originY, size} = cropPoint(
       layout,
       translate,
       scale.value,
-      {width: d.w, height: d.h},
+      rotateImage.value,
+      {width: d.width, height: d.height},
       R,
     );
 
-    console.log(originX, originY, size);
-
+    /*
+      Rotation must always happend after flip, otherwise the cropped image
+      will differ by a lot to the one shown in the svg circle
+    */
     const {uri} = await manipulateAsync(
       asset.uri,
       [
         ...actions,
+        {
+          rotate: rotateImage.value * (180 / Math.PI),
+        },
         {
           crop: {
             originX,
@@ -202,6 +201,23 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     });
   };
 
+  useAnimatedReaction(
+    () => rotateImage.value,
+    value => {
+      if (value === 0 || value === Math.PI) {
+        layout.x.value = original.x.value;
+        layout.y.value = original.y.value;
+      } else {
+        layout.x.value = original.y.value;
+        layout.y.value = original.x.value;
+      }
+
+      scale.value = 1;
+      set(translate, 0);
+      set(offset, 0);
+    },
+  );
+
   return (
     <NativeBaseProvider>
       <View style={styles.root}>
@@ -210,7 +226,10 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
             onLayout={e => {
               layout.x.value = e.nativeEvent.layout.width;
               layout.y.value = e.nativeEvent.layout.height;
+              original.x.value = e.nativeEvent.layout.width;
+              original.y.value = e.nativeEvent.layout.height;
             }}
+            resizeMethod={'scale'}
             resizeMode={'cover'}
             source={{uri: asset.uri}}
             style={[s, effectStyles]}
@@ -220,11 +239,11 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
           width={width}
           height={height}
           style={StyleSheet.absoluteFillObject}>
-          <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.4)'} />
+          <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.3)'} />
         </SVG>
         <View style={styles.reflection}>
           <GestureDetector gesture={gesture}>
-            <Animated.View style={[s, rStyle, reflectionStyles]} />
+            <Animated.View style={[reflectionStyles, rStyle]} />
           </GestureDetector>
         </View>
         <HStack

@@ -8,6 +8,7 @@ import Shared from './src/shared/Shared';
 import Notifications from './src/notifications/Notifications';
 import {Settings, Editor} from './src/settings';
 import Result from './src/settings/editor/Result';
+import ImageDetails from './src/home/files/details/ImageDetails';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -18,44 +19,6 @@ const tabs = [
   Screens.SETTINGS,
 ];
 
-Navigation.registerComponent(Screens.MY_UNIT, () =>
-  gestureHandlerRootHOC(Home),
-);
-
-Navigation.registerComponent(Screens.SHARED, () =>
-  gestureHandlerRootHOC(Shared),
-);
-
-Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
-  gestureHandlerRootHOC(Notifications),
-);
-
-// Settings tab Stack
-Navigation.registerComponent(Screens.SETTINGS, () =>
-  gestureHandlerRootHOC(Settings),
-);
-
-Navigation.registerComponent(Screens.EDITOR, () =>
-  gestureHandlerRootHOC(Editor),
-);
-
-Navigation.registerComponent('Result', () => Result);
-
-Navigation.setDefaultOptions({
-  statusBar: {
-    visible: true,
-    drawBehind: true,
-    backgroundColor: {
-      light: '#fff',
-    },
-  },
-  bottomTabs: {
-    elevation: 1000,
-    drawBehind: false,
-    barStyle: 'default',
-  },
-});
-
 const defaultTab = {
   textColor: '#9BA4B4',
   selectedTextColor: '#3366ff',
@@ -65,11 +28,16 @@ const defaultTab = {
   animateBadge: true,
 };
 
-Navigation.events().registerAppLaunchedListener(async () => {
+Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
       bottomTabs: {
         id: 'BottomTabs',
+        options: {
+          bottomTabs: {
+            elevation: 5,
+          },
+        },
         children: [
           {
             stack: {
@@ -155,3 +123,28 @@ Navigation.events().registerAppLaunchedListener(async () => {
     },
   });
 });
+
+Navigation.registerComponent(Screens.MY_UNIT, () =>
+  gestureHandlerRootHOC(Home),
+);
+
+Navigation.registerComponent(Screens.IMAGE_DETAILS, () => ImageDetails);
+
+Navigation.registerComponent(Screens.SHARED, () =>
+  gestureHandlerRootHOC(Shared),
+);
+
+Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
+  gestureHandlerRootHOC(Notifications),
+);
+
+// Settings tab Stack
+Navigation.registerComponent(Screens.SETTINGS, () =>
+  gestureHandlerRootHOC(Settings),
+);
+
+Navigation.registerComponent(Screens.EDITOR, () =>
+  gestureHandlerRootHOC(Editor),
+);
+
+Navigation.registerComponent('Result', () => Result);

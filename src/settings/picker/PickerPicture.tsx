@@ -1,10 +1,17 @@
 import {StyleSheet, Dimensions} from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Camera} from 'expo-camera';
-import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import emitter from '../../utils/emitter';
 import FastImage from 'react-native-fast-image';
 import {Asset} from 'expo-media-library';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {useVector} from 'react-native-redash';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 type PickerPictureProps = {
   asset: Asset;
@@ -17,24 +24,71 @@ const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
 
 const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
+  const radius = useRef(Math.sqrt(SIZE ** 2 + SIZE ** 2)).current;
+
   const onSelectedPicture = () => {
     emitter.emit('picture.selected', asset);
   };
+
+  const translate = useVector(0, 0);
+  const scale = useSharedValue<number>(0);
+  const opacity = useSharedValue<number>(1);
+
+  const tap = Gesture.Tap()
+    .onBegin(e => {
+      translate.x.value = e.x;
+      translate.y.value = e.y;
+    })
+    .onEnd(() => {
+      scale.value = withTiming(1, {duration: 500}, finished => {
+        if (finished) {
+          scale.value = 0;
+          runOnJS(onSelectedPicture)();
+        }
+      });
+
+      opacity.value = withTiming(0, {duration: 500}, finished => {
+        if (finished) {
+          opacity.value = 1;
+        }
+      });
+    });
+
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      position: 'absolute',
+      top: -radius,
+      left: -radius,
+      height: radius * 2,
+      width: radius * 2,
+      borderRadius: radius,
+      transform: [
+        {translateX: translate.x.value},
+        {translateY: translate.y.value},
+        {scale: scale.value},
+      ],
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      opacity: opacity.value,
+    };
+  });
 
   useEffect(() => {
     (async () => {
       await Camera.requestCameraPermissionsAsync();
     })();
-  });
+  }, []);
 
   return (
-    <TouchableWithoutFeedback style={styles.tile} onPress={onSelectedPicture}>
-      <FastImage
-        source={{uri: asset.uri}}
-        style={styles.image}
-        resizeMode={'cover'}
-      />
-    </TouchableWithoutFeedback>
+    <GestureDetector gesture={tap}>
+      <Animated.View style={styles.tile}>
+        <FastImage
+          source={{uri: asset.uri}}
+          style={styles.image}
+          resizeMode={'cover'}
+        />
+        <Animated.View style={rStyle} />
+      </Animated.View>
+    </GestureDetector>
   );
 };
 

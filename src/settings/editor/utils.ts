@@ -24,10 +24,28 @@ type CropPoint = {
   size: number;
 };
 
+const maxScale = (
+  layout: Vector<Animated.SharedValue<number>>,
+  dimensions: Dim,
+  rotation: number,
+): number => {
+  'worklet';
+  if (rotation === 0 || rotation === Math.PI) {
+    return dimensions.height > dimensions.width
+      ? dimensions.height / layout.y.value
+      : dimensions.width / layout.x.value;
+  }
+
+  return dimensions.height > dimensions.width
+    ? dimensions.height / layout.x.value
+    : dimensions.width / layout.y.value;
+};
+
 const cropPoint = (
   layout: Vector<Animated.SharedValue<number>>,
   translate: Vector<Animated.SharedValue<number>>,
   scale: number,
+  rotation: number,
   dimensions: Dim,
   R: number,
 ): CropPoint => {
@@ -55,6 +73,14 @@ const cropPoint = (
     Extrapolate.CLAMP,
   );
 
+  if (rotation === Math.PI / 2 || rotation === (3 / 4) * (Math.PI * 2)) {
+    const dx = dimensions.width;
+    const dy = dimensions.height;
+
+    dimensions.width = dy;
+    dimensions.height = dx;
+  }
+
   let originX = dimensions.width * x;
   let originY = dimensions.height * y;
 
@@ -66,8 +92,8 @@ const cropPoint = (
   return {originX, originY, size};
 };
 
-const imageStyles = (dimensions: {w: number; h: number}, R: number): Styles => {
-  const aspectRatio = dimensions.w / dimensions.h;
+const imageStyles = (dimensions: Dim, R: number): Styles => {
+  const aspectRatio = dimensions.width / dimensions.height;
   const styles: Styles = {
     width: 0,
     height: 0,
@@ -95,4 +121,4 @@ const flip = (rotate: Animated.SharedValue<number>) => {
   rotate.value = rotate.value === 0 ? Math.PI : 0;
 };
 
-export {flip, imageStyles, cropPoint};
+export {flip, imageStyles, cropPoint, maxScale};

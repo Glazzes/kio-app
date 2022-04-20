@@ -37,7 +37,7 @@ type ImagePickerProps = {
 
 const getAssets = async (): Promise<Asset[]> => {
   const albums = await getAlbumsAsync();
-  const assets: Asset[] = [{} as Asset];
+  const assets: Asset[] = [];
   for (let album of albums) {
     const albumAssets = await getAssetsAsync({
       album: album.id,
@@ -49,6 +49,7 @@ const getAssets = async (): Promise<Asset[]> => {
     assets.push(...albumAssets.assets);
   }
 
+  assets.forEach(e => console.log(e.uri));
   return assets;
 };
 
@@ -149,7 +150,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   useAnimatedReaction(
     () => scroll.value,
     value => {
-      scrollTo(ref, 0, value, true);
+      scrollTo(ref, 0, value, false);
     },
   );
 
@@ -170,7 +171,8 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
           getItemLayout={getItemLayout}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
-          removeClippedSubviews
+          removeClippedSubviews={true}
+          windowSize={9}
         />
       </Animated.View>
     </GestureDetector>
