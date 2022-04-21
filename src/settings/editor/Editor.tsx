@@ -223,6 +223,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       <View style={styles.root}>
         <Animated.View style={[styles.container, rStyle]}>
           <Animated.Image
+            nativeID={`${asset.uri}-dest`}
             onLayout={e => {
               layout.x.value = e.nativeEvent.layout.width;
               layout.y.value = e.nativeEvent.layout.height;
@@ -247,6 +248,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
           </GestureDetector>
         </View>
         <HStack
+          nativeID="effects"
           alignSelf={'flex-end'}
           position={'absolute'}
           w={'70%'}
@@ -288,6 +290,20 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
 };
 
 Editor.options = {
+  animations: {
+    push: {
+      elementTransitions: [
+        {
+          id: 'effects',
+          alpha: {
+            from: 0,
+            to: 1,
+            duration: 4000,
+          },
+        },
+      ],
+    },
+  },
   statusBar: {
     visible: false,
   },

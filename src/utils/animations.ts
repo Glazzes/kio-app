@@ -1,5 +1,9 @@
+import {Dimensions} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {Vector} from 'react-native-redash';
+import {Dim, Styles} from './types';
+
+const {width, height} = Dimensions.get('window');
 
 // simple
 const set = (vector: Vector<Animated.SharedValue<number>>, value: number) => {
@@ -11,6 +15,20 @@ const set = (vector: Vector<Animated.SharedValue<number>>, value: number) => {
 const clamp = (right: number, value: number, left: number): number => {
   'worklet';
   return Math.max(right, Math.min(value, left));
+};
+
+const imageStyles = (layout: Dim): Styles => {
+  'worklet';
+  const aspectRatio = layout.width / layout.height;
+  const styles: Styles = {
+    width,
+    height: undefined,
+    maxWidth: width,
+    maxHeight: undefined,
+    aspectRatio,
+  };
+
+  return styles;
 };
 
 // gestures
@@ -50,4 +68,4 @@ const pinch = (
   return {translateX, translateY};
 };
 
-export {clamp, pinch, set};
+export {clamp, pinch, set, imageStyles};

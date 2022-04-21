@@ -3,6 +3,7 @@ import {
   ListRenderItemInfo,
   StyleSheet,
   FlatList,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Animated, {
@@ -27,6 +28,7 @@ import {
   getAlbumsAsync,
   getAssetsAsync,
   MediaType,
+  requestPermissionsAsync,
 } from 'expo-media-library';
 import PickerPicture from './PickerPicture';
 import {snapPoint} from 'react-native-redash';
@@ -49,7 +51,7 @@ const getAssets = async (): Promise<Asset[]> => {
     assets.push(...albumAssets.assets);
   }
 
-  assets.forEach(e => console.log(e.uri));
+  console.log(assets[10].uri);
   return assets;
 };
 
@@ -142,15 +144,20 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
 
   useEffect(() => {
     (async () => {
-      const allAssets = await getAssets();
-      setAssets(allAssets);
+      const {granted} = await requestPermissionsAsync();
+      if (granted) {
+        const allAssets = await getAssets();
+        setAssets(allAssets);
+      } else {
+        Alert.alert('Error xd');
+      }
     })();
   }, []);
 
   useAnimatedReaction(
-    () => scroll.value,
-    value => {
-      scrollTo(ref, 0, value, false);
+    () => Math.round(scroll.value),
+    y => {
+      scrollTo(ref, 0, y, true);
     },
   );
 
@@ -170,8 +177,8 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
           keyExtractor={keyExtractor}
           getItemLayout={getItemLayout}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={false}
           contentContainerStyle={styles.content}
-          removeClippedSubviews={true}
           windowSize={9}
         />
       </Animated.View>

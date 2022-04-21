@@ -1,4 +1,9 @@
-import {Dimensions, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import React from 'react';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../enums/screens';
@@ -33,16 +38,8 @@ const toDetails = (parentId: string, fromId: string, toId: string) => {
 };
 
 const ImageThumbnail: React.FC<ImageThumbnailProps> = ({}) => {
-  const [d, setD] = React.useState({width: 1, height: 1});
-
-  React.useEffect(() => {
-    Image.getSize(uri, (w, h) => {
-      setD({width: w, height: h});
-    });
-  }, []);
-
   return (
-    <TouchableOpacity
+    <TouchableWithoutFeedback
       onPress={() => toDetails(Screens.MY_UNIT, 'img', 'img-dest')}>
       <Image
         nativeID="img"
@@ -50,7 +47,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({}) => {
         resizeMode={'cover'}
         style={styles.image}
       />
-    </TouchableOpacity>
+    </TouchableWithoutFeedback>
   );
 };
 

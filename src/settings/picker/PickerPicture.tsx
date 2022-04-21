@@ -2,7 +2,6 @@ import {StyleSheet, Dimensions} from 'react-native';
 import React, {useEffect, useRef} from 'react';
 import {Camera} from 'expo-camera';
 import emitter from '../../utils/emitter';
-import FastImage from 'react-native-fast-image';
 import {Asset} from 'expo-media-library';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {useVector} from 'react-native-redash';
@@ -34,22 +33,28 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
   const scale = useSharedValue<number>(0);
   const opacity = useSharedValue<number>(1);
 
+  const dummy = useSharedValue<number>(1);
   const tap = Gesture.Tap()
     .onBegin(e => {
       translate.x.value = e.x;
       translate.y.value = e.y;
     })
     .onEnd(() => {
-      scale.value = withTiming(1, {duration: 500}, finished => {
+      scale.value = withTiming(1, {duration: 300}, finished => {
         if (finished) {
           scale.value = 0;
-          runOnJS(onSelectedPicture)();
         }
       });
 
-      opacity.value = withTiming(0, {duration: 500}, finished => {
+      opacity.value = withTiming(0, {duration: 300}, finished => {
         if (finished) {
           opacity.value = 1;
+        }
+      });
+
+      dummy.value = withTiming(0, {duration: 150}, finished => {
+        if (finished) {
+          runOnJS(onSelectedPicture)();
         }
       });
     });
@@ -67,7 +72,7 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
         {translateY: translate.y.value},
         {scale: scale.value},
       ],
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: '#rgba(0, 0, 0, 0.4)',
       opacity: opacity.value,
     };
   });
@@ -81,7 +86,8 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
   return (
     <GestureDetector gesture={tap}>
       <Animated.View style={styles.tile}>
-        <FastImage
+        <Animated.Image
+          nativeID={`${asset.uri}`}
           source={{uri: asset.uri}}
           style={styles.image}
           resizeMode={'cover'}

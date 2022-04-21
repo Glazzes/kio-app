@@ -128,7 +128,9 @@ Navigation.registerComponent(Screens.MY_UNIT, () =>
   gestureHandlerRootHOC(Home),
 );
 
-Navigation.registerComponent(Screens.IMAGE_DETAILS, () => ImageDetails);
+Navigation.registerComponent(Screens.IMAGE_DETAILS, () =>
+  gestureHandlerRootHOC(ImageDetails),
+);
 
 Navigation.registerComponent(Screens.SHARED, () =>
   gestureHandlerRootHOC(Shared),

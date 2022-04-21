@@ -4,19 +4,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import {Vector} from 'react-native-redash';
-
-export type Styles = {
-  width: number | undefined;
-  maxWidth: number | undefined;
-  height: number | undefined;
-  maxHeight: number | undefined;
-  aspectRatio: number;
-};
-
-type Dim = {
-  width: number;
-  height: number;
-};
+import {Dim, Styles} from '../../utils/types';
 
 type CropPoint = {
   originX: number;
