@@ -24,19 +24,6 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
         component: {
           name: Screens.EDITOR,
           passProps: {asset},
-          options: {
-            animations: {
-              push: {
-                sharedElementTransitions: [
-                  {
-                    fromId: asset.uri,
-                    toId: `${asset.uri}-dest`,
-                    duration: 300,
-                  },
-                ],
-              },
-            },
-          },
         },
       });
     });
@@ -57,15 +44,11 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
 };
 
 Settings.options = {
-  layout: {
-    backgroundColor: 'transparent',
-  },
   bottomTabs: {
     elevation: 5,
   },
   statusBar: {
     visible: true,
-    backgroundColor: '#3366ff',
   },
   topBar: {
     visible: false,

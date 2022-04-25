@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@dimaportenko/react-native-shadow-view": "^0.1.4",
     "@types/fbemitter": "^2.0.32",
     "@types/react-native-vector-icons": "^6.4.10",
     "expo": "^44.0.6",
@@ -17,6 +18,7 @@
     "expo-camera": "^12.1.2",
     "expo-haptics": "~11.1.0",
     "expo-image-manipulator": "~10.2.0",
+    "expo-linear-gradient": "~11.0.3",
     "expo-media-library": "~14.0.0",
     "expo-secure-store": "~11.1.0",
     "fbemitter": "^3.0.0",

@@ -1,13 +1,18 @@
 import {View, StyleSheet} from 'react-native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import FastImage from 'react-native-fast-image';
+import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 
 type ResultProps = {
   uri: string;
 };
 
 const Result: NavigationFunctionComponent<ResultProps> = ({uri}) => {
+  useEffect(() => {
+    impactAsync(ImpactFeedbackStyle.Medium);
+  }, []);
+
   return (
     <View style={styles.root}>
       <FastImage source={{uri}} style={styles.image} resizeMode={'cover'} />

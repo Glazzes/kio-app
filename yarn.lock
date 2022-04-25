@@ -1080,6 +1080,11 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@dimaportenko/react-native-shadow-view@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@dimaportenko/react-native-shadow-view/-/react-native-shadow-view-0.1.4.tgz#303032afa0f20229b7643d697f5641b3e26bb4bb"
+  integrity sha512-HL+LL0m/CmXucqUtfILFEDmLh5JMVQ+oyh4ltxqXJ/spc4kcZ8/1JhWMlv245yx7K17qKoxslpG+mdRpvJCj3A==
+
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
   resolved "https://registry.yarnpkg.com/@egjs/hammerjs/-/hammerjs-2.0.17.tgz#5dc02af75a6a06e4c2db0202cae38c9263895124"
@@ -4590,6 +4595,11 @@ expo-keep-awake@~10.0.2:
   version "10.0.2"
   resolved "https://registry.yarnpkg.com/expo-keep-awake/-/expo-keep-awake-10.0.2.tgz#706bda839782bb3e8ad4cbe43bde471a56368813"
   integrity sha512-Ro1lgyKldbFs4mxhWM+goX9sg0S2SRR8FiJJeOvaRzf8xNhrZfWA00Zpr+/3ocCoWQ3eEL+X9UF4PXXHf0KoOg==
+
+expo-linear-gradient@~11.0.3:
+  version "11.0.3"
+  resolved "https://registry.yarnpkg.com/expo-linear-gradient/-/expo-linear-gradient-11.0.3.tgz#bc559b9a251c9dc8aa37fb6c66c7a497fe92993c"
+  integrity sha512-LuzTM5+iEHCQfC2TBHAAI+ZjPvf0TvGiA7GYMsyTnakGA2r4JtsV8Ah/miQPKhfG06jLDOo4grUoSMGqbmSrEw==
 
 expo-media-library@~14.0.0:
   version "14.0.1"

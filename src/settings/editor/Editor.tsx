@@ -9,7 +9,6 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withDecay,
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
 import {clamp, pinch, set} from '../../utils/animations';
@@ -83,10 +82,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       translate.x.value = offset.x.value + e.translationX;
       translate.y.value = offset.y.value + e.translationY;
     })
-    .onEnd(({velocityX, velocityY}) => {
-      translate.x.value = withDecay({velocity: velocityX});
-      translate.y.value = withDecay({velocity: velocityY});
-    });
+    .onEnd(_ => {});
 
   const pinchGesture = Gesture.Pinch()
     .onBegin(_ => {
@@ -298,7 +294,7 @@ Editor.options = {
           alpha: {
             from: 0,
             to: 1,
-            duration: 4000,
+            duration: 2000,
           },
         },
       ],

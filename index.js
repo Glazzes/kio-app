@@ -9,6 +9,7 @@ import Notifications from './src/notifications/Notifications';
 import {Settings, Editor} from './src/settings';
 import Result from './src/settings/editor/Result';
 import ImageDetails from './src/home/files/details/ImageDetails';
+import ColorRatation from './src/shared/ColorRatation';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -20,12 +21,8 @@ const tabs = [
 ];
 
 const defaultTab = {
-  textColor: '#9BA4B4',
-  selectedTextColor: '#3366ff',
-  selectedFontSize: 11,
-  fontSize: 11,
-  badgeColor: '#3366ff',
   animateBadge: true,
+  badgeColor: '#3366ff',
 };
 
 Navigation.events().registerAppLaunchedListener(() => {
@@ -36,6 +33,7 @@ Navigation.events().registerAppLaunchedListener(() => {
         options: {
           bottomTabs: {
             elevation: 5,
+            titleDisplayMode: 'alwaysHide',
           },
         },
         children: [
@@ -52,8 +50,9 @@ Navigation.events().registerAppLaunchedListener(() => {
               ],
               options: {
                 bottomTab: {
-                  text: tabs[0],
                   ...defaultTab,
+                  icon: require('./assets/images/folder.png'),
+                  selectedIcon: require('./assets/images/folder-active.png'),
                 },
               },
             },
@@ -72,8 +71,9 @@ Navigation.events().registerAppLaunchedListener(() => {
               ],
               options: {
                 bottomTab: {
-                  text: tabs[1],
                   ...defaultTab,
+                  icon: require('./assets/images/shared.png'),
+                  selectedIcon: require('./assets/images/shared-active.png'),
                 },
               },
             },
@@ -92,8 +92,9 @@ Navigation.events().registerAppLaunchedListener(() => {
               ],
               options: {
                 bottomTab: {
-                  text: tabs[2],
                   ...defaultTab,
+                  icon: require('./assets/images/notifications.png'),
+                  selectedIcon: require('./assets/images/notifications-active.png'),
                 },
               },
             },
@@ -112,8 +113,9 @@ Navigation.events().registerAppLaunchedListener(() => {
               ],
               options: {
                 bottomTab: {
-                  text: tabs[3],
                   ...defaultTab,
+                  icon: require('./assets/images/settings.png'),
+                  selectedIcon: require('./assets/images/settings-active.png'),
                 },
               },
             },
@@ -133,7 +135,7 @@ Navigation.registerComponent(Screens.IMAGE_DETAILS, () =>
 );
 
 Navigation.registerComponent(Screens.SHARED, () =>
-  gestureHandlerRootHOC(Shared),
+  gestureHandlerRootHOC(ColorRatation),
 );
 
 Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
