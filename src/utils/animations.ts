@@ -3,7 +3,7 @@ import Animated from 'react-native-reanimated';
 import {Vector} from 'react-native-redash';
 import {Dim, Styles} from './types';
 
-const {width, height} = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 // simple
 const set = (vector: Vector<Animated.SharedValue<number>>, value: number) => {
@@ -12,9 +12,9 @@ const set = (vector: Vector<Animated.SharedValue<number>>, value: number) => {
   vector.y.value = value;
 };
 
-const clamp = (right: number, value: number, left: number): number => {
+const clamp = (value: number, min: number, max: number): number => {
   'worklet';
-  return Math.max(right, Math.min(value, left));
+  return Math.max(min, Math.min(value, max));
 };
 
 const imageStyles = (layout: Dim): Styles => {
@@ -33,37 +33,30 @@ const imageStyles = (layout: Dim): Styles => {
 
 // gestures
 const pinch = (
-  layout: Vector<Animated.SharedValue<number>>,
-  translateOffset: Vector<Animated.SharedValue<number>>,
+  center: {x: number; y: number},
+  offset: {x: number; y: number},
   event: {focalX: number; focalY: number; scale: number},
-  originAssign: Animated.SharedValue<boolean>,
-  origin: Vector<Animated.SharedValue<number>>,
+  origin: {x: Animated.SharedValue<number>; y: Animated.SharedValue<number>},
+  assign: Animated.SharedValue<boolean>,
 ): {translateX: number; translateY: number} => {
   'worklet';
 
-  const adjustedFocalX = event.focalX - layout.x.value / 2;
-  const adjustedFocalY = event.focalY - layout.y.value / 2;
+  const adjustedFocalX = event.focalX - (center.x + offset.x);
+  const adjustedFocalY = event.focalY - (center.y + offset.y);
 
-  if (originAssign.value) {
+  if (assign.value) {
     origin.x.value = adjustedFocalX;
     origin.y.value = adjustedFocalY;
-    originAssign.value = false;
+    assign.value = false;
   }
 
   const pinchX = adjustedFocalX - origin.x.value;
   const pinchY = adjustedFocalY - origin.y.value;
 
   const translateX =
-    pinchX +
-    origin.x.value +
-    translateOffset.x.value +
-    -1 * event.scale * origin.x.value;
-
+    pinchX + origin.x.value + -1 * event.scale * origin.x.value;
   const translateY =
-    pinchY +
-    origin.y.value +
-    translateOffset.y.value +
-    -1 * event.scale * origin.y.value;
+    pinchY + origin.y.value + -1 * event.scale * origin.y.value;
 
   return {translateX, translateY};
 };

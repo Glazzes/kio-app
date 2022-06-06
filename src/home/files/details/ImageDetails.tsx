@@ -15,7 +15,7 @@ import {maxScale} from '../../../settings/editor/utils';
 
 type ImageDetailsProps = {};
 
-const uri = 'file:///storage/sdcard0/Descargas/Callejon.png';
+const uri = 'file:///storage/sdcard0/Descargas/fox.jpg';
 
 const {width, height} = Dimensions.get('window');
 
@@ -38,8 +38,8 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
     const offsetX = Math.max((layout.x.value * scale.value - width) / 2, 0);
     const offsetY = Math.max((layout.y.value * scale.value - height) / 2, 0);
 
-    const x = clamp(-offsetX, translate.x.value, offsetX);
-    const y = clamp(-offsetY, translate.y.value, offsetY);
+    const x = clamp(translate.x.value, -offsetX, offsetX);
+    const y = clamp(translate.y.value, -offsetY, offsetY);
 
     return {x, y};
   }, [translate.x.value, translate.y.value, scale.value]);
@@ -67,20 +67,16 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
     })
     .onChange(e => {
       const {translateX, translateY} = pinch(
-        layout,
-        offset,
+        {x: layout.x.value / 2, y: layout.y.value / 2},
+        {x: offset.x.value, y: offset.y.value},
         e,
+        {x: origin.x, y: origin.y},
         originAssign,
-        origin,
       );
 
-      translate.x.value = translateX;
-      translate.y.value = translateY;
-      scale.value = clamp(
-        0,
-        e.scale * scaleOffset.value,
-        maxScale(layout, d, 0),
-      );
+      translate.x.value = offset.x.value + translateX;
+      translate.y.value = offset.y.value + translateY;
+      scale.value = scaleOffset.value * e.scale;
     })
     .onEnd(_ => {
       originAssign.value = true;
@@ -102,22 +98,22 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
       }
 
       const {translateX, translateY} = pinch(
-        layout,
-        offset,
+        {x: layout.x.value / 2, y: layout.y.value / 2},
+        {x: offset.x.value, y: offset.y.value},
         {focalX: e.x, focalY: e.y, scale: toScale},
+        {x: origin.x, y: origin.y},
         originAssign,
-        origin,
       );
 
-      translate.x.value = withTiming(translateX);
-      translate.y.value = withTiming(translateY);
+      translate.x.value = withTiming(offset.x.value + translateX);
+      translate.y.value = withTiming(offset.y.value + translateY);
       scale.value = withTiming(toScale);
     })
     .onFinalize(() => {
       originAssign.value = true;
     });
 
-  const combinedGesture = Gesture.Race(pan, pinchGesture, doubleTap);
+  const combinedGesture = Gesture.Exclusive(pan, pinchGesture, doubleTap);
 
   const rStyle = useAnimatedStyle(() => {
     return {
@@ -138,17 +134,19 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
   return (
     <View style={styles.root} nativeID={'bg'}>
       <GestureDetector gesture={combinedGesture}>
-        <Animated.Image
-          onLayout={({nativeEvent}) => {
-            layout.x.value = nativeEvent.layout.width;
-            layout.y.value = nativeEvent.layout.height;
-          }}
-          nativeID="img-dest"
-          source={{uri}}
-          resizeMethod={'scale'}
-          resizeMode={'cover'}
-          style={[s, rStyle]}
-        />
+        <Animated.View style={s}>
+          <Animated.Image
+            onLayout={({nativeEvent}) => {
+              layout.x.value = nativeEvent.layout.width;
+              layout.y.value = nativeEvent.layout.height;
+            }}
+            nativeID="img-dest"
+            source={{uri}}
+            resizeMethod={'scale'}
+            resizeMode={'cover'}
+            style={[s, rStyle]}
+          />
+        </Animated.View>
       </GestureDetector>
     </View>
   );

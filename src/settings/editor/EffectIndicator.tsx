@@ -46,7 +46,7 @@ const EffectIndicator: React.FC<EffectIndicatorProps> = ({
   return (
     <IconButton
       icon={
-        <AnimatedIcon animatedProps={animatedProps} name={icon} size={28} />
+        <AnimatedIcon animatedProps={animatedProps} name={icon} size={25} />
       }
       onPress={performEffect}
       borderRadius={'full'}

@@ -1,8 +1,4 @@
-import Animated, {
-  cancelAnimation,
-  Extrapolate,
-  interpolate,
-} from 'react-native-reanimated';
+import Animated, {Extrapolate, interpolate} from 'react-native-reanimated';
 import {Vector} from 'react-native-redash';
 import {Dim, Styles} from '../../utils/types';
 
@@ -30,38 +26,37 @@ const maxScale = (
 };
 
 const cropPoint = (
-  layout: Vector<Animated.SharedValue<number>>,
-  translate: Vector<Animated.SharedValue<number>>,
-  scale: number,
-  rotation: number,
+  translate: {x: number; y: number},
+  layout: {x: number; y: number},
   dimensions: Dim,
+  scale: number,
+  rotationAngle: number,
   R: number,
 ): CropPoint => {
-  'worklet';
-  cancelAnimation(translate.x);
-  cancelAnimation(translate.y);
+  const offsetX = (layout.x * scale - R * 2) / 2;
+  const offsetY = (layout.y * scale - R * 2) / 2;
 
-  const offsetX = (layout.x.value * scale - R * 2) / 2;
-  const offsetY = (layout.y.value * scale - R * 2) / 2;
-
-  const maxXPercent = Math.abs(1 - (R * 2) / (layout.x.value * scale));
-  const maxYPercent = Math.abs(1 - (R * 2) / (layout.y.value * scale));
+  const maxXPercent = Math.abs(1 - (R * 2) / (layout.x * scale));
+  const maxYPercent = Math.abs(1 - (R * 2) / (layout.y * scale));
 
   const x = interpolate(
-    translate.x.value,
+    translate.x,
     [-offsetX, offsetX],
     [maxXPercent, 0],
     Extrapolate.CLAMP,
   );
 
   const y = interpolate(
-    translate.y.value,
+    translate.y,
     [-offsetY, offsetY],
     [maxYPercent, 0],
     Extrapolate.CLAMP,
   );
 
-  if (rotation === Math.PI / 2 || rotation === (3 / 4) * (Math.PI * 2)) {
+  if (
+    rotationAngle === Math.PI / 2 ||
+    rotationAngle === (3 / 4) * (Math.PI * 2)
+  ) {
     const dx = dimensions.width;
     const dy = dimensions.height;
 
@@ -83,23 +78,19 @@ const cropPoint = (
 const imageStyles = (dimensions: Dim, R: number): Styles => {
   const aspectRatio = dimensions.width / dimensions.height;
   const styles: Styles = {
-    width: 0,
-    height: 0,
-    maxWidth: 0,
-    maxHeight: 0,
+    width: undefined,
+    height: undefined,
+    maxWidth: undefined,
+    maxHeight: undefined,
     aspectRatio,
   };
 
   if (aspectRatio >= 1) {
     styles.height = R * 2;
     styles.maxHeight = R * 2;
-    styles.maxWidth = undefined;
-    styles.width = undefined;
   } else {
     styles.width = R * 2;
     styles.maxWidth = R * 2;
-    styles.maxHeight = undefined;
-    styles.height = undefined;
   }
 
   return styles;

@@ -1,32 +1,15 @@
 import {View, StyleSheet, Text} from 'react-native';
 import React from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
-import ImageThumbnail from './files/thumnnails/ImageThumbnail';
+import {Gesture} from 'react-native-gesture-handler';
+import FilesList from './files/FilesList';
+import {useSharedValue} from 'react-native-reanimated';
+import {Camera, CameraType} from 'expo-camera';
 
 const Home: NavigationFunctionComponent = ({}) => {
-  const translateY = useSharedValue<number>(100);
-  const offset = useSharedValue<number>(0);
-
-  const pan = Gesture.Pan()
-    .onStart(e => {
-      offset.value = translateY.value;
-    })
-    .onChange(e => {
-      translateY.value = offset.value + e.translationY;
-    });
-
   return (
-    <View style={[styles.root]}>
-      <ImageThumbnail />
+    <View style={styles.root}>
+      <FilesList />
     </View>
   );
 };
@@ -34,7 +17,8 @@ const Home: NavigationFunctionComponent = ({}) => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

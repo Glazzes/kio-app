@@ -1,7 +1,6 @@
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Image} from 'react-native';
 import React, {useEffect} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
-import FastImage from 'react-native-fast-image';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 
 type ResultProps = {
@@ -15,7 +14,7 @@ const Result: NavigationFunctionComponent<ResultProps> = ({uri}) => {
 
   return (
     <View style={styles.root}>
-      <FastImage source={{uri}} style={styles.image} resizeMode={'cover'} />
+      <Image source={{uri}} style={styles.image} />
     </View>
   );
 };
@@ -37,8 +36,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
   },
 });
 

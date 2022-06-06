@@ -49,6 +49,8 @@ Settings.options = {
   },
   statusBar: {
     visible: true,
+    drawBehind: true,
+    backgroundColor: 'lime',
   },
   topBar: {
     visible: false,

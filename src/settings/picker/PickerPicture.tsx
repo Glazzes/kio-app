@@ -1,5 +1,5 @@
 import {StyleSheet, Dimensions} from 'react-native';
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect} from 'react';
 import {Camera} from 'expo-camera';
 import emitter from '../../utils/emitter';
 import {Asset} from 'expo-media-library';
@@ -21,10 +21,9 @@ const {width} = Dimensions.get('window');
 
 const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
+const radius = Math.SQRT2 * SIZE;
 
 const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
-  const radius = useRef(Math.sqrt(SIZE ** 2 + SIZE ** 2)).current;
-
   const onSelectedPicture = () => {
     emitter.emit('picture.selected', asset);
   };
@@ -33,27 +32,16 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
   const scale = useSharedValue<number>(0);
   const opacity = useSharedValue<number>(1);
 
-  const dummy = useSharedValue<number>(1);
   const tap = Gesture.Tap()
     .onBegin(e => {
       translate.x.value = e.x;
       translate.y.value = e.y;
     })
     .onEnd(() => {
+      opacity.value = withTiming(0, {duration: 450});
       scale.value = withTiming(1, {duration: 300}, finished => {
         if (finished) {
-          scale.value = 0;
-        }
-      });
-
-      opacity.value = withTiming(0, {duration: 300}, finished => {
-        if (finished) {
-          opacity.value = 1;
-        }
-      });
-
-      dummy.value = withTiming(0, {duration: 150}, finished => {
-        if (finished) {
+          scale.value = withTiming(0, {duration: 300});
           runOnJS(onSelectedPicture)();
         }
       });
@@ -72,7 +60,7 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
         {translateY: translate.y.value},
         {scale: scale.value},
       ],
-      backgroundColor: '#rgba(0, 0, 0, 0.4)',
+      backgroundColor: '#rgba(0, 0, 0, 0.3)',
       opacity: opacity.value,
     };
   });
@@ -90,6 +78,7 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
           nativeID={`${asset.uri}`}
           source={{uri: asset.uri}}
           style={styles.image}
+          resizeMethod={'resize'}
           resizeMode={'cover'}
         />
         <Animated.View style={rStyle} />

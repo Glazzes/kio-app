@@ -1,8 +1,7 @@
 import {Dimensions} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
-const {bottomTabsHeight} = Navigation.constantsSync();
-const {width, height} = Dimensions.get('window');
-const actualHeight = height - bottomTabsHeight;
+const {width} = Dimensions.get('window');
 
-export {actualHeight};
+const thumbnailSize = width * 0.85;
+
+export {thumbnailSize};

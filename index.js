@@ -4,18 +4,18 @@ import {Navigation} from 'react-native-navigation';
 import {Screens} from './src/enums/screens';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import Home from './src/home/Home';
-import Shared from './src/shared/Shared';
 import Notifications from './src/notifications/Notifications';
 import {Settings, Editor} from './src/settings';
 import Result from './src/settings/editor/Result';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import ColorRatation from './src/shared/ColorRatation';
+import KioCamera from './src/home/KioCamera';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
 const tabs = [
   Screens.MY_UNIT,
-  Screens.SHARED,
+  Screens.CAMERA,
   Screens.NOTIFICATIONS,
   Screens.SETTINGS,
 ];
@@ -25,6 +25,15 @@ const defaultTab = {
   badgeColor: '#3366ff',
 };
 
+Navigation.setDefaultOptions({
+  statusBar: {
+    visible: false,
+  },
+  topBar: {
+    visible: false,
+  },
+});
+
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
@@ -32,7 +41,10 @@ Navigation.events().registerAppLaunchedListener(() => {
         id: 'BottomTabs',
         options: {
           bottomTabs: {
-            elevation: 5,
+            elevation: -9999999,
+            barStyle: 'black',
+            borderWidth: 3,
+            borderColor: 'lime',
             titleDisplayMode: 'alwaysHide',
           },
         },
@@ -49,6 +61,10 @@ Navigation.events().registerAppLaunchedListener(() => {
                 },
               ],
               options: {
+                fab: {
+                  backgroundColor: '#3366ff',
+                  size: 50,
+                },
                 bottomTab: {
                   ...defaultTab,
                   icon: require('./assets/images/folder.png'),
@@ -125,6 +141,10 @@ Navigation.events().registerAppLaunchedListener(() => {
     },
   });
 });
+
+Navigation.registerComponent(Screens.CAMERA, () =>
+  gestureHandlerRootHOC(KioCamera),
+);
 
 Navigation.registerComponent(Screens.MY_UNIT, () =>
   gestureHandlerRootHOC(Home),
