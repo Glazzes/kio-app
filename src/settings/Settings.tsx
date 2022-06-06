@@ -37,7 +37,6 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
         <View style={styles.container}>
           <Button title={'Sheet'} onPress={showSheet} />
         </View>
-        <ImagePicker translateY={translateY} />
       </Box>
     </NativeBaseProvider>
   );
