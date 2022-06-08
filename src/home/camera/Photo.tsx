@@ -1,45 +1,30 @@
 import {StyleSheet, Dimensions} from 'react-native';
 import React from 'react';
-import Animated, {
-  Keyframe,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, {Keyframe, useAnimatedStyle} from 'react-native-reanimated';
 import FastImage from 'react-native-fast-image';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 
 type PhotoProps = {
   uri: string;
-  translateY: Animated.SharedValue<number>;
   opacity: Animated.SharedValue<number>;
 };
 
-const {width, height} = Dimensions.get('window');
-const SIZE = (width / 4) * 0.75;
+const {width} = Dimensions.get('window');
+const SIZE = (width / 4) * 0.6;
 const H_PADDING = 15;
 const V_PADDING = H_PADDING * 2;
 
 const entering = new Keyframe({
   from: {
-    width,
-    height,
-    borderRadius: 0,
-    borderWidth: 6,
-    transform: [{translateX: 0}, {translateY: 0}],
+    opacity: 0.6,
+    transform: [{translateY: -(SIZE + V_PADDING)}],
   },
   to: {
-    width: SIZE,
-    height: SIZE,
-    borderRadius: 10,
-    borderWidth: 3,
-    transform: [
-      {translateX: width - SIZE - H_PADDING},
-      {translateY: height - V_PADDING - SIZE - SIZE / 4},
-    ],
+    opacity: 1,
+    transform: [{translateY: 0}],
   },
 });
 
-const Photo: React.FC<PhotoProps> = ({uri, translateY, opacity}) => {
+const Photo: React.FC<PhotoProps> = ({uri, opacity}) => {
   const rStyle = useAnimatedStyle(() => {
     return {opacity: opacity.value};
   });
@@ -47,12 +32,9 @@ const Photo: React.FC<PhotoProps> = ({uri, translateY, opacity}) => {
   return (
     <Animated.View
       style={[styles.thumbnail, rStyle]}
-      entering={entering.duration(500)}
+      entering={entering.duration(1000)}
       key={`asset-${uri}`}>
-      <TouchableOpacity
-        onPress={() => (translateY.value = withTiming(-height / 2))}>
-        <FastImage source={{uri}} style={styles.image} />
-      </TouchableOpacity>
+      <FastImage source={{uri}} style={styles.image} />
     </Animated.View>
   );
 };
@@ -60,12 +42,15 @@ const Photo: React.FC<PhotoProps> = ({uri, translateY, opacity}) => {
 const styles = StyleSheet.create({
   thumbnail: {
     position: 'absolute',
-    borderColor: '#fff',
-    overflow: 'hidden',
+    top: 0,
+    left: 0,
   },
   image: {
     width: SIZE,
     height: SIZE,
+    borderWidth: 2,
+    borderColor: '#fff',
+    borderRadius: 10,
     resizeMode: 'cover',
   },
 });

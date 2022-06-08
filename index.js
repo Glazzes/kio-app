@@ -41,6 +41,7 @@ Navigation.events().registerAppLaunchedListener(() => {
         id: 'BottomTabs',
         options: {
           bottomTabs: {
+            tabsAttachMode: 'onSwitchToTab',
             elevation: -9999999,
             barStyle: 'black',
             borderWidth: 3,

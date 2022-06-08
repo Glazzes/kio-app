@@ -4,14 +4,17 @@ import emitter from '../../utils/emitter';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
-type ControlsProps = {};
+type ControlsProps = {
+  opacity: Animated.SharedValue<number>;
+};
 
 const {width, height} = Dimensions.get('window');
 const H_PADDING = 15;
 const V_PADDING = H_PADDING * 2;
 
-const Controls: React.FC<ControlsProps> = ({}) => {
+const Controls: React.FC<ControlsProps> = ({opacity}) => {
   const haptic = () => impactAsync(ImpactFeedbackStyle.Light);
 
   const toggleFlash = () => {
@@ -24,8 +27,12 @@ const Controls: React.FC<ControlsProps> = ({}) => {
     haptic();
   };
 
+  const rStyle = useAnimatedStyle(() => {
+    return {elevation: 0, opacity: opacity.value};
+  });
+
   return (
-    <View style={styles.controls}>
+    <Animated.View style={[styles.controls, rStyle]}>
       <View>
         <TouchableWithoutFeedback onPress={toggleFlash} style={styles.icon}>
           <Icon name={'flash'} size={25} color={'#fff'} />
@@ -34,7 +41,7 @@ const Controls: React.FC<ControlsProps> = ({}) => {
           <Icon name={'camera-switch-outline'} size={25} color={'#fff'} />
         </TouchableWithoutFeedback>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
