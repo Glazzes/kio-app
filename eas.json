@@ -1,13 +1,13 @@
 {
   "cli": {
-    "version": "0.50.0"
+    "version": "0.53.1"
   },
   "build": {
     "dev": {
       "developmentClient": false,
       "distribution": "internal",
       "android": {
-        "node": "16.13.0",
+        "node": "16.15.1",
         "buildType": "apk",
         "gradleCommand": ":app:assembleDebug",
         "withoutCredentials": true

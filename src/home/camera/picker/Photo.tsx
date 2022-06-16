@@ -10,17 +10,15 @@ type PhotoProps = {
 
 const {width} = Dimensions.get('window');
 const SIZE = (width / 4) * 0.6;
-const H_PADDING = 15;
-const V_PADDING = H_PADDING * 2;
 
 const entering = new Keyframe({
   from: {
-    opacity: 0.6,
-    transform: [{translateY: -(SIZE + V_PADDING)}],
+    opacity: 0.75,
+    transform: [{translateY: -(SIZE * 2)}],
   },
   to: {
     opacity: 1,
-    transform: [{translateY: 0}],
+    transform: [{translateY: ((width / 4) * 0.75 - SIZE) / 2}],
   },
 });
 
@@ -32,7 +30,7 @@ const Photo: React.FC<PhotoProps> = ({uri, opacity}) => {
   return (
     <Animated.View
       style={[styles.thumbnail, rStyle]}
-      entering={entering.duration(1000)}
+      entering={entering.duration(650)}
       key={`asset-${uri}`}>
       <FastImage source={{uri}} style={styles.image} />
     </Animated.View>

@@ -1,5 +1,5 @@
 import {View, Dimensions, StyleSheet} from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
 import emitter from '../../utils/emitter';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
@@ -15,9 +15,11 @@ const H_PADDING = 15;
 const V_PADDING = H_PADDING * 2;
 
 const Controls: React.FC<ControlsProps> = ({opacity}) => {
+  const [flash, setFlash] = useState<boolean>(false);
   const haptic = () => impactAsync(ImpactFeedbackStyle.Light);
 
   const toggleFlash = () => {
+    setFlash(f => !f);
     emitter.emit('toggle.flash');
     haptic();
   };
@@ -35,7 +37,7 @@ const Controls: React.FC<ControlsProps> = ({opacity}) => {
     <Animated.View style={[styles.controls, rStyle]}>
       <View>
         <TouchableWithoutFeedback onPress={toggleFlash} style={styles.icon}>
-          <Icon name={'flash'} size={25} color={'#fff'} />
+          <Icon name={flash ? 'flash' : 'flash-off'} size={25} color={'#fff'} />
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={flipCamera} style={styles.icon}>
           <Icon name={'camera-switch-outline'} size={25} color={'#fff'} />

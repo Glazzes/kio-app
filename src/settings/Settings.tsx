@@ -37,15 +37,13 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
         <View style={styles.container}>
           <Button title={'Sheet'} onPress={showSheet} />
         </View>
+        <ImagePicker translateY={translateY} />
       </Box>
     </NativeBaseProvider>
   );
 };
 
 Settings.options = {
-  bottomTabs: {
-    elevation: 5,
-  },
   statusBar: {
     visible: true,
     drawBehind: true,
@@ -58,13 +56,12 @@ Settings.options = {
 
 const styles = StyleSheet.create({
   root: {
-    width,
-    height: height - bottomTabsHeight,
+    flex: 1,
     backgroundColor: '#fff',
   },
   container: {
     width,
-    height: height - bottomTabsHeight,
+    height,
     justifyContent: 'center',
     alignItems: 'center',
   },

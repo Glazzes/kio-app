@@ -3,27 +3,14 @@ import {LogBox} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from './src/enums/screens';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
-import Home from './src/home/Home';
 import Notifications from './src/notifications/Notifications';
 import {Settings, Editor} from './src/settings';
 import Result from './src/settings/editor/Result';
 import ImageDetails from './src/home/files/details/ImageDetails';
-import ColorRatation from './src/shared/ColorRatation';
-import KioCamera from './src/home/KioCamera';
+import Shared from './src/shared/Shared';
+import {Home, Camera} from './src/home';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
-
-const tabs = [
-  Screens.MY_UNIT,
-  Screens.CAMERA,
-  Screens.NOTIFICATIONS,
-  Screens.SETTINGS,
-];
-
-const defaultTab = {
-  animateBadge: true,
-  badgeColor: '#3366ff',
-};
 
 Navigation.setDefaultOptions({
   statusBar: {
@@ -37,104 +24,13 @@ Navigation.setDefaultOptions({
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
-      bottomTabs: {
-        id: 'BottomTabs',
-        options: {
-          bottomTabs: {
-            tabsAttachMode: 'onSwitchToTab',
-            elevation: -9999999,
-            barStyle: 'black',
-            borderWidth: 3,
-            borderColor: 'lime',
-            titleDisplayMode: 'alwaysHide',
-          },
-        },
+      stack: {
+        id: 'Stack',
         children: [
           {
-            stack: {
-              id: tabs[0],
-              children: [
-                {
-                  component: {
-                    id: tabs[0],
-                    name: tabs[0],
-                  },
-                },
-              ],
-              options: {
-                fab: {
-                  backgroundColor: '#3366ff',
-                  size: 50,
-                },
-                bottomTab: {
-                  ...defaultTab,
-                  icon: require('./assets/images/folder.png'),
-                  selectedIcon: require('./assets/images/folder-active.png'),
-                },
-              },
-            },
-          },
-
-          {
-            stack: {
-              id: tabs[1],
-              children: [
-                {
-                  component: {
-                    id: tabs[1],
-                    name: tabs[1],
-                  },
-                },
-              ],
-              options: {
-                bottomTab: {
-                  ...defaultTab,
-                  icon: require('./assets/images/shared.png'),
-                  selectedIcon: require('./assets/images/shared-active.png'),
-                },
-              },
-            },
-          },
-
-          {
-            stack: {
-              id: tabs[2],
-              children: [
-                {
-                  component: {
-                    id: tabs[2],
-                    name: tabs[2],
-                  },
-                },
-              ],
-              options: {
-                bottomTab: {
-                  ...defaultTab,
-                  icon: require('./assets/images/notifications.png'),
-                  selectedIcon: require('./assets/images/notifications-active.png'),
-                },
-              },
-            },
-          },
-
-          {
-            stack: {
-              id: tabs[3],
-              children: [
-                {
-                  component: {
-                    id: tabs[3],
-                    name: tabs[3],
-                  },
-                },
-              ],
-              options: {
-                bottomTab: {
-                  ...defaultTab,
-                  icon: require('./assets/images/settings.png'),
-                  selectedIcon: require('./assets/images/settings-active.png'),
-                },
-              },
+            component: {
+              id: 'Camera',
+              name: Screens.SETTINGS,
             },
           },
         ],
@@ -144,7 +40,7 @@ Navigation.events().registerAppLaunchedListener(() => {
 });
 
 Navigation.registerComponent(Screens.CAMERA, () =>
-  gestureHandlerRootHOC(KioCamera),
+  gestureHandlerRootHOC(Camera),
 );
 
 Navigation.registerComponent(Screens.MY_UNIT, () =>
@@ -156,7 +52,7 @@ Navigation.registerComponent(Screens.IMAGE_DETAILS, () =>
 );
 
 Navigation.registerComponent(Screens.SHARED, () =>
-  gestureHandlerRootHOC(ColorRatation),
+  gestureHandlerRootHOC(Shared),
 );
 
 Navigation.registerComponent(Screens.NOTIFICATIONS, () =>

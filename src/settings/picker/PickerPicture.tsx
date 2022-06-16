@@ -1,6 +1,6 @@
 import {StyleSheet, Dimensions} from 'react-native';
-import React, {useEffect} from 'react';
-import {Camera} from 'expo-camera';
+import React from 'react';
+import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import emitter from '../../utils/emitter';
 import {Asset} from 'expo-media-library';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import {View} from 'native-base';
 
 type PickerPictureProps = {
   asset: Asset;
@@ -23,7 +24,9 @@ const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
 const radius = Math.SQRT2 * SIZE;
 
-const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
+const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
+  const devices = useCameraDevices();
+
   const onSelectedPicture = () => {
     emitter.emit('picture.selected', asset);
   };
@@ -65,22 +68,28 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset}) => {
     };
   });
 
-  useEffect(() => {
-    (async () => {
-      await Camera.requestCameraPermissionsAsync();
-    })();
-  }, []);
-
   return (
     <GestureDetector gesture={tap}>
       <Animated.View style={styles.tile}>
-        <Animated.Image
-          nativeID={`${asset.uri}`}
-          source={{uri: asset.uri}}
-          style={styles.image}
-          resizeMethod={'resize'}
-          resizeMode={'cover'}
-        />
+        {index === 0 ? (
+          <View style={styles.tile}>
+            {devices.front == null ? null : (
+              <Camera
+                isActive={true}
+                device={devices.front}
+                style={styles.image}
+              />
+            )}
+          </View>
+        ) : (
+          <Animated.Image
+            nativeID={`${asset.uri}`}
+            source={{uri: asset.uri}}
+            style={styles.image}
+            resizeMethod={'resize'}
+            resizeMode={'cover'}
+          />
+        )}
         <Animated.View style={rStyle} />
       </Animated.View>
     </GestureDetector>

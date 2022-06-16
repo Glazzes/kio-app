@@ -55,13 +55,13 @@ const getAssets = async (): Promise<Asset[]> => {
   return assets;
 };
 
-const {bottomTabsHeight} = Navigation.constantsSync();
+const {statusBarHeight} = Navigation.constantsSync();
 const {width, height} = Dimensions.get('window');
 
 const COL = 3;
 const PADDING = 5;
 const SIZE = width / COL - PADDING * 2;
-const actualHeight = height - bottomTabsHeight;
+const actualHeight = height - statusBarHeight;
 
 function getItemLayout(
   _: any,
@@ -84,7 +84,7 @@ function renderItem(info: ListRenderItemInfo<Asset>): React.ReactElement {
 
 const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   const ref = useAnimatedRef<FlatList<Asset>>();
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([{} as Asset]);
 
   const offset = useSharedValue<number>(0);
 
@@ -107,7 +107,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
     })
     .onEnd(({velocityY}) => {
       const contentHeight =
-        Math.ceil(assets.length / 3) * (SIZE + PADDING * 2) + bottomTabsHeight;
+        Math.ceil(assets.length / 3) * (SIZE + PADDING * 2) + statusBarHeight;
 
       if (translateY.value <= -height / 2) {
         translateY.value = withDecay({
@@ -189,7 +189,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
 const styles = StyleSheet.create({
   root: {
     width,
-    height: height - bottomTabsHeight,
+    height: height - statusBarHeight,
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
