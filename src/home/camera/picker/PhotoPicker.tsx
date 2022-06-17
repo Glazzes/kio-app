@@ -9,6 +9,7 @@ import {
 import React, {useRef} from 'react';
 import Animated, {
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -16,6 +17,7 @@ import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
 import {Navigation} from 'react-native-navigation';
 import PickerPhoto from './PickerPhoto';
+import {clamp} from '../../../utils/animations';
 
 type PhotoPickerProps = {
   opacity: Animated.SharedValue<number>;
@@ -45,9 +47,13 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
   opacity,
   photos,
 }) => {
+  const scroll = useDerivedValue<number>(() => {
+    return clamp(scrollY.value, -height, 0);
+  });
+
   const rStyle = useAnimatedStyle(() => {
     return {
-      transform: [{translateY: scrollY.value}],
+      transform: [{translateY: scroll.value}],
     };
   });
 

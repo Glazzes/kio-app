@@ -1,6 +1,14 @@
-import {View, StyleSheet, Dimensions} from 'react-native';
+import {StyleSheet, Dimensions, ImageBackground} from 'react-native';
 import React, {useState} from 'react';
-import FastImage from 'react-native-fast-image';
+import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 
 type PickerPhotoProps = {
   uri: string;
@@ -10,14 +18,53 @@ const {width} = Dimensions.get('window');
 
 const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
+const CIRCLE_SIZE = 20;
 
 const PickerPhoto: React.FC<PickerPhotoProps> = ({uri}) => {
   const [selected, setSelected] = useState<boolean>(false);
 
+  const onSelectedPhoto = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    setSelected(s => !s);
+  };
+
+  const borderStyle = useAnimatedStyle(() => {
+    return {
+      borderWidth: 2,
+      borderColor: selected
+        ? withTiming('#3366ff')
+        : withTiming('rgba(51, 102, 255, 0)'),
+    };
+  });
+
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      borderWidth: 2,
+      borderColor: selected
+        ? withTiming('rgba(51, 102, 255, 1)')
+        : withTiming('rgba(255, 255, 255, 1)'),
+      backgroundColor: selected
+        ? withTiming('rgba(51, 102, 255, 1)')
+        : withTiming('rgba(51, 102, 255, 0)'),
+    };
+  });
+
   return (
-    <View style={styles.tile}>
-      <FastImage source={{uri}} style={styles.image} resizeMode={'cover'} />
-    </View>
+    <TouchableWithoutFeedback onPress={onSelectedPhoto}>
+      <Animated.View style={[styles.tile, borderStyle]}>
+        <ImageBackground source={{uri}} style={styles.image} resizeMode="cover">
+          <Animated.View style={[styles.circle, rStyle]}>
+            {selected && (
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                exiting={FadeOut.duration(300)}>
+                <Icon name={'check'} color={'#fff'} size={15} />
+              </Animated.View>
+            )}
+          </Animated.View>
+        </ImageBackground>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -27,11 +74,26 @@ const styles = StyleSheet.create({
     height: SIZE,
     marginHorizontal: PADDING,
     marginVertical: PADDING,
-    borderRadius: 10,
+    borderRadius: CIRCLE_SIZE / 2,
     overflow: 'hidden',
   },
   image: {
     flex: 1,
+    alignItems: 'flex-end',
+    overflow: 'hidden',
+  },
+  border: {
+    borderWidth: 2,
+    borderColor: '#3366ff',
+  },
+  circle: {
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    borderRadius: CIRCLE_SIZE / 2,
+    marginHorizontal: CIRCLE_SIZE / 4,
+    marginVertical: CIRCLE_SIZE / 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

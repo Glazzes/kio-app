@@ -72,7 +72,7 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
     <GestureDetector gesture={tap}>
       <Animated.View style={styles.tile}>
         {index === 0 ? (
-          <View style={styles.tile}>
+          <View style={{flex: 1}}>
             {devices.front == null ? null : (
               <Camera
                 isActive={true}

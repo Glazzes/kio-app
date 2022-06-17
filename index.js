@@ -30,7 +30,7 @@ Navigation.events().registerAppLaunchedListener(() => {
           {
             component: {
               id: 'Camera',
-              name: Screens.SETTINGS,
+              name: Screens.CAMERA,
             },
           },
         ],

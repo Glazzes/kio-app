@@ -51,7 +51,6 @@ const getAssets = async (): Promise<Asset[]> => {
     assets.push(...albumAssets.assets);
   }
 
-  console.log(assets[10].uri);
   return assets;
 };
 
@@ -89,7 +88,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   const offset = useSharedValue<number>(0);
 
   const translation = useDerivedValue<number>(() => {
-    return clamp(-actualHeight, translateY.value, actualHeight);
+    return clamp(translateY.value, -actualHeight, actualHeight);
   }, [translateY.value]);
 
   const scroll = useDerivedValue<number>(() => {
@@ -155,9 +154,9 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   }, []);
 
   useAnimatedReaction(
-    () => Math.round(scroll.value),
+    () => scroll.value,
     y => {
-      scrollTo(ref, 0, y, true);
+      scrollTo(ref, 0, y, false);
     },
   );
 

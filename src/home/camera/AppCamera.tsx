@@ -10,10 +10,10 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import Animated, {
   Extrapolate,
   interpolate,
+  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
@@ -54,6 +54,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     }
   };
 
+  const hasShrunk = useSharedValue<boolean>(false);
   const translateCameraY = useSharedValue<number>(0);
   const containerHeight = useSharedValue<number>(0);
   const opacity = useSharedValue<number>(1);
@@ -67,8 +68,9 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     translateCameraY.value = withTiming(
       -(containerHeight.value - SIZE) / 2 + SIZE,
     );
-    scrollY.value = withSpring(-height / 2);
+    scrollY.value = withTiming(-height / 2);
     opacity.value = withTiming(0);
+    hasShrunk.value = true;
   };
 
   const pan = Gesture.Pan()
@@ -84,10 +86,13 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
   const tap = Gesture.Tap()
     .numberOfTaps(1)
     .onEnd(_ => {
-      if (scrollY.value <= -height / 2) {
+      if (scrollY.value < height / 2 && hasShrunk.value) {
         translate.x.value = withTiming(0);
         translate.y.value = withTiming(0);
         translateCameraY.value = withTiming(0);
+        scrollY.value = withTiming(0);
+        opacity.value = withTiming(1);
+        hasShrunk.value = false;
       }
     });
 
@@ -114,7 +119,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     const ty = (-1 * (height - height * scale.value)) / 2;
     const condition = scrollY.value > -height / 2;
     return {
-      elevation: condition ? withTiming(0) : withTiming(5),
+      elevation: condition ? withTiming(0) : withTiming(4),
       borderRadius: condition ? withTiming(0) : withTiming(20),
       transform: [
         {translateY: ty},
