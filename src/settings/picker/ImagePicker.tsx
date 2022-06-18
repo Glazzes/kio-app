@@ -59,7 +59,7 @@ const {width, height} = Dimensions.get('window');
 
 const COL = 3;
 const PADDING = 5;
-const SIZE = width / COL - PADDING * 2;
+const SIZE = width / 3;
 const actualHeight = height - statusBarHeight;
 
 function getItemLayout(

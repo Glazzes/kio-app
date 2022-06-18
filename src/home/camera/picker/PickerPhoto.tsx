@@ -1,5 +1,5 @@
 import {StyleSheet, Dimensions, ImageBackground} from 'react-native';
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
@@ -9,9 +9,12 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import emitter from '../../../utils/emitter';
+import {Event} from '../../../enums/events';
 
 type PickerPhotoProps = {
   uri: string;
+  selected: boolean;
 };
 
 const {width} = Dimensions.get('window');
@@ -20,18 +23,24 @@ const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
 const CIRCLE_SIZE = 20;
 
-const PickerPhoto: React.FC<PickerPhotoProps> = ({uri}) => {
-  const [selected, setSelected] = useState<boolean>(false);
+const PickerPhoto: React.FC<PickerPhotoProps> = ({uri, selected}) => {
+  const [isSelected, setIsSelected] = useState(selected);
 
   const onSelectedPhoto = () => {
     impactAsync(ImpactFeedbackStyle.Light);
-    setSelected(s => !s);
+    if (isSelected) {
+      emitter.emit(Event.UNSELECT_PHOTO, uri);
+    } else {
+      emitter.emit(Event.SELECT_PHOTO, uri);
+    }
+
+    setIsSelected(s => !s);
   };
 
   const borderStyle = useAnimatedStyle(() => {
     return {
       borderWidth: 2,
-      borderColor: selected
+      borderColor: isSelected
         ? withTiming('#3366ff')
         : withTiming('rgba(51, 102, 255, 0)'),
     };
@@ -40,10 +49,10 @@ const PickerPhoto: React.FC<PickerPhotoProps> = ({uri}) => {
   const rStyle = useAnimatedStyle(() => {
     return {
       borderWidth: 2,
-      borderColor: selected
+      borderColor: isSelected
         ? withTiming('rgba(51, 102, 255, 1)')
         : withTiming('rgba(255, 255, 255, 1)'),
-      backgroundColor: selected
+      backgroundColor: isSelected
         ? withTiming('rgba(51, 102, 255, 1)')
         : withTiming('rgba(51, 102, 255, 0)'),
     };
@@ -54,7 +63,7 @@ const PickerPhoto: React.FC<PickerPhotoProps> = ({uri}) => {
       <Animated.View style={[styles.tile, borderStyle]}>
         <ImageBackground source={{uri}} style={styles.image} resizeMode="cover">
           <Animated.View style={[styles.circle, rStyle]}>
-            {selected && (
+            {isSelected && (
               <Animated.View
                 entering={FadeIn.duration(300)}
                 exiting={FadeOut.duration(300)}>
@@ -97,4 +106,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PickerPhoto;
+export default React.memo(PickerPhoto);

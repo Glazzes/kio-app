@@ -22,7 +22,7 @@ import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Controls from './Controls';
 import PhotoPicker from './picker/PhotoPicker';
 import {clamp} from '../../utils/animations';
-import Photo from './picker/Photo';
+import Photo from './picker/ThumbnailPhoto';
 import emitter from '../../utils/emitter';
 
 type AppCameraProps = {};
@@ -36,25 +36,27 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
 
   const [photos, setPhotos] = useState<string[]>([]);
   const [isBackCamera, setIsBackCamera] = useState<boolean>(true);
+  const [authorized, setAuthorized] = useState<boolean>(false);
 
-  const authorized = useRef<boolean>(false);
   const flash = useRef<boolean>(false);
   const cameraRef = useRef<Camera>(null);
 
   const takePicture = async () => {
     if (cameraRef.current) {
+      opacity.value = withTiming(0);
       const {path} = await cameraRef.current.takePhoto({
         flash: flash.current ? 'on' : 'off',
         skipMetadata: true,
         qualityPrioritization: 'speed',
       });
 
+      opacity.value = withTiming(1);
       const endPath = Platform.OS === 'android' ? 'file://' + path : path;
       setPhotos(a => [...a, endPath]);
     }
   };
 
-  const hasShrunk = useSharedValue<boolean>(false);
+  const snap = useSharedValue<boolean>(false);
   const translateCameraY = useSharedValue<number>(0);
   const containerHeight = useSharedValue<number>(0);
   const opacity = useSharedValue<number>(1);
@@ -70,7 +72,6 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     );
     scrollY.value = withTiming(-height / 2);
     opacity.value = withTiming(0);
-    hasShrunk.value = true;
   };
 
   const pan = Gesture.Pan()
@@ -79,21 +80,20 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
       offset.y.value = translate.y.value;
     })
     .onChange(e => {
-      translate.x.value = offset.x.value + e.translationX;
-      translate.y.value = offset.y.value + e.translationY;
+      if (scrollY.value <= -height * 0.7) {
+        translate.x.value = offset.x.value + e.translationX;
+        translate.y.value = offset.y.value + e.translationY;
+      }
     });
 
   const tap = Gesture.Tap()
     .numberOfTaps(1)
     .onEnd(_ => {
-      if (scrollY.value < height / 2 && hasShrunk.value) {
-        translate.x.value = withTiming(0);
-        translate.y.value = withTiming(0);
-        translateCameraY.value = withTiming(0);
-        scrollY.value = withTiming(0);
-        opacity.value = withTiming(1);
-        hasShrunk.value = false;
-      }
+      scrollY.value = withTiming(0);
+      translate.x.value = withTiming(0);
+      translate.y.value = withTiming(0);
+      translateCameraY.value = withTiming(0);
+      opacity.value = withTiming(1);
     });
 
   const combinedGesture = Gesture.Exclusive(pan, tap);
@@ -106,7 +106,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
       x: clamp(translate.x.value, -maxX, maxX),
       y: clamp(translate.y.value, 0, maxY),
     };
-  });
+  }, [scrollY, scale, translate.x, translate.y]);
 
   const rStyle = useAnimatedStyle(() => {
     scale.value = interpolate(
@@ -117,10 +117,10 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     );
 
     const ty = (-1 * (height - height * scale.value)) / 2;
-    const condition = scrollY.value > -height / 2;
+    const condition = scrollY.value <= -height / 2;
     return {
-      elevation: condition ? withTiming(0) : withTiming(4),
-      borderRadius: condition ? withTiming(0) : withTiming(20),
+      elevation: condition ? withTiming(3) : withTiming(0),
+      borderRadius: condition ? withTiming(20) : withTiming(0),
       transform: [
         {translateY: ty},
         {translateY: translation.value.y},
@@ -137,7 +137,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
   useEffect(() => {
     (async () => {
       const result = await Camera.requestCameraPermission();
-      authorized.current = result === 'authorized';
+      setAuthorized(result === 'authorized');
     })();
 
     const toggleFlash = emitter.addListener('toggle.flash', () => {
@@ -154,55 +154,82 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     };
   }, []);
 
+  useAnimatedReaction(
+    () => snap.value,
+    s => {
+      if (s) {
+        opacity.value = withTiming(1);
+        translate.x.value = withTiming(0);
+        translate.y.value = withTiming(0);
+        translateCameraY.value = withTiming(0);
+        snap.value = false;
+      }
+    },
+  );
+
+  useAnimatedReaction(
+    () => scrollY.value,
+    y => {
+      if (y >= -height * 0.7) {
+        translate.x.value = withTiming(0);
+        translate.y.value = withTiming(0);
+      }
+    },
+  );
+
   if (devices.back == null || devices.front == null) {
     return null;
   }
 
   return (
     <View style={styles.root}>
-      <PhotoPicker opacity={opacity} scrollY={scrollY} photos={photos} />
+      <PhotoPicker snap={snap} scrollY={scrollY} photos={photos} />
       <GestureDetector gesture={combinedGesture}>
         <Animated.View
           style={[styles.cameraContainer, rStyle]}
           onLayout={e => {
             containerHeight.value = e.nativeEvent.layout.height;
           }}>
-          <Camera
-            ref={cameraRef}
-            isActive={true}
-            device={isBackCamera ? devices.back : devices.front}
-            photo={true}
-            style={styles.camera}
-          />
-          <Controls opacity={opacity} />
-          <View style={styles.photoContainer}>
-            <View style={styles.buttonContainer}>
-              <Animated.View style={buttonStyles}>
-                <TouchableWithoutFeedback onPress={takePicture}>
-                  <View style={styles.buttonOuterContent}>
-                    <View style={styles.buttonInnerContent} />
-                  </View>
-                </TouchableWithoutFeedback>
-              </Animated.View>
+          {authorized && (
+            <View style={styles.cameraContainer}>
+              <Camera
+                ref={cameraRef}
+                isActive={true}
+                device={isBackCamera ? devices.back : devices.front}
+                photo={true}
+                style={styles.camera}
+              />
+              <Controls opacity={opacity} />
+              <View style={styles.photoContainer}>
+                <View style={styles.buttonContainer}>
+                  <Animated.View style={buttonStyles}>
+                    <TouchableWithoutFeedback onPress={takePicture}>
+                      <View style={styles.buttonOuterContent}>
+                        <View style={styles.buttonInnerContent} />
+                      </View>
+                    </TouchableWithoutFeedback>
+                  </Animated.View>
+                </View>
+                <View style={styles.thumbnailContainer}>
+                  {photos.length > 0 && (
+                    <TouchableWithoutFeedback onPress={showBottomShet}>
+                      <View style={styles.photos}>
+                        {photos.map(uri => {
+                          return (
+                            <Photo
+                              uri={uri}
+                              opacity={opacity}
+                              key={`asset-${uri}`}
+                            />
+                          );
+                        })}
+                      </View>
+                    </TouchableWithoutFeedback>
+                  )}
+                </View>
+              </View>
             </View>
-            <View style={styles.thumbnailContainer}>
-              {photos.length > 0 && (
-                <TouchableWithoutFeedback onPress={showBottomShet}>
-                  <View style={styles.photos}>
-                    {photos.map(uri => {
-                      return (
-                        <Photo
-                          uri={uri}
-                          opacity={opacity}
-                          key={`asset-${uri}`}
-                        />
-                      );
-                    })}
-                  </View>
-                </TouchableWithoutFeedback>
-              )}
-            </View>
-          </View>
+          )}
         </Animated.View>
       </GestureDetector>
     </View>
