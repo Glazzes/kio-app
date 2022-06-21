@@ -5,10 +5,14 @@ import {
   View,
   ViewStyle,
   ListRenderItemInfo,
+  FlatList,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Animated, {
   cancelAnimation,
+  scrollTo,
+  useAnimatedReaction,
+  useAnimatedRef,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -21,6 +25,7 @@ import {Navigation} from 'react-native-navigation';
 import PickerPhoto from './PickerPhoto';
 import emitter from '../../../utils/emitter';
 import {Event} from '../../../enums/events';
+import {clamp} from '../../../utils/animations';
 
 type PhotoPickerProps = {
   snap: Animated.SharedValue<boolean>;
@@ -28,54 +33,75 @@ type PhotoPickerProps = {
   photos: string[];
 };
 
+type Photos = {[id: string]: string};
+
 const {width, height} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
 
 const COL = 3;
 const RADIUS = 20;
 const PADDING = 10;
-const PHOTO_SIZE = width - PADDING * 5;
+const PHOTO_SIZE = width / 3 + PADDING * 2;
 const CONTAINER_HEIGHT = height - statusBarHeight * 1.5;
 
 function keyExtractor(path: string) {
   return `photo-${path}`;
 }
 
-function renderItem(info: ListRenderItemInfo<string>): React.ReactElement {
-  return <PickerPhoto uri={info.item} />;
-}
-
 const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
-  const [selectedPhotos, setselectedPhotos] = useState<string[]>([]);
+  const ref = useAnimatedRef<FlatList<string>>();
+
+  const [selectedPhotos, setselectedPhotos] = useState<Photos>({});
+  const [photoCount, setPhotoCount] = useState<number>(0);
+
+  const contentStyles: ViewStyle = {
+    width,
+    height: Math.max(
+      CONTAINER_HEIGHT,
+      (Math.floor(photos.length / 3) + 1) * PHOTO_SIZE,
+    ),
+  };
+
+  const renderItem = function (
+    info: ListRenderItemInfo<string>,
+  ): React.ReactElement {
+    return (
+      <PickerPhoto
+        uri={info.item}
+        selected={selectedPhotos[info.item] !== undefined}
+      />
+    );
+  };
+
+  const translation = useDerivedValue<number>(() => {
+    return clamp(scrollY.value, -height, 0);
+  }, [scrollY]);
 
   const scroll = useDerivedValue<number>(() => {
-    return Math.max(scrollY.value, -height);
+    return -1 * scrollY.value - height;
   }, [scrollY]);
 
   const rStyle = useAnimatedStyle(() => {
     return {
-      transform: [{translateY: scroll.value}],
+      transform: [{translateY: translation.value}],
     };
   });
-
-  const contentStyles = useRef<ViewStyle>({
-    width,
-    height: Math.max(
-      CONTAINER_HEIGHT,
-      (Math.floor(photos.length / 3) + 2) * PHOTO_SIZE,
-    ),
-  }).current;
 
   const offset = useSharedValue<number>(0);
   const pan = Gesture.Pan()
     .onStart(_ => {
-      offset.value = scroll.value;
+      offset.value = scrollY.value;
       cancelAnimation(scrollY);
     })
     .onChange(e => {
       scrollY.value = offset.value + e.translationY;
     })
     .onEnd(e => {
+      const contentHeight =
+        Math.ceil(photos.length / 3 + 1) * PHOTO_SIZE + statusBarHeight;
+
+      const threshold = Math.min(-contentHeight, -height);
+
       const snapScroll = snapPoint(scrollY.value, e.velocityY, [-height, 0]);
       if (snapScroll === 0 && scrollY.value > -height / 2) {
         scrollY.value = withTiming(snapScroll);
@@ -83,7 +109,7 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
       } else {
         scrollY.value = withDecay({
           velocity: e.velocityY,
-          clamp: [-height, -height / 2],
+          clamp: [threshold, -height / 2],
         });
       }
     });
@@ -92,14 +118,22 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
     const selectPhoto = emitter.addListener(
       Event.SELECT_PHOTO,
       (uri: string) => {
-        setselectedPhotos(p => [uri, ...p]);
+        setselectedPhotos(p => {
+          p = {...p, [uri]: uri};
+          setPhotoCount(Object.keys(p).length);
+          return p;
+        });
       },
     );
 
     const unselecPhoto = emitter.addListener(
       Event.UNSELECT_PHOTO,
       (uri: string) => {
-        setselectedPhotos(p => p.filter(i => i !== uri));
+        setselectedPhotos(p => {
+          delete p[uri];
+          setPhotoCount(Object.keys(p).length);
+          return p;
+        });
       },
     );
 
@@ -109,18 +143,26 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
     };
   }, []);
 
+  useAnimatedReaction(
+    () => scroll.value,
+    y => {
+      scrollTo(ref, 0, y, false);
+    },
+  );
+
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={[styles.root, rStyle]}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
-            {selectedPhotos.length > 0
-              ? `${selectedPhotos.length} selected pictures`
+            {photoCount > 0
+              ? `${photoCount} selected pictures`
               : 'Upload photos'}
           </Text>
         </View>
         <View style={styles.listContainer}>
-          <Animated.FlatList
+          <FlatList
+            ref={ref}
             data={photos}
             keyExtractor={keyExtractor}
             renderItem={renderItem}

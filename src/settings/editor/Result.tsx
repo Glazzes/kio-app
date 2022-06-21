@@ -2,9 +2,11 @@ import {View, StyleSheet, Image} from 'react-native';
 import React, {useEffect} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import UploadPhotoFAB from '../../home/fabs/UploadPhotoFAB';
+import FAB from '../../others/FAB';
 
 type ResultProps = {
-  uri: string;
+  uri?: string;
 };
 
 const Result: NavigationFunctionComponent<ResultProps> = ({uri}) => {
@@ -14,7 +16,7 @@ const Result: NavigationFunctionComponent<ResultProps> = ({uri}) => {
 
   return (
     <View style={styles.root}>
-      <Image source={{uri}} style={styles.image} />
+      <FAB />
     </View>
   );
 };

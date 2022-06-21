@@ -14,6 +14,8 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
+  withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
@@ -41,8 +43,11 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
   const flash = useRef<boolean>(false);
   const cameraRef = useRef<Camera>(null);
 
+  const cameraScale = useSharedValue<number>(1);
+
   const takePicture = async () => {
-    if (cameraRef.current) {
+    if (cameraRef.current && scrollY.value > -height / 2) {
+      cameraScale.value = withSequence(withTiming(0.75), withSpring(1));
       opacity.value = withTiming(0);
       const {path} = await cameraRef.current.takePhoto({
         flash: flash.current ? 'on' : 'off',
@@ -66,14 +71,6 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
   const translate = useVector(0, 0);
   const offset = useVector(0, 0);
 
-  const showBottomShet = () => {
-    translateCameraY.value = withTiming(
-      -(containerHeight.value - SIZE) / 2 + SIZE,
-    );
-    scrollY.value = withTiming(-height / 2);
-    opacity.value = withTiming(0);
-  };
-
   const pan = Gesture.Pan()
     .onStart(_ => {
       offset.x.value = translate.x.value;
@@ -85,6 +82,14 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
         translate.y.value = offset.y.value + e.translationY;
       }
     });
+
+  const showBottomShet = () => {
+    translateCameraY.value = withTiming(
+      -(containerHeight.value - SIZE) / 2 + SIZE,
+    );
+    scrollY.value = withTiming(-height / 2);
+    opacity.value = withTiming(0);
+  };
 
   const tap = Gesture.Tap()
     .numberOfTaps(1)
@@ -131,7 +136,10 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
   });
 
   const buttonStyles = useAnimatedStyle(() => ({
-    transform: [{translateY: translateCameraY.value}],
+    transform: [
+      {translateY: translateCameraY.value},
+      {scale: cameraScale.value},
+    ],
   }));
 
   useEffect(() => {
@@ -270,6 +278,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: width / 2 + SIZE / 2,
+    alignItems: 'flex-end',
   },
   buttonOuterContent: {
     borderWidth: 5,
@@ -279,7 +288,6 @@ const styles = StyleSheet.create({
     borderRadius: SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'flex-end',
   },
   buttonInnerContent: {
     height: SIZE / 2,

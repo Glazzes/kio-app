@@ -9,6 +9,7 @@ import Result from './src/settings/editor/Result';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
 import {Home, Camera} from './src/home';
+import CreateFolderModal from './src/home/modals/CreateFolderModal';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -19,6 +20,10 @@ Navigation.setDefaultOptions({
   topBar: {
     visible: false,
   },
+  modalPresentationStyle: 'overCurrentContext',
+  layout: {
+    backgroundColor: 'transparent',
+  },
 });
 
 Navigation.events().registerAppLaunchedListener(() => {
@@ -26,11 +31,16 @@ Navigation.events().registerAppLaunchedListener(() => {
     root: {
       stack: {
         id: 'Stack',
+        options: {
+          layout: {
+            backgroundColor: 'transparent',
+          },
+        },
         children: [
           {
             component: {
               id: 'Camera',
-              name: Screens.CAMERA,
+              name: 'Result',
             },
           },
         ],
@@ -68,4 +78,8 @@ Navigation.registerComponent(Screens.EDITOR, () =>
   gestureHandlerRootHOC(Editor),
 );
 
-Navigation.registerComponent('Result', () => Result);
+Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
+
+// Modals
+
+Navigation.registerComponent('Modal', () => CreateFolderModal);

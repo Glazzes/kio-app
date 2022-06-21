@@ -1,5 +1,5 @@
 import {StyleSheet, Dimensions, ImageBackground} from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
