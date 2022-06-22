@@ -5,8 +5,9 @@ import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
 
 type FABOptionProps = {
-  action: {icon: string; angle: number; index: number};
+  action: {icon: string; angle: number};
   progress: Animated.SharedValue<number>;
+  toggle: () => void;
 };
 
 const {width} = Dimensions.get('window');
@@ -15,7 +16,7 @@ const END_POSITION = width / 2 - BUTTON_RADIUS / 2;
 
 const AnimatedTouchable = Animated.createAnimatedComponent(Pressable);
 
-const FABOption: React.FC<FABOptionProps> = ({action, progress}) => {
+const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
   const rStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -26,6 +27,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress}) => {
   });
 
   const onPress = () => {
+    toggle();
     Navigation.showModal({
       component: {
         name: 'Modal',

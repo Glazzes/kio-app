@@ -1,14 +1,8 @@
-import {
-  View,
-  Dimensions,
-  StyleSheet,
-  TouchableWithoutFeedback,
-} from 'react-native';
+import {View, Dimensions, StyleSheet, Pressable} from 'react-native';
 import React, {useState} from 'react';
 import Animated, {
   FadeIn,
   FadeOut,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -16,7 +10,6 @@ import Animated, {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {AnimatedButton, Folder} from '../utils/types';
 import FABOption from './FABOption';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 
 type FABProps = {
   parent?: Folder;
@@ -25,7 +18,6 @@ type FABProps = {
 const {width, height} = Dimensions.get('window');
 
 const FAB_RADIUS = 25;
-const RADIUS = width - FAB_RADIUS / 2;
 
 const actions: AnimatedButton[] = [
   {
@@ -46,7 +38,7 @@ const actions: AnimatedButton[] = [
   },
 ];
 
-// const AnimatedIcon = Animated.createAnimatedComponent(Icon);
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FAB: React.FC<FABProps> = ({}) => {
   const [blockBackInteraction, setBlockBackInteraction] =
@@ -61,56 +53,46 @@ const FAB: React.FC<FABProps> = ({}) => {
     transform: [{rotate: `${rotation.value}rad`}],
   }));
 
-  const revert = () => {
-    'worklet';
-    progress.value = withTiming(0);
-    buttonColor.value = withTiming('#3366ff');
-    rotation.value = withTiming(0);
-
-    runOnJS(setBlockBackInteraction)(!blockBackInteraction);
-  };
-
-  const tap = Gesture.Tap().onEnd(() => {
+  const toggle = () => {
+    // console.log('Remove this console log and it will break');
     if (blockBackInteraction) {
-      revert();
+      progress.value = withTiming(0);
+      buttonColor.value = withTiming('#3366ff');
+      rotation.value = withTiming(0);
+      setBlockBackInteraction(false);
     } else {
       progress.value = withTiming(1);
       buttonColor.value = withTiming('#b0b1b5');
       rotation.value = withTiming(Math.PI / 4);
+      setBlockBackInteraction(true);
     }
-
-    runOnJS(setBlockBackInteraction)(!blockBackInteraction);
-  });
+  };
 
   return (
     <View style={styles.root}>
       {blockBackInteraction && (
-        <TouchableWithoutFeedback
-          style={StyleSheet.absoluteFillObject}
-          onPress={revert}>
-          <Animated.View
-            entering={FadeIn.duration(200)}
-            exiting={FadeOut.duration(200)}
-            style={styles.block}
-          />
-        </TouchableWithoutFeedback>
+        <AnimatedPressable
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={[StyleSheet.absoluteFillObject, styles.block]}
+          onPress={toggle}
+        />
       )}
-      <GestureDetector gesture={tap}>
-        <Animated.View style={[styles.fab]}>
-          {actions.map((action, index) => {
-            return (
-              <FABOption
-                key={`action-${action.icon}`}
-                action={{...action, index}}
-                progress={progress}
-              />
-            );
-          })}
-          <Animated.View style={[rStyle, styles.icon]}>
-            <Icon name={'plus'} size={30} color={'#fff'} />
-          </Animated.View>
+      <AnimatedPressable style={[styles.fab]} onPress={toggle}>
+        {actions.map(action => {
+          return (
+            <FABOption
+              key={`action-${action.icon}`}
+              action={action}
+              progress={progress}
+              toggle={toggle}
+            />
+          );
+        })}
+        <Animated.View style={[rStyle, styles.icon]}>
+          <Icon name={'plus'} size={30} color={'#fff'} />
         </Animated.View>
-      </GestureDetector>
+      </AnimatedPressable>
     </View>
   );
 };

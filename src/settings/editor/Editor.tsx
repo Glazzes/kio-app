@@ -1,5 +1,5 @@
 import {View, Dimensions, StyleSheet} from 'react-native';
-import React, {useRef} from 'react';
+import React, {useMemo} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import SVG, {Path} from 'react-native-svg';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
@@ -11,13 +11,14 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
 import {clamp, pinch, set} from '../../utils/animations';
-import {cropPoint, maxScale} from './utils';
 import {HStack, IconButton, NativeBaseProvider} from 'native-base';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {imageStyles} from './utils';
 import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import {Asset} from 'expo-media-library';
 import EffectIndicator from './EffectIndicator';
+import crop from '../utils/crop';
+import imageStyles from '../utils/imageStyles';
+import {maxScale} from './utils';
 
 type EditorProps = {
   asset: Asset;
@@ -43,8 +44,15 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
   componentId,
   asset,
 }) => {
-  const d = useRef({width: asset.width, height: asset.height}).current;
-  const s = useRef(imageStyles(d, R)).current;
+  const dimensions = useMemo(
+    () => ({width: asset.width, height: asset.height}),
+    [asset],
+  );
+
+  const imageStyle = useMemo(
+    () => imageStyles({width: asset.width, height: asset.height}, R),
+    [asset],
+  );
 
   const layout = useVector(0, 0);
   const original = useVector(0, 0);
@@ -102,7 +110,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       scale.value = clamp(
         e.scale * scaleOffset.value,
         1,
-        maxScale(layout, d, rotateImage.value),
+        maxScale(layout, dimensions, rotateImage.value),
       );
     })
     .onEnd(_ => {
@@ -138,8 +146,13 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     };
   });
 
-  const crop = async () => {
+  const cropImage = async () => {
     const actions = [];
+
+    /*
+      Rotation must always happend after flip, otherwise the cropped image
+      will differ by a lot to the one shown in the svg circle
+    */
     if (rotate.y.value === Math.PI) {
       actions.push({flip: FlipType.Horizontal});
     }
@@ -154,41 +167,27 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       });
     }
 
-    /*
-    d (dimensions) will be inverted if rotation is not 0 or 180 degree, the first time it's fine
-    but at the moment of retuning to this screen dimensions will be inverted again and again
-    so a copy of d it's required because it needs to be inmutable
-    */
-    const {originX, originY, size} = cropPoint(
+    const {x, y, size, resize} = crop(
+      {width: layout.x.value, height: layout.y.value},
+      {width: dimensions.width, height: dimensions.height},
       {x: translate.x.value, y: translate.y.value},
-      {x: layout.x.value, y: layout.y.value},
-      {width: d.width, height: d.height},
       scale.value,
       rotateImage.value,
       R,
+      CROP_SIZE,
     );
 
-    /*
-      Rotation must always happend after flip, otherwise the cropped image
-      will differ by a lot to the one shown in the svg circle
-    */
-    const resizeFactor = CROP_SIZE / size;
     const {uri} = await manipulateAsync(
       asset.uri,
       [
-        {
-          resize: {
-            height: Math.ceil(d.height * resizeFactor),
-            width: Math.ceil(d.width * resizeFactor),
-          },
-        },
+        resize !== null ? {resize} : {rotate: 0},
         ...actions,
         {
           crop: {
-            originX: originX * resizeFactor,
-            originY: originY * resizeFactor,
-            height: CROP_SIZE,
-            width: CROP_SIZE,
+            originX: x,
+            originY: y,
+            height: size,
+            width: size,
           },
         },
       ],
@@ -233,7 +232,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
             resizeMethod={'scale'}
             resizeMode={'cover'}
             source={{uri: asset.uri}}
-            style={[s, effectStyles]}
+            style={[imageStyle, effectStyles]}
           />
         </Animated.View>
         <SVG
@@ -275,7 +274,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
           />
 
           <IconButton
-            onPress={crop}
+            onPress={cropImage}
             icon={<MaterialCommunityIcons name="check" size={30} />}
             bgColor={'#3366ff'}
             borderRadius={'full'}

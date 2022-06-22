@@ -21,9 +21,6 @@ Navigation.setDefaultOptions({
     visible: false,
   },
   modalPresentationStyle: 'overCurrentContext',
-  layout: {
-    backgroundColor: 'transparent',
-  },
 });
 
 Navigation.events().registerAppLaunchedListener(() => {
