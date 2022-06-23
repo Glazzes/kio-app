@@ -2,7 +2,7 @@ import {View, StyleSheet} from 'react-native';
 import React, {useEffect} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import FAB from '../../others/FAB';
+import FAB from '../../misc/filefab/FAB';
 
 type ResultProps = {
   uri?: string;

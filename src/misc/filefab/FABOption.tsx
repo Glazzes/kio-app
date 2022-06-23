@@ -3,6 +3,7 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
+import {Notification} from '../../enums/notification';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -12,7 +13,7 @@ type FABOptionProps = {
 
 const {width} = Dimensions.get('window');
 const BUTTON_RADIUS = 40;
-const END_POSITION = width / 2 - BUTTON_RADIUS / 2;
+const END_POSITION = width / 2 - BUTTON_RADIUS;
 
 const AnimatedTouchable = Animated.createAnimatedComponent(Pressable);
 
@@ -28,9 +29,17 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
 
   const onPress = () => {
     toggle();
-    Navigation.showModal({
+    Navigation.showOverlay<{
+      type: Notification;
+      content: string;
+    }>({
       component: {
-        name: 'Modal',
+        name: 'Toast',
+        passProps: {
+          type: Notification.SUCCESS,
+          content:
+            "Your files could not be uploaded because you've got run out of space",
+        },
       },
     });
   };
@@ -51,6 +60,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3366ff',
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: -1,
   },
 });
 

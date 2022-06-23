@@ -32,8 +32,7 @@ const crop = (
   const deriveHeight = 1 - (radius * 2) / (layout.height * scale);
 
   /*
-    we can determine at which point we are in the image by using using the offset in a "reverse"
-    fashion
+    represents the top left corner of the svg circle based on the current position on both axis
   */
   const positionX = interpolate(
     position.x,
@@ -60,6 +59,8 @@ const crop = (
   // images are cropped based on their real dimensions and their current position
   const originX = realDimensions.width * positionX;
   const originY = realDimensions.height * positionY;
+
+  // the smalller dimensions is the one used to determine the crop size
   const size = Math.min(realDimensions.width, realDimensions.height) / scale;
 
   /*

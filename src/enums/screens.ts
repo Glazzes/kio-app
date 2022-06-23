@@ -6,4 +6,8 @@ export enum Screens {
   NOTIFICATIONS = 'Notifications',
   SETTINGS = 'Settings',
   EDITOR = 'Editor',
+  TOAST = 'Toast',
+
+  // modals
+  CREATE_FOLDER_MODAL = 'Create folder modal',
 }

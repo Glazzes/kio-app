@@ -8,8 +8,8 @@ import {Settings, Editor} from './src/settings';
 import Result from './src/settings/editor/Result';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
-import {Home, Camera} from './src/home';
-import CreateFolderModal from './src/home/modals/CreateFolderModal';
+import {Home, Camera, CreateFolderModal} from './src/home';
+import {Toast} from './src/misc';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -77,6 +77,9 @@ Navigation.registerComponent(Screens.EDITOR, () =>
 
 Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
 
-// Modals
-
-Navigation.registerComponent('Modal', () => CreateFolderModal);
+// Miscelaneous
+Navigation.registerComponent(Screens.TOAST, () => Toast);
+Navigation.registerComponent(
+  Screens.CREATE_FOLDER_MODAL,
+  () => CreateFolderModal,
+);

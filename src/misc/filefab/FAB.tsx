@@ -1,5 +1,5 @@
-import {View, Dimensions, StyleSheet, Pressable} from 'react-native';
-import React, {useState} from 'react';
+import {Dimensions, StyleSheet, Pressable, View} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -8,8 +8,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {AnimatedButton, Folder} from '../utils/types';
+import {AnimatedButton, Folder} from '../../utils/types';
 import FABOption from './FABOption';
+import emitter from '../../utils/emitter';
+import {Event} from '../../enums/events';
 
 type FABProps = {
   parent?: Folder;
@@ -47,14 +49,18 @@ const FAB: React.FC<FABProps> = ({}) => {
   const progress = useSharedValue<number>(0);
   const buttonColor = useSharedValue<string>('#3366ff');
   const rotation = useSharedValue<number>(0);
+  const translateY = useSharedValue<number>(0);
 
   const rStyle = useAnimatedStyle(() => ({
     backgroundColor: buttonColor.value,
     transform: [{rotate: `${rotation.value}rad`}],
   }));
 
+  const fabStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: translateY.value}],
+  }));
+
   const toggle = () => {
-    // console.log('Remove this console log and it will break');
     if (blockBackInteraction) {
       progress.value = withTiming(0);
       buttonColor.value = withTiming('#3366ff');
@@ -68,6 +74,21 @@ const FAB: React.FC<FABProps> = ({}) => {
     }
   };
 
+  useEffect(() => {
+    const moveUp = emitter.addListener(Event.FAB_MOVE_UP, (ty: number) => {
+      translateY.value = withTiming(-ty, {duration: 200});
+    });
+
+    const moveDown = emitter.addListener(Event.FAB_MOVE_DOWN, () => {
+      translateY.value = withTiming(0);
+    });
+    return () => {
+      moveUp.remove();
+      moveDown.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <View style={styles.root}>
       {blockBackInteraction && (
@@ -78,7 +99,7 @@ const FAB: React.FC<FABProps> = ({}) => {
           onPress={toggle}
         />
       )}
-      <AnimatedPressable style={[styles.fab]} onPress={toggle}>
+      <AnimatedPressable style={[styles.fab, fabStyle]} onPress={toggle}>
         {actions.map(action => {
           return (
             <FABOption

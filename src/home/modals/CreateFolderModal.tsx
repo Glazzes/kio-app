@@ -22,8 +22,9 @@ const MODAL_WIDTH = width * 0.8;
 
 const CreateFolderModal: NavigationFunctionComponent<
   CreateFolderModalProps
-> = ({}) => {
+> = ({componentId}) => {
   const folderName = useRef<string>('');
+
   const [selected, setSelected] = useState<boolean>(false);
   const [folderExists, setFolderExists] = useState<boolean>(true);
 
@@ -34,7 +35,7 @@ const CreateFolderModal: NavigationFunctionComponent<
   };
 
   const hideModal = () => {
-    Navigation.dismissAllModals();
+    Navigation.dismissModal(componentId);
   };
 
   return (
