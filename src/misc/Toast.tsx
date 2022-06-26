@@ -5,6 +5,7 @@ import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Notification} from '../enums/notification';
 import Animated, {
   Keyframe,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -70,18 +71,24 @@ const entering = new Keyframe({
   },
 });
 
+const exiting = new Keyframe({
+  from: {
+    transform: [{translateY: 0}],
+  },
+  to: {
+    transform: [{translateY: 100}],
+  },
+});
+
 const Toast: NavigationFunctionComponent<ToastProps> = ({
   componentId,
   type,
 }) => {
+  const [show, setShow] = useState<boolean>(true);
+
   const toastInfo = information[type];
   const translateX = useSharedValue<number>(1);
   const [height, setHeight] = useState<number>(0);
-
-  const hide = () => {
-    Navigation.dismissOverlay(componentId);
-    emitter.emit(Event.FAB_MOVE_DOWN);
-  };
 
   const rStyle = useAnimatedStyle(() => {
     return {
@@ -90,9 +97,21 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
     };
   });
 
+  const hide = () => {
+    emitter.emit(Event.FAB_MOVE_DOWN);
+    setShow(false);
+  };
+
   useEffect(() => {
-    translateX.value = withTiming(-TOAST_WIDTH, {duration: DURATION});
-    const timeout = setTimeout(hide, DURATION - 200);
+    translateX.value = withTiming(-TOAST_WIDTH, {duration: DURATION}, f => {
+      if (f) {
+        runOnJS(hide)();
+      }
+    });
+
+    const timeout = setTimeout(() => {
+      Navigation.dismissOverlay(componentId);
+    }, DURATION + 300);
     return () => {
       clearTimeout(timeout);
     };
@@ -101,40 +120,45 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
 
   useEffect(() => {
     if (height !== 0) {
-      emitter.emit(Event.FAB_MOVE_UP, height + 20);
+      emitter.emit(Event.FAB_MOVE_UP, height + 10);
     }
   }, [height]);
 
-  return (
-    <Animated.View
-      onLayout={e => setHeight(e.nativeEvent.layout.height)}
-      entering={entering.duration(300)}
-      style={[styles.toast, {backgroundColor: toastInfo.backgroundColor}]}>
-      <View style={styles.content}>
-        <Icon
-          name={toastInfo.icon}
-          size={30}
-          color={'#fff'}
-          style={[
-            styles.icon,
-            {
-              transform: [
-                {rotate: type === Notification.ERROR ? '45deg' : '0deg'},
-              ],
-            },
-          ]}
-        />
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>{toastInfo.status}</Text>
-          <Text style={styles.textContent}>good work</Text>
+  if (show) {
+    return (
+      <Animated.View
+        entering={entering.duration(300)}
+        exiting={exiting.duration(300)}
+        onLayout={e => setHeight(e.nativeEvent.layout.height)}
+        style={[styles.toast, {backgroundColor: toastInfo.backgroundColor}]}>
+        <View style={styles.content}>
+          <Icon
+            name={toastInfo.icon}
+            size={30}
+            color={'#fff'}
+            style={[
+              styles.icon,
+              {
+                transform: [
+                  {rotate: type === Notification.ERROR ? '45deg' : '0deg'},
+                ],
+              },
+            ]}
+          />
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>{toastInfo.status}</Text>
+            <Text style={styles.textContent}>good work</Text>
+          </View>
+          <Pressable style={styles.closeIcon} onPress={hide}>
+            <Icon name={'plus'} color={'#fff'} size={25} />
+          </Pressable>
         </View>
-        <Pressable style={styles.closeIcon} onPress={hide}>
-          <Icon name={'plus'} color={'#fff'} size={25} />
-        </Pressable>
-      </View>
-      <Animated.View style={[styles.progress, rStyle]} />
-    </Animated.View>
-  );
+        <Animated.View style={[styles.progress, rStyle]} />
+      </Animated.View>
+    );
+  }
+
+  return null;
 };
 
 Toast.options = {
@@ -160,7 +184,6 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     padding: 5,
-    paddingBottom: 10,
   },
   textContainer: {
     flex: 1,
@@ -173,7 +196,6 @@ const styles = StyleSheet.create({
   },
   textContent: {
     color: '#fff',
-    fontSize: 12,
     fontWeight: 'bold',
   },
   closeIcon: {

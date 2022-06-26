@@ -36,7 +36,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       component: {
         name: 'Toast',
         passProps: {
-          type: Notification.SUCCESS,
+          type: Notification.WARNING,
           content:
             "Your files could not be uploaded because you've got run out of space",
         },

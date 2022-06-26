@@ -1,15 +1,18 @@
 import {View, Dimensions, Image, StyleSheet} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
+  interpolate,
+  interpolateColor,
+  runOnJS,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withDecay,
   withTiming,
 } from 'react-native-reanimated';
-import {useVector} from 'react-native-redash';
+import {snapPoint, useVector} from 'react-native-redash';
 import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
 import {maxScale} from '../../../settings/editor/utils';
 
@@ -19,7 +22,9 @@ const uri = 'file:///storage/sdcard0/Descargas/fox.jpg';
 
 const {width, height} = Dimensions.get('window');
 
-const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
+const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
+  componentId,
+}) => {
   const [d, setD] = useState({width: 1, height: 1});
   const s = imageStyles(d);
 
@@ -44,6 +49,33 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
     return {x, y};
   }, [translate.x.value, translate.y.value, scale.value]);
 
+  const backgroundColor = useDerivedValue(() => {
+    return scale.value === 1
+      ? interpolateColor(
+          translate.y.value,
+          [-height / 2, 0, height / 2],
+          ['transparent', 'rgba(0, 0, 0, 1)', 'transparent'],
+          'RGB',
+        )
+      : 'rgba(0, 0, 0, 1)';
+  }, [translate.y.value]);
+
+  const wrapper = () => {
+    Navigation.dismissModal(componentId, {
+      animations: {
+        dismissModal: {
+          sharedElementTransitions: [
+            {
+              fromId: 'img-dest',
+              toId: 'img',
+              duration: 300,
+            },
+          ],
+        },
+      },
+    });
+  };
+
   const pan = Gesture.Pan()
     .maxPointers(1)
     .onStart(_ => {
@@ -55,6 +87,25 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
       translate.y.value = offset.y.value + e.translationY;
     })
     .onEnd(({velocityX, velocityY}) => {
+      const snap = snapPoint(translate.y.value, velocityY, [
+        -height,
+        0,
+        height,
+      ]);
+
+      if (scale.value === 1) {
+        if (snap === -height || snap === height) {
+          runOnJS(wrapper)();
+        }
+
+        if (snap === 0) {
+          translate.y.value = withTiming(0);
+          offset.y.value = withTiming(0);
+        }
+
+        return;
+      }
+
       translate.x.value = withDecay({velocity: velocityX});
       translate.y.value = withDecay({velocity: velocityY});
     });
@@ -105,8 +156,12 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
         originAssign,
       );
 
+      if (toScale === 1) {
+        translate.y.value = withTiming(0);
+      } else {
+        translate.y.value = withTiming(offset.y.value + translateY);
+      }
       translate.x.value = withTiming(offset.x.value + translateX);
-      translate.y.value = withTiming(offset.y.value + translateY);
       scale.value = withTiming(toScale);
     })
     .onFinalize(() => {
@@ -119,11 +174,18 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
     return {
       transform: [
         {translateX: translation.value.x},
-        {translateY: translation.value.y},
+        {
+          translateY:
+            scale.value === 1 ? translate.y.value : translation.value.y,
+        },
         {scale: scale.value},
       ],
     };
   });
+
+  const rootRStyles = useAnimatedStyle(() => ({
+    backgroundColor: backgroundColor.value,
+  }));
 
   useEffect(() => {
     Image.getSize(uri, (w, h) => {
@@ -132,7 +194,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
   }, []);
 
   return (
-    <View style={styles.root} nativeID={'bg'}>
+    <Animated.View style={[styles.root, rootRStyles]} nativeID={'bg'}>
       <GestureDetector gesture={combinedGesture}>
         <Animated.View style={s}>
           <Animated.Image
@@ -148,7 +210,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = () => {
           />
         </Animated.View>
       </GestureDetector>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -167,7 +229,6 @@ ImageDetails.options = {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
   },

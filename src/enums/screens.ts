@@ -8,6 +8,8 @@ export enum Screens {
   EDITOR = 'Editor',
   TOAST = 'Toast',
 
+  LEFT_DRAWER = 'Left drawer',
+
   // modals
   CREATE_FOLDER_MODAL = 'Create folder modal',
 }

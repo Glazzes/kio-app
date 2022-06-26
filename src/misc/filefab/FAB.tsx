@@ -120,6 +120,7 @@ const FAB: React.FC<FABProps> = ({}) => {
 
 const styles = StyleSheet.create({
   root: {
+    position: 'absolute',
     width,
     height,
   },
@@ -129,8 +130,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 15,
-    right: 15,
+    bottom: width * 0.05,
+    right: width * 0.05,
     height: FAB_RADIUS * 2,
     width: FAB_RADIUS * 2,
     borderRadius: FAB_RADIUS,

@@ -10,37 +10,54 @@ import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
 import {Home, Camera, CreateFolderModal} from './src/home';
 import {Toast} from './src/misc';
+import DetailsDrawer from './src/navigation/DetailsDrawer';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
 Navigation.setDefaultOptions({
-  statusBar: {
-    visible: false,
-  },
   topBar: {
     visible: false,
   },
+  statusBar: {
+    visible: false,
+  },
   modalPresentationStyle: 'overCurrentContext',
+  overlay: {
+    interceptTouchOutside: false,
+  },
+  layout: {
+    backgroundColor: 'transparent',
+  },
+  sideMenu: {
+    right: {
+      enabled: false,
+    },
+  },
 });
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
-      stack: {
-        id: 'Stack',
-        options: {
-          layout: {
-            backgroundColor: 'transparent',
+      sideMenu: {
+        center: {
+          stack: {
+            id: 'Stack',
+            children: [
+              {
+                component: {
+                  id: 'Camera',
+                  name: 'Result',
+                },
+              },
+            ],
           },
         },
-        children: [
-          {
-            component: {
-              id: 'Camera',
-              name: 'Result',
-            },
+        right: {
+          component: {
+            id: Screens.LEFT_DRAWER,
+            name: Screens.LEFT_DRAWER,
           },
-        ],
+        },
       },
     },
   });
@@ -83,3 +100,5 @@ Navigation.registerComponent(
   Screens.CREATE_FOLDER_MODAL,
   () => CreateFolderModal,
 );
+
+Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);
