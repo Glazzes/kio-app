@@ -16,6 +16,7 @@
     "expo": "45.0.5",
     "expo-av": "~11.2.3",
     "expo-camera": "^12.2.0",
+    "expo-document-picker": "~10.2.1",
     "expo-haptics": "~11.2.0",
     "expo-image-manipulator": "~10.3.1",
     "expo-linear-gradient": "~11.3.0",

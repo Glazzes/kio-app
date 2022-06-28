@@ -1,13 +1,11 @@
-import {View, StyleSheet, Pressable, Image} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import FAB from '../../misc/filefab/FAB';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {runOnJS} from 'react-native-reanimated';
-import {Screens} from '../../enums/screens';
-import {Event} from '../../enums/events';
-import {Notification} from '../../enums/notification';
+import SearchBar from '../../misc/SearchBar';
+import Appbar from '../../misc/Appbar';
+import ImageTest from '../../misc/ImageTest';
 
 type ResultProps = {
   uri?: string;
@@ -25,37 +23,9 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
 
   return (
     <View style={[styles.root]}>
-      <Pressable
-        onPress={() => {
-          Navigation.showModal({
-            component: {
-              name: Screens.IMAGE_DETAILS,
-              options: {
-                animations: {
-                  showModal: {
-                    sharedElementTransitions: [
-                      {
-                        fromId: 'img',
-                        toId: 'img-dest',
-                        duration: 300,
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          });
-
-          setOpacity(0);
-        }}>
-        <Image
-          source={{uri: 'file:///storage/sdcard0/Descargas/fox.jpg'}}
-          style={[styles.box, {opacity}]}
-          resizeMode={'cover'}
-          resizeMethod={'scale'}
-          nativeID={'img'}
-        />
-      </Pressable>
+      <Appbar />
+      <SearchBar />
+      <ImageTest />
       <FAB />
     </View>
   );
@@ -73,7 +43,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'center',
     alignItems: 'center',
   },
   box: {

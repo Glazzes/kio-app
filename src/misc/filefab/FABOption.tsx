@@ -31,14 +31,13 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     toggle();
     Navigation.showOverlay<{
       type: Notification;
-      content: string;
+      message: string;
     }>({
       component: {
         name: 'Toast',
         passProps: {
-          type: Notification.WARNING,
-          content:
-            "Your files could not be uploaded because you've got run out of space",
+          type: Notification.INFO,
+          message: 'All of your files have been uploaded successfully',
         },
       },
     });

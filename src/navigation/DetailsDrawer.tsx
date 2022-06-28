@@ -87,7 +87,8 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontFamily: 'UberBold',
+    // fontWeight: 'bold',
     color: '#354259',
     marginBottom: 10,
   },
@@ -109,9 +110,10 @@ const styles = StyleSheet.create({
     flex: 0.7,
     fontWeight: '600',
     color: '#748DA6',
+    fontFamily: 'Uber',
   },
   data: {
-    fontWeight: '600',
+    fontFamily: 'Uber',
     color: '#354259',
     flex: 1,
   },
@@ -127,7 +129,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   title: {
-    fontWeight: 'bold',
+    fontFamily: 'UberBold',
     color: '#354259',
   },
   contributor: {

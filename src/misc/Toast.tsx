@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Notification} from '../enums/notification';
 import Animated, {
+  cancelAnimation,
   Keyframe,
   runOnJS,
   useAnimatedStyle,
@@ -60,7 +61,7 @@ const information: Color = {
 
 const SPACING = 15;
 const TOAST_WIDTH = width * 0.9;
-const DURATION = 7000;
+const DURATION = 6000;
 
 const entering = new Keyframe({
   from: {
@@ -83,6 +84,7 @@ const exiting = new Keyframe({
 const Toast: NavigationFunctionComponent<ToastProps> = ({
   componentId,
   type,
+  message,
 }) => {
   const [show, setShow] = useState<boolean>(true);
 
@@ -100,6 +102,7 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
   const hide = () => {
     emitter.emit(Event.FAB_MOVE_DOWN);
     setShow(false);
+    cancelAnimation(translateX);
   };
 
   useEffect(() => {
@@ -147,7 +150,7 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
           />
           <View style={styles.textContainer}>
             <Text style={styles.title}>{toastInfo.status}</Text>
-            <Text style={styles.textContent}>good work</Text>
+            <Text style={styles.textContent}>{message}</Text>
           </View>
           <Pressable style={styles.closeIcon} onPress={hide}>
             <Icon name={'plus'} color={'#fff'} size={25} />
@@ -191,12 +194,12 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontFamily: 'UberBold',
+    fontSize: 15,
   },
   textContent: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'Uber',
   },
   closeIcon: {
     alignSelf: 'flex-start',
