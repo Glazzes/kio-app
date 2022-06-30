@@ -5,7 +5,7 @@ import FastImage from 'react-native-fast-image';
 type AppbarProps = {};
 
 const {width} = Dimensions.get('window');
-const IMAGE_SIZE = 45;
+const IMAGE_SIZE = 40;
 
 const Appbar: React.FC<AppbarProps> = ({}) => {
   return (
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   },
   username: {
     fontFamily: 'UberBold',
-    fontSize: 18,
+    fontSize: 17,
   },
   image: {
     height: IMAGE_SIZE,

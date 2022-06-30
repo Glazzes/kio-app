@@ -6,6 +6,14 @@ import FAB from '../../misc/filefab/FAB';
 import SearchBar from '../../misc/SearchBar';
 import Appbar from '../../misc/Appbar';
 import ImageTest from '../../misc/ImageTest';
+import SearchableText from '../../misc/SearchableText';
+import CircleSkeleton from '../../misc/skeleton/CircleSkeleton';
+import SquareSkeleton from '../../misc/skeleton/SquareSkeleton';
+import FileWrapper from '../../misc/FileWrapper';
+import ImageThumbnail from '../../home/files/thumnnails/ImageThumbnail';
+import {useSharedValue} from 'react-native-reanimated';
+import {File} from '../../utils/types';
+import OptionsMenu from '../../misc/OptionsMenu';
 
 type ResultProps = {
   uri?: string;
@@ -20,12 +28,13 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
   }, []);
 
   const [opacity, setOpacity] = useState<number>(1);
+  const selectedIndex = useSharedValue<number>(0);
 
   return (
     <View style={[styles.root]}>
       <Appbar />
       <SearchBar />
-      <ImageTest />
+      <OptionsMenu />
       <FAB />
     </View>
   );

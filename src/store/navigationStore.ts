@@ -2,16 +2,18 @@ import create from 'zustand';
 
 type NavigationScreen = {
   name: string;
+  folder: string;
   componentId: string;
 };
 
 type Store = {
   screens: NavigationScreen[];
-  setScreen: (newStr: NavigationScreen) => void;
-  removeUntil: (selected: NavigationScreen) => void;
+  push: (newStr: NavigationScreen) => void;
+  pop: () => void;
+  takeUntil: (selected: NavigationScreen) => void;
 };
 
-function keepUntil(
+function takeUntil(
   selectedScreen: NavigationScreen,
   screens: NavigationScreen[],
 ): NavigationScreen[] {
@@ -29,11 +31,16 @@ function keepUntil(
 
 const navigationStore = create<Store>(set => ({
   screens: [],
-  setScreen: (newScreen: NavigationScreen) =>
+  push: (newScreen: NavigationScreen) =>
     set(state => set({...state, screens: [...state.screens, newScreen]})),
-  removeUntil: (selected: NavigationScreen) =>
+  pop: () =>
     set(state => {
-      const screens = keepUntil(selected, state.screens);
+      state.screens.pop();
+      return state;
+    }),
+  takeUntil: (selected: NavigationScreen) =>
+    set(state => {
+      const screens = takeUntil(selected, state.screens);
       return {...state, screens};
     }),
 }));

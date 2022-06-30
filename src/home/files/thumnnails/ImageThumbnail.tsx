@@ -14,7 +14,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Star from '../folder/Star';
-import Gradient from '../folder/Gradient';
 
 type ImageThumbnailProps = {
   image: File;
@@ -144,12 +143,12 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
 
 const styles = StyleSheet.create({
   root: {
-    width: thumbnailSize,
-    height: thumbnailSize * 0.65,
+    width: 300,
+    height: 140,
   },
   thumb: {
-    width: thumbnailSize,
-    height: thumbnailSize * 0.65,
+    width: 300,
+    height: 140,
     borderRadius: 10,
     backgroundColor: 'lightgrey',
   },

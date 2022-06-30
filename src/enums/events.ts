@@ -6,3 +6,9 @@ export enum Event {
   FAB_MOVE_UP = 'fab.move.up',
   FAB_MOVE_DOWN = 'fab.move.down',
 }
+
+export enum TypingEvent {
+  TYPING = 'typing',
+  STOPPED_TYPIMG = 'stopped_typing',
+  RESET_TYPING = 'reset_typing',
+}
