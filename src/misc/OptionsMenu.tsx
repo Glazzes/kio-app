@@ -11,26 +11,26 @@ type OptionsMenuProps = {
 const OPTION_SIZE = 40;
 const MARGIN = 5;
 
+const icons = ['information', 'link', 'share-variant', 'pencil', 'delete'];
+
 const entering = new Keyframe({
-  from: {
-    width: 60,
+  0: {
+    width: OPTION_SIZE + MARGIN * 2,
     transform: [{scale: 0}, {translateX: 0}],
   },
-  50: {
-    width: 60,
+  33: {
+    width: OPTION_SIZE + MARGIN * 2,
     transform: [{scale: 1}, {translateX: 0}],
   },
-  to: {
-    width: 260,
+  100: {
+    width: (OPTION_SIZE + MARGIN * 2) * icons.length,
     transform: [{scale: 1}, {translateX: 0}],
   },
 });
 
-const icons = ['information', 'link', 'share-variant', 'pencil', 'delete'];
-
 const OptionsMenu: React.FC<OptionsMenuProps> = ({absX, absY}) => {
   return (
-    <Animated.View entering={entering.duration(600)} style={styles.root}>
+    <Animated.View entering={entering.duration(750)} style={styles.root}>
       {icons.map((icon, index) => {
         let backgroundColor = '#3366ff';
         if (icon === 'delete') backgroundColor = '#F94415';
@@ -38,7 +38,7 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({absX, absY}) => {
 
         return (
           <Animated.View
-            entering={BounceIn.duration(index * 600)}
+            entering={BounceIn.duration(index * 500)}
             style={[styles.option, {backgroundColor}]}
             key={icon}>
             <Icon name={icon} color={'#fff'} size={20} />
@@ -52,12 +52,13 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({absX, absY}) => {
 const styles = StyleSheet.create({
   root: {
     marginTop: MARGIN * 2,
-    padding: MARGIN,
+    paddingVertical: MARGIN,
     height: OPTION_SIZE + MARGIN * 2,
-    borderRadius: 30,
+    borderRadius: (OPTION_SIZE + MARGIN * 2) / 2,
     backgroundColor: '#F3F3F4',
     overflow: 'hidden',
     flexDirection: 'row',
+    elevation: 1,
   },
   option: {
     height: OPTION_SIZE,

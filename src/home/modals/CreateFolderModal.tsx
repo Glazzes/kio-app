@@ -6,13 +6,23 @@ import {
   Pressable,
   TextInput,
   Image,
+  Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  ZoomIn,
+  ZoomOut,
+} from 'react-native-reanimated';
+import {withKeyboard} from '../../utils/hoc';
+import {ShadowView} from '@dimaportenko/react-native-shadow-view';
 
 type CreateFolderModalProps = {
-  parentComponentId: string;
+  parentComponentId?: string;
   parentFolderId?: string;
   folderNames?: string[];
 };
@@ -20,43 +30,80 @@ type CreateFolderModalProps = {
 const {width} = Dimensions.get('window');
 const MODAL_WIDTH = width * 0.8;
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const CreateFolderModal: NavigationFunctionComponent<
   CreateFolderModalProps
 > = ({componentId}) => {
-  const folderName = useRef<string>('');
+  const ref = useRef<TextInput>(null);
 
+  const [folderName, setFolderName] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const [selected, setSelected] = useState<boolean>(false);
-  const [folderExists, setFolderExists] = useState<boolean>(true);
+  const [folderExists, setFolderExists] = useState<boolean>(false);
 
   const toggle = () => setSelected(s => !s);
 
+  const clear = () => {
+    if (!loading) {
+      ref.current?.clear();
+      setFolderName('');
+    }
+  };
+
   const onChangeText = (text: string): void => {
-    folderName.current = text;
+    setFolderName(text);
+  };
+
+  const create = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 3000);
   };
 
   const hideModal = () => {
+    Keyboard.dismiss();
     Navigation.dismissModal(componentId);
   };
 
   return (
     <Pressable style={styles.root} onPress={hideModal}>
-      <View style={styles.modal}>
-        <View style={[styles.content]}>
+      <Pressable>
+        <View style={styles.modal}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>New Folder</Text>
+            <Text style={styles.title}>Create Folder</Text>
             <Image
               source={require('./assets/folder.png')}
               resizeMode={'contain'}
               style={styles.image}
             />
           </View>
-          <TextInput
-            style={[styles.input, {borderColor: selected ? '#336fff' : '#000'}]}
-            placeholder={'Enter a folder name'}
-            keyboardType={'default'}
-            onFocus={toggle}
-            onChangeText={onChangeText}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              ref={ref}
+              editable={!loading}
+              style={styles.input}
+              placeholder={'New folder name'}
+              keyboardType={'default'}
+              onFocus={toggle}
+              onChangeText={onChangeText}
+            />
+            {folderName.length > 0 && (
+              <AnimatedPressable
+                onPress={clear}
+                entering={ZoomIn.duration(200)}
+                exiting={ZoomOut.duration(200)}
+                style={styles.icon}>
+                <Icon
+                  name={'plus'}
+                  size={18}
+                  color={'#fff'}
+                  style={{transform: [{rotate: '45deg'}]}}
+                />
+              </AnimatedPressable>
+            )}
+          </View>
           {folderExists && (
             <Animated.Text
               entering={FadeIn.duration(200)}
@@ -66,67 +113,111 @@ const CreateFolderModal: NavigationFunctionComponent<
             </Animated.Text>
           )}
           <View style={styles.buttonContainer}>
-            <Pressable style={[styles.button, styles.cancelButton]}>
-              <Text style={{color: '#354259'}}>CANCEL</Text>
+            <Pressable
+              style={
+                loading
+                  ? [styles.button, styles.cancelDisabled]
+                  : [styles.button, styles.cancel]
+              }
+              onPress={hideModal}>
+              <Text
+                style={loading ? styles.textDisabled : {fontFamily: 'Uber'}}>
+                CANCEL
+              </Text>
             </Pressable>
-            <Pressable style={[styles.button, styles.createButton]}>
-              <Text style={styles.buttonText}>CREATE</Text>
+            <Pressable
+              style={
+                loading
+                  ? [styles.button, styles.createDisabled]
+                  : [styles.button, styles.create]
+              }>
+              <Text
+                style={loading ? styles.textDisabled : styles.buttonText}
+                onPress={create}>
+                CREATE
+              </Text>
+              {loading && (
+                <ActivityIndicator
+                  size={'small'}
+                  color={'#C5C8D7'}
+                  style={styles.activity}
+                />
+              )}
             </Pressable>
           </View>
         </View>
-      </View>
+      </Pressable>
     </Pressable>
   );
 };
 
 CreateFolderModal.options = {
-  statusBar: {
-    visible: false,
+  sideMenu: {
+    right: {
+      visible: false,
+    },
   },
-  topBar: {
-    visible: false,
+  hardwareBackButton: {
+    dismissModalOnPress: false,
   },
 };
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modal: {
     width: MODAL_WIDTH,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 5,
     backgroundColor: '#fff',
-  },
-  content: {
     shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: {width: 0, height: 10},
-    shadowRadius: 7,
+    shadowOpacity: 0.2,
+    shadowOffset: {width: 2, height: 4},
+    shadowRadius: 10,
+    elevation: 8,
   },
   titleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   title: {
-    fontWeight: 'bold',
+    fontFamily: 'UberBold',
   },
   image: {
     width: 45,
     height: 45,
   },
-  input: {
-    fontSize: 15,
-    borderWidth: 1,
-    borderRadius: 3,
+  inputContainer: {
+    height: 40,
+    backgroundColor: '#F3F3F4',
+    flexDirection: 'row',
+    borderRadius: 5,
+    alignItems: 'center',
     marginBottom: 10,
   },
+  input: {
+    flex: 1,
+    padding: 5,
+    fontFamily: 'Uber',
+    color: '#C5C8D7',
+    borderRadius: 3,
+  },
+  icon: {
+    backgroundColor: '#000',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginHorizontal: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   error: {
+    fontFamily: 'Uber',
     color: 'red',
     paddingTop: 5,
     paddingBottom: 15,
@@ -137,22 +228,42 @@ const styles = StyleSheet.create({
   },
   button: {
     width: MODAL_WIDTH / 2 - 20,
-    padding: 10,
+    padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
+    borderRadius: 3,
   },
-  createButton: {
+  create: {
     backgroundColor: '#3366ff',
+    flexDirection: 'row',
+    borderWidth: 0.5,
+    borderColor: '#3366ff',
   },
-  cancelButton: {
-    borderColor: '#354259',
-    borderWidth: 1,
+  createDisabled: {
+    backgroundColor: '#F3F3F4',
+    flexDirection: 'row',
+    borderWidth: 0.5,
+    borderColor: '#F3F3F4',
+  },
+  cancel: {
+    borderWidth: 0.5,
+  },
+  cancelDisabled: {
+    borderWidth: 0.5,
+    backgroundColor: '#F3F3F4',
+    borderColor: '#F3F3F4',
   },
   buttonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'Uber',
+  },
+  textDisabled: {
+    color: '#C5C8D7',
+    fontFamily: 'Uber',
+  },
+  activity: {
+    marginHorizontal: 10,
   },
 });
 
-export default CreateFolderModal;
+export default withKeyboard(CreateFolderModal);

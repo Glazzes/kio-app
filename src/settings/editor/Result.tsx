@@ -14,6 +14,9 @@ import ImageThumbnail from '../../home/files/thumnnails/ImageThumbnail';
 import {useSharedValue} from 'react-native-reanimated';
 import {File} from '../../utils/types';
 import OptionsMenu from '../../misc/OptionsMenu';
+import BreadCrumbs from '../../misc/BreadCrumbs';
+import {FlashList} from '@shopify/flash-list';
+import FlashlistTest from '../../misc/FlashlistTest';
 
 type ResultProps = {
   uri?: string;
@@ -33,9 +36,10 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
   return (
     <View style={[styles.root]}>
       <Appbar />
+      <BreadCrumbs />
       <SearchBar />
-      <OptionsMenu />
-      <FAB />
+
+      <FAB parentComponentId={componentId} />
     </View>
   );
 };

@@ -12,9 +12,15 @@ import {AnimatedButton, Folder} from '../../utils/types';
 import FABOption from './FABOption';
 import emitter from '../../utils/emitter';
 import {Event} from '../../enums/events';
+import {Navigation} from 'react-native-navigation';
+import {Screens} from '../../enums/screens';
+import AppCamera from '../../home/camera/AppCamera';
+
+type Action = 'camera' | 'folder' | 'person';
 
 type FABProps = {
   parent?: Folder;
+  parentComponentId: string;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -42,7 +48,7 @@ const actions: AnimatedButton[] = [
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const FAB: React.FC<FABProps> = ({}) => {
+const FAB: React.FC<FABProps> = ({parentComponentId}) => {
   const [blockBackInteraction, setBlockBackInteraction] =
     useState<boolean>(false);
 
@@ -75,6 +81,17 @@ const FAB: React.FC<FABProps> = ({}) => {
   };
 
   useEffect(() => {
+    const optionPress = emitter.addListener('press', async (type: Action) => {
+      if (type === 'camera') {
+        console.log('ses');
+        await Navigation.push(parentComponentId, {
+          component: {
+            name: Screens.CAMERA,
+          },
+        });
+      }
+    });
+
     const moveUp = emitter.addListener(Event.FAB_MOVE_UP, (ty: number) => {
       translateY.value = withTiming(-ty, {duration: 200});
     });
@@ -85,6 +102,7 @@ const FAB: React.FC<FABProps> = ({}) => {
     return () => {
       moveUp.remove();
       moveDown.remove();
+      optionPress.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -116,6 +134,15 @@ const FAB: React.FC<FABProps> = ({}) => {
       </AnimatedPressable>
     </View>
   );
+};
+
+AppCamera.options = {
+  statusBar: {
+    visible: false,
+  },
+  topBar: {
+    visible: false,
+  },
 };
 
 const styles = StyleSheet.create({

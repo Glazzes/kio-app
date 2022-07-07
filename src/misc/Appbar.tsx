@@ -1,9 +1,11 @@
 import {View, Text, StyleSheet, Image, Dimensions} from 'react-native';
 import React from 'react';
 import FastImage from 'react-native-fast-image';
+import {Navigation} from 'react-native-navigation';
 
 type AppbarProps = {};
 
+const {statusBarHeight} = Navigation.constantsSync();
 const {width} = Dimensions.get('window');
 const IMAGE_SIZE = 40;
 
@@ -31,7 +33,8 @@ const styles = StyleSheet.create({
     width: width * 0.9,
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 20,
+    marginTop: statusBarHeight + 5,
+    marginBottom: 0,
     marginHorizontal: width * 0.05,
   },
   hi: {

@@ -41,24 +41,28 @@ const pinch = (
 ): {translateX: number; translateY: number} => {
   'worklet';
 
-  const adjustedFocalX = event.focalX - (center.x + offset.x);
-  const adjustedFocalY = event.focalY - (center.y + offset.y);
+  if (event.focalX !== 0 && event.focalY !== 0) {
+    const adjustedFocalX = event.focalX - (center.x + offset.x);
+    const adjustedFocalY = event.focalY - (center.y + offset.y);
 
-  if (assign.value) {
-    origin.x.value = adjustedFocalX;
-    origin.y.value = adjustedFocalY;
-    assign.value = false;
+    if (assign.value) {
+      origin.x.value = adjustedFocalX;
+      origin.y.value = adjustedFocalY;
+      assign.value = false;
+    }
+
+    const pinchX = adjustedFocalX - origin.x.value;
+    const pinchY = adjustedFocalY - origin.y.value;
+
+    const translateX =
+      pinchX + origin.x.value + -1 * event.scale * origin.x.value;
+    const translateY =
+      pinchY + origin.y.value + -1 * event.scale * origin.y.value;
+
+    return {translateX, translateY};
   }
 
-  const pinchX = adjustedFocalX - origin.x.value;
-  const pinchY = adjustedFocalY - origin.y.value;
-
-  const translateX =
-    pinchX + origin.x.value + -1 * event.scale * origin.x.value;
-  const translateY =
-    pinchY + origin.y.value + -1 * event.scale * origin.y.value;
-
-  return {translateX, translateY};
+  return {translateX: 0, translateY: 0};
 };
 
 export {clamp, pinch, set, imageStyles};

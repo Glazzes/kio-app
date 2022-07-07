@@ -96,6 +96,7 @@ Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
 
 // Miscelaneous
 Navigation.registerComponent(Screens.TOAST, () => Toast);
+
 Navigation.registerComponent(
   Screens.CREATE_FOLDER_MODAL,
   () => CreateFolderModal,

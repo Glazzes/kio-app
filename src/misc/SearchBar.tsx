@@ -6,11 +6,12 @@ import {
   Pressable,
   Keyboard,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../utils/emitter';
 import {TypingEvent} from '../enums/events';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
+import {withKeyboard} from '../utils/hoc';
 
 const {width} = Dimensions.get('window');
 const CLOSE_ICON_SIZE = 20;
@@ -49,16 +50,6 @@ const SearchBar: React.FC = ({}) => {
     Keyboard.dismiss();
     setSearchTerm('');
   };
-
-  useEffect(() => {
-    const kListener = Keyboard.addListener('keyboardDidHide', () => {
-      Keyboard.dismiss();
-    });
-
-    return () => {
-      kListener.remove();
-    };
-  }, []);
 
   return (
     <View style={styles.root}>
@@ -117,4 +108,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SearchBar;
+export default withKeyboard(SearchBar);

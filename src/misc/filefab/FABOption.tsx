@@ -4,6 +4,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
 import {Notification} from '../../enums/notification';
+import {Screens} from '../../enums/screens';
+import emitter from '../../utils/emitter';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -29,18 +31,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
 
   const onPress = () => {
     toggle();
-    Navigation.showOverlay<{
-      type: Notification;
-      message: string;
-    }>({
-      component: {
-        name: 'Toast',
-        passProps: {
-          type: Notification.INFO,
-          message: 'All of your files have been uploaded successfully',
-        },
-      },
-    });
+    emitter.emit('press', 'camera');
   };
 
   return (

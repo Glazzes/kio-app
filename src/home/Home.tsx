@@ -1,12 +1,15 @@
-import {View, StyleSheet, Text} from 'react-native';
-import React from 'react';
+import {View, StyleSheet} from 'react-native';
+import React, {useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
-import {Gesture} from 'react-native-gesture-handler';
 import FilesList from './files/FilesList';
-import {useSharedValue} from 'react-native-reanimated';
-import {Camera, CameraType} from 'expo-camera';
 
-const Home: NavigationFunctionComponent = ({}) => {
+type HomeProps = {
+  folderId?: string;
+};
+
+const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
+  const [canRegisterScreen, setCanRegisterScreen] = useState<boolean>();
+
   return (
     <View style={styles.root}>
       <FilesList />

@@ -4,4 +4,7 @@ const {width} = Dimensions.get('window');
 
 const thumbnailSize = width / 2;
 
-export {thumbnailSize};
+const FONT = 'Uber';
+const FONT_BOLD = 'UberBold';
+
+export {thumbnailSize, FONT, FONT_BOLD};

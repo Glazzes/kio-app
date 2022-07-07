@@ -8,7 +8,7 @@ type NavigationScreen = {
 
 type Store = {
   screens: NavigationScreen[];
-  push: (newStr: NavigationScreen) => void;
+  putIfAbsent: (newStr: NavigationScreen) => void;
   pop: () => void;
   takeUntil: (selected: NavigationScreen) => void;
 };
@@ -26,13 +26,20 @@ function takeUntil(
     }
   }
 
-  return screens;
+  return newScreens;
 }
 
 const navigationStore = create<Store>(set => ({
   screens: [],
-  push: (newScreen: NavigationScreen) =>
-    set(state => set({...state, screens: [...state.screens, newScreen]})),
+  putIfAbsent: (newScreen: NavigationScreen) =>
+    set(state => {
+      const componentIds = state.screens.map(s => s.componentId);
+      if (componentIds.includes(newScreen.componentId)) {
+        return state;
+      }
+
+      return {...state, screens: [...state.screens, newScreen]};
+    }),
   pop: () =>
     set(state => {
       state.screens.pop();
