@@ -11,6 +11,7 @@ import Shared from './src/shared/Shared';
 import {Home, Camera, CreateFolderModal} from './src/home';
 import {Toast} from './src/misc';
 import DetailsDrawer from './src/navigation/DetailsDrawer';
+import ScrollTest from './src/misc/ScrollTest';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -62,6 +63,8 @@ Navigation.events().registerAppLaunchedListener(() => {
     },
   });
 });
+
+Navigation.registerComponent('ST', () => ScrollTest);
 
 Navigation.registerComponent(Screens.CAMERA, () =>
   gestureHandlerRootHOC(Camera),

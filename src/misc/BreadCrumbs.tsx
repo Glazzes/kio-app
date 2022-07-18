@@ -43,8 +43,7 @@ const styles = StyleSheet.create({
     height: 35,
     maxHeight: 35,
     width: width * 0.9,
-    marginHorizontal: 5,
-    marginVertical: 10,
+    marginVertical: 5,
   },
   container: {
     flexDirection: 'row',

@@ -24,19 +24,28 @@ import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Controls from './Controls';
 import PhotoPicker from './picker/PhotoPicker';
 import {clamp} from '../../utils/animations';
-import Photo from './picker/ThumbnailPhoto';
+import Photo from './picker/CameraThumbnail';
 import emitter from '../../utils/emitter';
+import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import UploadPhotoFAB from './UploadPhotoFAB';
+import {Event} from '../../enums/events';
 
+type Photos = {[id: string]: string};
 type AppCameraProps = {};
 
 const {width, height} = Dimensions.get('window');
 const SIZE = (width / 4) * 0.75;
 const PHOTO_SIZE = SIZE * 0.8;
 
-const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
+const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
+  componentId,
+}) => {
   const devices = useCameraDevices();
 
   const [photos, setPhotos] = useState<string[]>([]);
+  const [selectedPhotos, setselectedPhotos] = useState<Photos>({});
+  const [photoCount, setPhotoCount] = useState<number>(0);
+
   const [isBackCamera, setIsBackCamera] = useState<boolean>(true);
   const [authorized, setAuthorized] = useState<boolean>(false);
 
@@ -47,6 +56,8 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
 
   const takePicture = async () => {
     if (cameraRef.current && scrollY.value > -height / 2) {
+      await impactAsync(ImpactFeedbackStyle.Medium);
+
       cameraScale.value = withSequence(withTiming(0.75), withSpring(1));
       opacity.value = withTiming(0);
       const {path} = await cameraRef.current.takePhoto({
@@ -71,10 +82,20 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
   const translate = useVector(0, 0);
   const offset = useVector(0, 0);
 
+  const translation = useDerivedValue(() => {
+    const maxY = height - height * scale.value;
+    const maxX = (width - width * scale.value) / 2;
+
+    return {
+      x: clamp(translate.x.value, -maxX, maxX),
+      y: clamp(translate.y.value, 0, maxY),
+    };
+  }, [scrollY, scale, translate.x, translate.y]);
+
   const pan = Gesture.Pan()
     .onStart(_ => {
-      offset.x.value = translate.x.value;
-      offset.y.value = translate.y.value;
+      offset.x.value = translation.value.x;
+      offset.y.value = translation.value.y;
     })
     .onChange(e => {
       if (scrollY.value <= -height * 0.7) {
@@ -103,16 +124,6 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
 
   const combinedGesture = Gesture.Exclusive(pan, tap);
 
-  const translation = useDerivedValue(() => {
-    const maxY = height - height * scale.value;
-    const maxX = (width - width * scale.value) / 2;
-
-    return {
-      x: clamp(translate.x.value, -maxX, maxX),
-      y: clamp(translate.y.value, 0, maxY),
-    };
-  }, [scrollY, scale, translate.x, translate.y]);
-
   const rStyle = useAnimatedStyle(() => {
     scale.value = interpolate(
       scrollY.value,
@@ -124,7 +135,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     const ty = (-1 * (height - height * scale.value)) / 2;
     const condition = scrollY.value <= -height / 2;
     return {
-      elevation: condition ? withTiming(3) : withTiming(0),
+      // elevation: condition ? withTiming(3) : withTiming(0),
       borderRadius: condition ? withTiming(20) : withTiming(0),
       transform: [
         {translateY: ty},
@@ -162,6 +173,35 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
     };
   }, []);
 
+  useEffect(() => {
+    const selectPhoto = emitter.addListener(
+      Event.SELECT_PHOTO,
+      (uri: string) => {
+        setPhotoCount(c => ++c);
+        setselectedPhotos(p => {
+          p = {...p, [uri]: uri};
+          return p;
+        });
+      },
+    );
+
+    const unselecPhoto = emitter.addListener(
+      Event.UNSELECT_PHOTO,
+      (uri: string) => {
+        setPhotoCount(c => --c);
+        setselectedPhotos(p => {
+          delete p[uri];
+          return p;
+        });
+      },
+    );
+
+    return () => {
+      selectPhoto.remove();
+      unselecPhoto.remove();
+    };
+  }, []);
+
   useAnimatedReaction(
     () => snap.value,
     s => {
@@ -191,7 +231,19 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({}) => {
 
   return (
     <View style={styles.root}>
-      <PhotoPicker snap={snap} scrollY={scrollY} photos={photos} />
+      <PhotoPicker
+        snap={snap}
+        scrollY={scrollY}
+        photos={photos}
+        selectedPhotos={selectedPhotos}
+        photoCount={photoCount}
+      />
+      {photoCount > 0 && (
+        <UploadPhotoFAB
+          componentId={componentId}
+          selectedPhotos={selectedPhotos}
+        />
+      )}
       <GestureDetector gesture={combinedGesture}>
         <Animated.View
           style={[styles.cameraContainer, rStyle]}
@@ -251,13 +303,20 @@ AppCamera.options = {
   topBar: {
     visible: false,
   },
+  sideMenu: {
+    left: {
+      visible: false,
+    },
+    right: {
+      visible: false,
+    },
+  },
 };
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'center',
     alignItems: 'center',
   },
   cameraContainer: {

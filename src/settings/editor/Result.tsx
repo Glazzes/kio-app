@@ -17,6 +17,7 @@ import OptionsMenu from '../../misc/OptionsMenu';
 import BreadCrumbs from '../../misc/BreadCrumbs';
 import {FlashList} from '@shopify/flash-list';
 import FlashlistTest from '../../misc/FlashlistTest';
+import Folder from '../../home/Folder';
 
 type ResultProps = {
   uri?: string;
@@ -39,6 +40,7 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
       <BreadCrumbs />
       <SearchBar />
 
+      <Folder />
       <FAB parentComponentId={componentId} />
     </View>
   );

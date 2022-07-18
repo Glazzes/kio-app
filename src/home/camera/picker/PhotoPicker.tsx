@@ -7,7 +7,7 @@ import {
   ListRenderItemInfo,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import Animated, {
   cancelAnimation,
   scrollTo,
@@ -23,17 +23,17 @@ import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
 import {Navigation} from 'react-native-navigation';
 import PickerPhoto from './PickerPhoto';
-import emitter from '../../../utils/emitter';
-import {Event} from '../../../enums/events';
 import {clamp} from '../../../utils/animations';
+
+type Photos = {[id: string]: string};
 
 type PhotoPickerProps = {
   snap: Animated.SharedValue<boolean>;
   scrollY: Animated.SharedValue<number>;
   photos: string[];
+  selectedPhotos: Photos;
+  photoCount: number;
 };
-
-type Photos = {[id: string]: string};
 
 const {width, height} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
@@ -48,11 +48,14 @@ function keyExtractor(path: string) {
   return `photo-${path}`;
 }
 
-const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
+const PhotoPicker: React.FC<PhotoPickerProps> = ({
+  scrollY,
+  photos,
+  selectedPhotos,
+  photoCount,
+  snap,
+}) => {
   const ref = useAnimatedRef<FlatList<string>>();
-
-  const [selectedPhotos, setselectedPhotos] = useState<Photos>({});
-  const [photoCount, setPhotoCount] = useState<number>(0);
 
   const contentStyles: ViewStyle = {
     width,
@@ -114,35 +117,6 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
       }
     });
 
-  useEffect(() => {
-    const selectPhoto = emitter.addListener(
-      Event.SELECT_PHOTO,
-      (uri: string) => {
-        setselectedPhotos(p => {
-          p = {...p, [uri]: uri};
-          setPhotoCount(Object.keys(p).length);
-          return p;
-        });
-      },
-    );
-
-    const unselecPhoto = emitter.addListener(
-      Event.UNSELECT_PHOTO,
-      (uri: string) => {
-        setselectedPhotos(p => {
-          delete p[uri];
-          setPhotoCount(Object.keys(p).length);
-          return p;
-        });
-      },
-    );
-
-    return () => {
-      selectPhoto.remove();
-      unselecPhoto.remove();
-    };
-  }, []);
-
   useAnimatedReaction(
     () => scroll.value,
     y => {
@@ -153,6 +127,7 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={[styles.root, rStyle]}>
+        <View style={styles.marker} />
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
             {photoCount > 0
@@ -182,7 +157,7 @@ const styles = StyleSheet.create({
     height,
     position: 'absolute',
     top: height,
-    backgroundColor: 'salmon',
+    backgroundColor: '#F3F3F4',
     elevation: -1,
     borderTopLeftRadius: RADIUS,
     borderTopRightRadius: RADIUS,
@@ -190,9 +165,17 @@ const styles = StyleSheet.create({
   },
   header: {
     width,
-    height: statusBarHeight * 1.5,
     justifyContent: 'center',
     paddingHorizontal: PADDING,
+  },
+  marker: {
+    backgroundColor: '#2C3639',
+    height: 5,
+    width: width * 0.25,
+    borderRadius: 15,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 5,
   },
   headerTitle: {
     fontWeight: 'bold',

@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     height: SIZE,
     marginHorizontal: PADDING,
     marginVertical: PADDING,
-    borderRadius: CIRCLE_SIZE / 2,
+    borderRadius: 8,
     overflow: 'hidden',
   },
   image: {

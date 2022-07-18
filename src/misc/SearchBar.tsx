@@ -80,7 +80,7 @@ const SearchBar: React.FC = ({}) => {
 
 const styles = StyleSheet.create({
   root: {
-    width: width * 0.89,
+    width: width * 0.9,
     height: 40,
     backgroundColor: '#F3F3F4',
     borderRadius: 5,
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'center',
     alignItems: 'center',
+    marginBottom: 10,
   },
   icon: {
     marginHorizontal: 10,

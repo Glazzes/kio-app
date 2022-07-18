@@ -8,7 +8,6 @@ import emitter from '../utils/emitter';
 import {Asset} from 'expo-media-library';
 import {Screens} from '../enums/screens';
 
-const {bottomTabsHeight} = Navigation.constantsSync();
 const {width, height} = Dimensions.get('window');
 
 const Settings: NavigationFunctionComponent = ({componentId}) => {
@@ -70,7 +69,7 @@ const styles = StyleSheet.create({
     top: height,
     left: 0,
     width,
-    height: height - bottomTabsHeight,
+    height: height,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
 });
