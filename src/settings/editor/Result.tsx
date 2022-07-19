@@ -5,19 +5,17 @@ import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import FAB from '../../misc/filefab/FAB';
 import SearchBar from '../../misc/SearchBar';
 import Appbar from '../../misc/Appbar';
-import ImageTest from '../../misc/ImageTest';
-import SearchableText from '../../misc/SearchableText';
-import CircleSkeleton from '../../misc/skeleton/CircleSkeleton';
-import SquareSkeleton from '../../misc/skeleton/SquareSkeleton';
 import FileWrapper from '../../misc/FileWrapper';
 import ImageThumbnail from '../../home/files/thumnnails/ImageThumbnail';
 import {useSharedValue} from 'react-native-reanimated';
 import {File} from '../../utils/types';
 import OptionsMenu from '../../misc/OptionsMenu';
 import BreadCrumbs from '../../misc/BreadCrumbs';
-import {FlashList} from '@shopify/flash-list';
-import FlashlistTest from '../../misc/FlashlistTest';
-import Folder from '../../home/Folder';
+import FolderList from '../../misc/FolderList';
+import FolderSkeleton from '../../misc/skeleton/FolderSkeleton';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import FolderListSkeleton from '../../misc/skeleton/FolderListSkeleton';
+import Contributors from '../../misc/Contributors';
 
 type ResultProps = {
   uri?: string;
@@ -31,16 +29,14 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
     impactAsync(ImpactFeedbackStyle.Medium);
   }, []);
 
-  const [opacity, setOpacity] = useState<number>(1);
-  const selectedIndex = useSharedValue<number>(0);
-
   return (
     <View style={[styles.root]}>
       <Appbar />
       <BreadCrumbs />
       <SearchBar />
+      <Contributors />
+      <FolderList />
 
-      <Folder />
       <FAB parentComponentId={componentId} />
     </View>
   );

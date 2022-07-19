@@ -11,7 +11,6 @@ import Animated, {
   Extrapolate,
   interpolate,
   scrollTo,
-  useAnimatedReaction,
   useAnimatedRef,
   useAnimatedStyle,
   useDerivedValue,
@@ -91,15 +90,14 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
     return clamp(translateY.value, -actualHeight, actualHeight);
   }, [translateY.value]);
 
-  const scroll = useDerivedValue<number>(() => {
-    return -1 * translateY.value - actualHeight;
+  useDerivedValue(() => {
+    scrollTo(ref, 0, -1 * translateY.value - actualHeight, false);
   }, [translateY.value]);
 
   const pan = Gesture.Pan()
     .onStart(_ => {
       offset.value = translateY.value;
       cancelAnimation(translateY);
-      cancelAnimation(scroll);
     })
     .onChange(e => {
       translateY.value = offset.value + e.translationY;
@@ -152,13 +150,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
       }
     })();
   }, []);
-
-  useAnimatedReaction(
-    () => scroll.value,
-    y => {
-      scrollTo(ref, 0, y, false);
-    },
-  );
 
   return (
     <GestureDetector gesture={pan}>

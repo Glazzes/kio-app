@@ -185,4 +185,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PhotoPicker;
+export default React.memo(PhotoPicker);

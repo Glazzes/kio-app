@@ -47,7 +47,7 @@ Navigation.events().registerAppLaunchedListener(() => {
               {
                 component: {
                   id: 'Camera',
-                  name: 'Result',
+                  name: Screens.SETTINGS,
                 },
               },
             ],

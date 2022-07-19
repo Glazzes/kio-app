@@ -18,8 +18,8 @@ type FolderProps = {};
 const {width} = Dimensions.get('window');
 
 const Folder: React.FC<FolderProps> = ({}) => {
-  const containerRef = useAnimatedRef();
-  const iconRef = useAnimatedRef();
+  const containerRef = useAnimatedRef<View>();
+  const iconRef = useAnimatedRef<Icon>();
 
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [position, setPosition] = useState<{
@@ -77,7 +77,7 @@ const Folder: React.FC<FolderProps> = ({}) => {
               <Icon
                 color={'#fff'}
                 name={'dots-vertical'}
-                size={20}
+                size={25}
                 style={styles.icon}
                 ref={iconRef}
               />
@@ -96,7 +96,14 @@ const Folder: React.FC<FolderProps> = ({}) => {
           Created: <Text style={styles.itemText}>20th October, 2022</Text>
         </Text>
       </ShadowView>
-      {showMenu && <OptionsMenu {...position} />}
+      {showMenu && (
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {backgroundColor: 'rgba(0, 0, 0, 0.3)'},
+          ]}
+        />
+      )}
     </View>
   );
 };
@@ -109,13 +116,15 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     elevation: 1,
     backgroundColor: '#3366ff',
+    marginRight: 10,
     shadowColor: '#000',
     shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowRadius: 5,
     shadowOffset: {
       width: 2,
       height: 2,
     },
+    overflow: 'visible',
   },
   topContainer: {
     flexDirection: 'row',
@@ -151,7 +160,6 @@ const styles = StyleSheet.create({
   },
   itemText: {
     color: 'rgba(255, 255, 255, 0.8)',
-    // color: '#F3F3F4',
     fontFamily: 'Uber',
     fontSize: 12,
   },
