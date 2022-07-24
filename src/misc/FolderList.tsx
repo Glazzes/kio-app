@@ -1,4 +1,4 @@
-import {View, Dimensions, StyleSheet} from 'react-native';
+import {View, Dimensions, StyleSheet, Text} from 'react-native';
 import {
   FlashList,
   FlashListProps,
@@ -29,7 +29,7 @@ function renderItem(info: ListRenderItemInfo<number>) {
   return <Folder />;
 }
 
-const AniamtedFL =
+const AnimatedFlashList =
   Animated.createAnimatedComponent<FlashListProps<number>>(FlashList);
 
 const FolderList: React.FC<FolderListProps> = ({}) => {
@@ -52,7 +52,16 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
 
   return (
     <View style={styles.root}>
-      <AniamtedFL
+      <View style={styles.infoContainer}>
+        <Text style={styles.title}>Folders</Text>
+        {/*
+        <Text style={styles.subtitle}>
+          You've got <Text style={styles.count}>{data.length} </Text> subfolders
+          within this folder
+        </Text>
+          */}
+      </View>
+      <AnimatedFlashList
         ref={ref}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
@@ -71,9 +80,29 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
 const styles = StyleSheet.create({
   root: {
     width,
+    marginVertical: 5,
   },
   content: {
-    paddingHorizontal: width * 0.05,
+    paddingLeft: width * 0.05,
+  },
+  infoContainer: {
+    marginLeft: width * 0.05,
+    marginVertical: 5,
+  },
+  title: {
+    fontFamily: 'UberBold',
+    fontSize: 15,
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontFamily: 'Uber',
+    color: '#C5C8D7',
+    fontSize: 12,
+  },
+  count: {
+    fontFamily: 'Uber',
+    color: '#3366ff',
+    fontSize: 12,
   },
 });
 

@@ -1,9 +1,8 @@
-import {View, Dimensions, Image, StyleSheet} from 'react-native';
+import {Dimensions, Image, StyleSheet} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
-  interpolate,
   interpolateColor,
   runOnJS,
   useAnimatedStyle,
@@ -219,9 +218,6 @@ ImageDetails.options = {
     visible: false,
   },
   topBar: {
-    visible: false,
-  },
-  bottomTabs: {
     visible: false,
   },
 };

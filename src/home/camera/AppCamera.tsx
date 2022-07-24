@@ -6,7 +6,7 @@ import {
   Platform,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Animated, {
   Extrapolate,
   interpolate,
@@ -29,9 +29,12 @@ import emitter from '../../utils/emitter';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import UploadPhotoFAB from './UploadPhotoFAB';
 import {Event} from '../../enums/events';
+import {Screens} from '../../enums/screens';
 
 type Photos = {[id: string]: string};
-type AppCameraProps = {};
+type AppCameraProps = {
+  singlePicture: boolean;
+};
 
 const {width, height} = Dimensions.get('window');
 const SIZE = (width / 4) * 0.75;
@@ -39,6 +42,7 @@ const PHOTO_SIZE = SIZE * 0.8;
 
 const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
   componentId,
+  singlePicture,
 }) => {
   const devices = useCameraDevices();
 
@@ -68,6 +72,20 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
 
       opacity.value = withTiming(1);
       const endPath = Platform.OS === 'android' ? 'file://' + path : path;
+
+      if (singlePicture) {
+        Navigation.push(componentId, {
+          component: {
+            name: Screens.EDITOR,
+            passProps: {
+              path: endPath,
+            },
+          },
+        });
+
+        return;
+      }
+
       setPhotos(a => [...a, endPath]);
     }
   };
@@ -135,7 +153,6 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
     const ty = (-1 * (height - height * scale.value)) / 2;
     const condition = scrollY.value <= -height / 2;
     return {
-      // elevation: condition ? withTiming(3) : withTiming(0),
       borderRadius: condition ? withTiming(20) : withTiming(0),
       transform: [
         {translateY: ty},

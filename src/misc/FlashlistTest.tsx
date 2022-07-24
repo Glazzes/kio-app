@@ -7,78 +7,51 @@ import {
 } from 'react-native';
 import React from 'react';
 import Animated, {
+  useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
-import {AnimatedFlashList, FlashList} from '@shopify/flash-list';
-
-type FlashlistTestProps = {};
+import {FlashList} from '@shopify/flash-list';
 
 const {width} = Dimensions.get('window');
-const items: string[] = [
-  'one',
-  'two',
-  'three',
-  'four',
-  'one',
-  'two',
-  'three',
-  'four',
-  'one',
-  'two',
-  'three',
-  'four',
-];
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 
-function renderItem(info: ListRenderItemInfo<string>): React.ReactElement {
-  return (
-    <Text style={{height: 50, width}} key={`${info.item}-${info.index}`}>
-      {info.item}
-    </Text>
-  );
-}
+const data = new Array(200).fill('Hello');
 
-const AA = Animated.createAnimatedComponent(FlashList);
+const FlashlistTest: React.FC = ({}) => {
+  const ref = useAnimatedRef();
 
-const FlashlistTest: React.FC<FlashlistTestProps> = ({}) => {
   const scrollY = useSharedValue<number>(0);
 
   const onScroll = useAnimatedScrollHandler<{y: number}>({
     onScroll: e => {
       scrollY.value = e.contentOffset.y;
-      console.log(scrollY.value);
     },
   });
 
   const rStyle = useAnimatedStyle(() => {
     return {
-      transform: [{translateY: -scrollY.value}],
+      transform: [{translateY: -scrollY.value * 0.78}],
     };
   });
 
   return (
-    <Animated.View style={[rStyle, {width, flex: 1, backgroundColor: 'lime'}]}>
-      <AA
-        data={items}
-        renderItem={({item}) => {
-          return (
-            <Text style={{height: 50, width}} key={`${item}}`}>
-              {item}
-            </Text>
-          );
-        }}
-        estimatedItemSize={100}
-        onScroll={onScroll}
-        contentContainerStyle={styles.content}
-      />
+    <Animated.View style={styles.root}>
+      <AnimatedFlashList ref={ref} data={data} />
     </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  content: {
+  root: {
+    flex: 1,
     backgroundColor: 'salmon',
+  },
+  content: {
+    width,
+    height: 100,
+    backgroundColor: 'tomato',
   },
 });
 

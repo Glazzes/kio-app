@@ -4,6 +4,8 @@ import {
   StyleSheet,
   FlatList,
   Alert,
+  View,
+  Text,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Animated, {
@@ -16,12 +18,12 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   withDecay,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import {clamp} from '../../utils/animations';
-import {Box, Text} from 'native-base';
 import {
   Asset,
   getAlbumsAsync,
@@ -91,15 +93,15 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   }, [translateY.value]);
 
   useDerivedValue(() => {
-    scrollTo(ref, 0, -1 * translateY.value - actualHeight, false);
-  }, [translateY.value]);
+    scrollTo(ref, 0, -1 * translateY.value - height, false);
+  }, [translateY]);
 
   const pan = Gesture.Pan()
     .onStart(_ => {
       offset.value = translateY.value;
       cancelAnimation(translateY);
     })
-    .onChange(e => {
+    .onUpdate(e => {
       translateY.value = offset.value + e.translationY;
     })
     .onEnd(({velocityY}) => {
@@ -111,17 +113,25 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
           velocity: velocityY,
           clamp: [-contentHeight, -height / 2],
         });
-      } else {
-        const snap = snapPoint(translateY.value, velocityY, [-height / 2, 0]);
-        if (snap === -height / 2) {
-          translateY.value = withDecay({
-            velocity: velocityY,
-            clamp: [-contentHeight, -height / 2],
-          });
-        } else {
-          translateY.value = withTiming(0);
-        }
+
+        return;
       }
+
+      const snap = snapPoint(translateY.value, velocityY, [-height / 2, 0]);
+      if (snap === -height / 2) {
+        if (velocityY > 0 && velocityY < 100) {
+          translateY.value = withSpring(snap);
+          return;
+        }
+
+        translateY.value = withDecay({
+          velocity: velocityY,
+          clamp: [-contentHeight, snap],
+        });
+        return;
+      }
+
+      translateY.value = withTiming(0);
     });
 
   const rStyle = useAnimatedStyle(() => {
@@ -154,22 +164,20 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={[styles.root, rStyle]}>
-        <Box width={width} px={4} py={2.5}>
-          <Text fontWeight={'bold'}>Select a picture</Text>
-        </Box>
+        <View style={styles.header}>
+          <Text style={styles.title}>Select a picture</Text>
+        </View>
         <FlatList
           ref={ref}
           data={assets}
           numColumns={COL}
           scrollEnabled={false}
-          initialNumToRender={24}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           getItemLayout={getItemLayout}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews={false}
           contentContainerStyle={styles.content}
-          windowSize={9}
         />
       </Animated.View>
     </GestureDetector>
@@ -178,12 +186,22 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
 
 const styles = StyleSheet.create({
   root: {
+    position: 'absolute',
+    top: height,
     width,
     height: height - statusBarHeight,
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: 'hidden',
+  },
+  header: {
+    width,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  title: {
+    fontFamily: 'UberBold',
   },
   content: {
     width,

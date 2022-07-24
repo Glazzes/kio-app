@@ -1,4 +1,4 @@
-import {View, StyleSheet, Dimensions, Image} from 'react-native';
+import {View, StyleSheet, Dimensions, Image, Text} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
@@ -7,6 +7,11 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import {snapPoint} from 'react-native-redash';
+import {
+  FlashList,
+  FlashListProps,
+  ListRenderItemInfo,
+} from '@shopify/flash-list';
 
 type ContributorsProps = {};
 
@@ -26,8 +31,19 @@ const photos = [
 
 const SIZE = 45;
 
+const AnimatedFlashList =
+  Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
+
+function keyExtractor(item: string, index: number): string {
+  return `${item}-${index}`;
+}
+
+function renderItem(info: ListRenderItemInfo<string>) {
+  return <Image source={{uri: info.item}} style={styles.photo} />;
+}
+
 const Contributors: React.FC<ContributorsProps> = ({}) => {
-  const ref = useAnimatedRef<Animated.ScrollView>();
+  const ref = useAnimatedRef();
 
   const onScroll = useAnimatedScrollHandler<{x: number}>({
     onScroll: (e, ctx) => {
@@ -41,33 +57,42 @@ const Contributors: React.FC<ContributorsProps> = ({}) => {
   });
 
   return (
-    <View style={{width, marginBottom: 10}}>
-      <Animated.ScrollView
+    <View style={styles.root}>
+      <Text style={styles.title}>Contributors</Text>
+      <AnimatedFlashList
         ref={ref}
+        data={photos}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        estimatedItemSize={SIZE}
         onScroll={onScroll}
-        contentContainerStyle={styles.content}
         horizontal={true}
-        showsHorizontalScrollIndicator={false}>
-        <View style={styles.plus}>
-          <Icon name={'plus'} size={25} color={'#C5C8D7'} />
-        </View>
-        {photos.map((uri, index) => {
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        ListHeaderComponent={() => {
           return (
-            <Image
-              source={{uri}}
-              style={styles.photo}
-              key={`photo-${uri}-${index}`}
-            />
+            <View style={styles.plus}>
+              <Icon name={'plus'} size={25} color={'#C5C8D7'} />
+            </View>
           );
-        })}
-      </Animated.ScrollView>
+        }}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  root: {
+    width,
+    marginVertical: 5,
+  },
   content: {
     paddingHorizontal: width * 0.05,
+  },
+  title: {
+    marginLeft: width * 0.05,
+    fontFamily: 'UberBold',
+    marginBottom: 5,
   },
   plus: {
     borderWidth: 1,

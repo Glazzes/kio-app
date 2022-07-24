@@ -1,16 +1,25 @@
-import {View, StyleSheet, Button, Dimensions} from 'react-native';
-import React, {useEffect} from 'react';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {useSharedValue, withSpring} from 'react-native-reanimated';
+import {View, StyleSheet, Dimensions, Image, Text} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  Navigation,
+  NavigationComponentListener,
+  NavigationFunctionComponent,
+} from 'react-native-navigation';
+import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
 import ImagePicker from './picker/ImagePicker';
-import {Box, NativeBaseProvider} from 'native-base';
 import emitter from '../utils/emitter';
 import {Asset} from 'expo-media-library';
 import {Screens} from '../enums/screens';
+import Appbar from './profile/Appbar';
+import UserInfo from './profile/UserInfo';
+import UnitInfo from './profile/UnitInfo';
 
 const {width, height} = Dimensions.get('window');
+const IMAGE_SIZE = 90;
 
 const Settings: NavigationFunctionComponent = ({componentId}) => {
+  const [newPicture, setNewPicture] = useState<string | undefined>(undefined);
+
   const translateY = useSharedValue<number>(0);
 
   const showSheet = () => {
@@ -19,37 +28,68 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
 
   useEffect(() => {
     const sub = emitter.addListener('picture.selected', (asset: Asset) => {
+      // translateY.value = withTiming(0);
       Navigation.push(componentId, {
         component: {
           name: Screens.EDITOR,
           passProps: {asset},
+          options: {
+            animations: {
+              push: {
+                content: {
+                  alpha: {
+                    from: 0,
+                    to: 1,
+                    duration: 600,
+                  },
+                },
+                sharedElementTransitions: [
+                  {
+                    fromId: `asset-${asset.uri}`,
+                    toId: `asset-${asset.uri}-dest`,
+                    duration: 450,
+                  },
+                ],
+              },
+            },
+          },
         },
       });
     });
 
-    return () => sub.remove();
+    const listener = Navigation.events().registerComponentDidDisappearListener(
+      () => {
+        translateY.value = withTiming(0);
+      },
+    );
+
+    return () => {
+      sub.remove();
+      listener.remove();
+    };
   });
 
   return (
-    <NativeBaseProvider>
-      <Box style={styles.root}>
-        <View style={styles.container}>
-          <Button title={'Sheet'} onPress={showSheet} />
-        </View>
-        <ImagePicker translateY={translateY} />
-      </Box>
-    </NativeBaseProvider>
+    <View style={styles.root}>
+      <Appbar parentComponentId={componentId} />
+      <UserInfo parentComponentId={componentId} />
+      <UnitInfo />
+    </View>
   );
 };
 
 Settings.options = {
   statusBar: {
-    visible: true,
-    drawBehind: true,
-    backgroundColor: 'lime',
+    visible: false,
+    drawBehind: false,
   },
   topBar: {
     visible: false,
+  },
+  sideMenu: {
+    right: {
+      enabled: false,
+    },
   },
 };
 
@@ -57,20 +97,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  container: {
-    width,
-    height,
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  modal: {
-    position: 'absolute',
-    top: height,
-    left: 0,
-    width,
-    height: height,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
 });
 

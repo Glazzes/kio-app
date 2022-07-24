@@ -1,4 +1,4 @@
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, KeyboardAvoidingView} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
@@ -30,7 +30,7 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
   }, []);
 
   return (
-    <View style={[styles.root]}>
+    <KeyboardAvoidingView style={[styles.root]} behavior={'height'}>
       <Appbar />
       <BreadCrumbs />
       <SearchBar />
@@ -38,7 +38,7 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
       <FolderList />
 
       <FAB parentComponentId={componentId} />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

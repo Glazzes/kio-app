@@ -18,23 +18,28 @@ const folders = [
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = ({}) => {
   return (
-    <ScrollView
-      showsHorizontalScrollIndicator={false}
-      horizontal={true}
-      style={styles.scrollview}>
-      {folders.map((folder, index) => {
-        return (
-          <View key={`${folder}-${index}`} style={styles.container}>
-            <Text style={styles.text} numberOfLines={1} ellipsizeMode={'tail'}>
-              {folder}
-            </Text>
-            {index !== folders.length - 1 && (
-              <Icon name={'chevron-right'} color={'#354259'} size={20} />
-            )}
-          </View>
-        );
-      })}
-    </ScrollView>
+    <View>
+      <ScrollView
+        showsHorizontalScrollIndicator={false}
+        horizontal={true}
+        style={styles.scrollview}>
+        {folders.map((folder, index) => {
+          return (
+            <View key={`${folder}-${index}`} style={styles.container}>
+              <Text
+                style={styles.text}
+                numberOfLines={1}
+                ellipsizeMode={'tail'}>
+                {folder}
+              </Text>
+              {index !== folders.length - 1 && (
+                <Icon name={'chevron-right'} color={'#354259'} size={20} />
+              )}
+            </View>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -52,7 +57,6 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: 'UberBold',
     fontSize: 12,
-
     maxWidth: 100,
   },
 });

@@ -1,5 +1,12 @@
-import {View, Dimensions, StyleSheet} from 'react-native';
-import React, {useMemo} from 'react';
+import {
+  View,
+  Dimensions,
+  StyleSheet,
+  Pressable,
+  ViewStyle,
+  Image,
+} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import SVG, {Path} from 'react-native-svg';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
@@ -11,7 +18,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
 import {clamp, pinch, set} from '../../utils/animations';
-import {HStack, IconButton, NativeBaseProvider} from 'native-base';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import {Asset} from 'expo-media-library';
@@ -19,9 +25,11 @@ import EffectIndicator from './EffectIndicator';
 import crop from '../utils/crop';
 import imageStyles from '../utils/imageStyles';
 import {maxScale} from './utils';
+import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 
 type EditorProps = {
-  asset: Asset;
+  asset?: Asset;
+  path: string;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -43,16 +51,22 @@ const CROP_SIZE = 180;
 const Editor: NavigationFunctionComponent<EditorProps> = ({
   componentId,
   asset,
+  path: imagePath,
 }) => {
-  const dimensions = useMemo(
-    () => ({width: asset.width, height: asset.height}),
-    [asset],
+  const [dimensions, setDimensions] = useState<{width: number; height: number}>(
+    {
+      width: 1,
+      height: 1,
+    },
   );
 
-  const imageStyle = useMemo(
-    () => imageStyles({width: asset.width, height: asset.height}, R),
-    [asset],
-  );
+  const imageStyle: ViewStyle = useMemo(() => {
+    if (asset) {
+      return imageStyles({width: asset.width, height: asset.height}, R);
+    }
+
+    return imageStyles(dimensions, R);
+  }, [dimensions, asset]);
 
   const layout = useVector(0, 0);
   const original = useVector(0, 0);
@@ -97,6 +111,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       scaleOffset.value = scale.value;
     })
     .onChange(e => {
+      const mScale = maxScale(layout, dimensions, rotateImage.value);
       const {translateX, translateY} = pinch(
         {x: layout.x.value / 2, y: layout.y.value / 2},
         {x: offset.x.value, y: offset.y.value},
@@ -107,11 +122,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
 
       translate.x.value = offset.x.value + translateX;
       translate.y.value = offset.y.value + translateY;
-      scale.value = clamp(
-        e.scale * scaleOffset.value,
-        1,
-        maxScale(layout, dimensions, rotateImage.value),
-      );
+      scale.value = clamp(e.scale * scaleOffset.value, 1, mScale * 1.5);
     })
     .onEnd(_ => {
       originAssign.value = true;
@@ -150,7 +161,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     const actions = [];
 
     /*
-      Rotation must always happend after flip, otherwise the cropped image
+      Rotation must always happen after flip, otherwise the cropped image
       will differ by a lot to the one shown in the svg circle
     */
     if (rotate.y.value === Math.PI) {
@@ -177,8 +188,9 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       CROP_SIZE,
     );
 
+    const image = asset?.uri ?? imagePath;
     const {uri} = await manipulateAsync(
-      asset.uri,
+      image,
       [
         resize !== null ? {resize} : {rotate: 0},
         ...actions,
@@ -194,6 +206,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       {base64: false, compress: 1, format: SaveFormat.PNG},
     );
 
+    await impactAsync(ImpactFeedbackStyle.Medium);
     Navigation.push(componentId, {
       component: {
         name: 'Result',
@@ -217,75 +230,72 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     },
   );
 
+  useEffect(() => {
+    if (asset) {
+      setDimensions({width: asset.width, height: asset.height});
+      return;
+    }
+
+    Image.getSize(imagePath, (w, h) => {
+      setDimensions({width: w, height: h});
+    });
+  }, [asset, imagePath]);
+
   return (
-    <NativeBaseProvider>
-      <View style={styles.root}>
-        <Animated.View style={[styles.container, rStyle]}>
-          <Animated.Image
-            nativeID={`${asset.uri}-dest`}
-            onLayout={e => {
-              layout.x.value = e.nativeEvent.layout.width;
-              layout.y.value = e.nativeEvent.layout.height;
-              original.x.value = e.nativeEvent.layout.width;
-              original.y.value = e.nativeEvent.layout.height;
-            }}
-            resizeMethod={'scale'}
-            resizeMode={'cover'}
-            source={{uri: asset.uri}}
-            style={[imageStyle, effectStyles]}
-          />
-        </Animated.View>
-        <SVG
-          width={width}
-          height={height}
-          style={StyleSheet.absoluteFillObject}>
-          <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.45)'} />
-        </SVG>
-        <View style={styles.reflection}>
-          <GestureDetector gesture={gesture}>
-            <Animated.View>
-              <Animated.View style={[reflectionStyles, rStyle]} />
-            </Animated.View>
-          </GestureDetector>
-        </View>
-        <HStack
-          alignSelf={'flex-end'}
-          position={'absolute'}
-          w={'60%'}
-          alignItems={'center'}
-          bottom={5}
-          justifyContent={'space-evenly'}>
-          <EffectIndicator
-            effect={rotateImage}
-            icon={'format-rotate-90'}
-            action={'rotate'}
-          />
-
-          <EffectIndicator
-            effect={rotate.x}
-            icon={'flip-vertical'}
-            action={'flip'}
-          />
-
-          <EffectIndicator
-            effect={rotate.y}
-            icon={'flip-horizontal'}
-            action={'flip'}
-          />
-
-          <IconButton
-            onPress={cropImage}
-            icon={<MaterialCommunityIcons name="check" size={30} />}
-            bgColor={'#3366ff'}
-            borderRadius={'full'}
-            _icon={{
-              color: '#fff',
-              size: 'md',
-            }}
-          />
-        </HStack>
+    <View style={styles.root}>
+      <Animated.View style={[styles.container, rStyle]}>
+        <Animated.Image
+          nativeID={`asset-${asset?.uri ?? imagePath}-dest`}
+          onLayout={e => {
+            layout.x.value = e.nativeEvent.layout.width;
+            layout.y.value = e.nativeEvent.layout.height;
+            original.x.value = e.nativeEvent.layout.width;
+            original.y.value = e.nativeEvent.layout.height;
+          }}
+          resizeMethod={'scale'}
+          resizeMode={'cover'}
+          source={{uri: asset ? asset.uri : imagePath}}
+          style={[imageStyle, effectStyles]}
+        />
+      </Animated.View>
+      <SVG
+        width={width}
+        height={height}
+        style={StyleSheet.absoluteFillObject}
+        nativeID={'svg'}>
+        <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.45)'} />
+      </SVG>
+      <View style={styles.reflection}>
+        <GestureDetector gesture={gesture}>
+          <Animated.View>
+            <Animated.View style={[reflectionStyles, rStyle]} />
+          </Animated.View>
+        </GestureDetector>
       </View>
-    </NativeBaseProvider>
+      <View style={styles.effectContainer} nativeID={'effects'}>
+        <EffectIndicator
+          effect={rotateImage}
+          icon={'format-rotate-90'}
+          action={'rotate'}
+        />
+
+        <EffectIndicator
+          effect={rotate.x}
+          icon={'flip-vertical'}
+          action={'flip'}
+        />
+
+        <EffectIndicator
+          effect={rotate.y}
+          icon={'flip-horizontal'}
+          action={'flip'}
+        />
+
+        <Pressable onPress={cropImage} style={styles.check}>
+          <MaterialCommunityIcons name="check" size={30} color={'#fff'} />
+        </Pressable>
+      </View>
+    </View>
   );
 };
 
@@ -296,9 +306,32 @@ Editor.options = {
   topBar: {
     visible: false,
   },
-  bottomTabs: {
-    visible: false,
-    animate: true,
+  sideMenu: {
+    right: {
+      enabled: false,
+    },
+  },
+  animations: {
+    push: {
+      elementTransitions: [
+        {
+          id: 'effects',
+          alpha: {
+            from: 0,
+            to: 1,
+            duration: 450,
+          },
+        },
+        {
+          id: 'svg',
+          alpha: {
+            from: 0,
+            to: 1,
+            duration: 450,
+          },
+        },
+      ],
+    },
   },
 };
 
@@ -317,6 +350,24 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width,
     height: height * 0.8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  effectContainer: {
+    width: width * 0.6,
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: width * 0.05,
+    right: width * 0.05,
+  },
+  check: {
+    backgroundColor: '#3366ff',
+    height: 50,
+    width: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
   },

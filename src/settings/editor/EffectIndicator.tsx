@@ -4,8 +4,8 @@ import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {IconButton} from 'native-base';
-import {LogBox} from 'react-native';
+import {LogBox, Pressable} from 'react-native';
+import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 
 LogBox.ignoreLogs(['Failed prop type: Invalid prop `color`']);
 
@@ -33,7 +33,8 @@ const EffectIndicator: React.FC<EffectIndicatorProps> = ({
     [color.value],
   );
 
-  const performEffect = () => {
+  const performEffect = async () => {
+    await impactAsync(ImpactFeedbackStyle.Light);
     if (action === 'flip') {
       effect.value = effect.value === Math.PI ? 0 : Math.PI;
     }
@@ -44,16 +45,9 @@ const EffectIndicator: React.FC<EffectIndicatorProps> = ({
   };
 
   return (
-    <IconButton
-      icon={
-        <AnimatedIcon animatedProps={animatedProps} name={icon} size={25} />
-      }
-      onPress={performEffect}
-      borderRadius={'full'}
-      _icon={{
-        size: 'lg',
-      }}
-    />
+    <Pressable onPress={performEffect}>
+      <AnimatedIcon animatedProps={animatedProps} name={icon} size={27} />
+    </Pressable>
   );
 };
 

@@ -25,8 +25,7 @@ const crop = (
   const offsetY = (layout.height * scale - radius * 2) / 2;
 
   /*
-    represents in a scale from 0 to 1 how large is the image - svg circle size in comparision to
-    the image layout size
+    represents in a scale from 0 to 1 the maximun offset achievable
   */
   const derivedWidth = 1 - (radius * 2) / (layout.width * scale);
   const deriveHeight = 1 - (radius * 2) / (layout.height * scale);
@@ -48,7 +47,7 @@ const crop = (
     Extrapolate.CLAMP,
   );
 
-  if (angle === Math.PI / 2 || angle === (3 / 4) * (Math.PI * 2)) {
+  if (angle === Math.PI / 2 || angle === (3 * Math.PI) / 2) {
     const dx = realDimensions.width;
     const dy = realDimensions.height;
 
@@ -60,12 +59,12 @@ const crop = (
   const originX = realDimensions.width * positionX;
   const originY = realDimensions.height * positionY;
 
-  // the smalller dimensions is the one used to determine the crop size
+  // the smalller dimension is the one used to determine the crop size
   const size = Math.min(realDimensions.width, realDimensions.height) / scale;
 
   /*
-  dividing the smaller dimension by the desired output size gives a value from 0 to 1 that can be
-  used to resize the image by multiplyng it to the real image dimensions
+  dividing the desired output size by the smaller dimension gives a value from 0 to 1 that
+  can be used to resize the image by multiplyng it to the real image dimensions
   */
   const resizeFactor = (outputSize ?? size) / size;
 
