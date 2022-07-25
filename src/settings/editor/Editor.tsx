@@ -26,6 +26,7 @@ import crop from '../utils/crop';
 import imageStyles from '../utils/imageStyles';
 import {maxScale} from './utils';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import emitter from '../../utils/emitter';
 
 type EditorProps = {
   asset?: Asset;
@@ -178,9 +179,9 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       });
     }
 
-    const {x, y, size, resize} = crop(
+    const {originX, originY, resize} = crop(
       {width: layout.x.value, height: layout.y.value},
-      {width: dimensions.width, height: dimensions.height},
+      {...dimensions},
       {x: translate.x.value, y: translate.y.value},
       scale.value,
       rotateImage.value,
@@ -189,17 +190,22 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     );
 
     const image = asset?.uri ?? imagePath;
+
+    /*
+      reisze action must happen after all the other actions as the layout is not undefined
+      until the rotation action is complete
+    */
     const {uri} = await manipulateAsync(
       image,
       [
-        resize !== null ? {resize} : {rotate: 0},
         ...actions,
+        {resize},
         {
           crop: {
-            originX: x,
-            originY: y,
-            height: size,
-            width: size,
+            originX,
+            originY,
+            height: CROP_SIZE,
+            width: CROP_SIZE,
           },
         },
       ],
@@ -207,14 +213,8 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     );
 
     await impactAsync(ImpactFeedbackStyle.Medium);
-    Navigation.push(componentId, {
-      component: {
-        name: 'Result',
-        passProps: {
-          uri,
-        },
-      },
-    });
+    emitter.emit('np', uri);
+    Navigation.pop(componentId);
   };
 
   useAnimatedReaction(
@@ -255,7 +255,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
           resizeMethod={'scale'}
           resizeMode={'cover'}
           source={{uri: asset ? asset.uri : imagePath}}
-          style={[imageStyle, effectStyles]}
+          style={[imageStyle as any, effectStyles]}
         />
       </Animated.View>
       <SVG

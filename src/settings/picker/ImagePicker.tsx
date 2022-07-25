@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'UberBold',
+    color: '#000',
   },
   content: {
     width,

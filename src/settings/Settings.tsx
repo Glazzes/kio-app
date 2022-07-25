@@ -1,79 +1,56 @@
-import {View, StyleSheet, Dimensions, Image, Text} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {
-  Navigation,
-  NavigationComponentListener,
-  NavigationFunctionComponent,
-} from 'react-native-navigation';
-import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
-import ImagePicker from './picker/ImagePicker';
-import emitter from '../utils/emitter';
-import {Asset} from 'expo-media-library';
-import {Screens} from '../enums/screens';
+import {View, StyleSheet, Dimensions, Text} from 'react-native';
+import React from 'react';
+import {NavigationFunctionComponent} from 'react-native-navigation';
 import Appbar from './profile/Appbar';
 import UserInfo from './profile/UserInfo';
 import UnitInfo from './profile/UnitInfo';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const {width, height} = Dimensions.get('window');
-const IMAGE_SIZE = 90;
+const {width} = Dimensions.get('window');
+
+type Action = {
+  title: string;
+  icon: string;
+};
+
+const actions: Action[] = [
+  {
+    icon: 'account',
+    title: 'Account Management',
+  },
+  {
+    icon: 'information',
+    title: 'Information',
+  },
+  {
+    icon: 'arrow-right-bold',
+    title: 'Log Out',
+  },
+];
 
 const Settings: NavigationFunctionComponent = ({componentId}) => {
-  const [newPicture, setNewPicture] = useState<string | undefined>(undefined);
-
-  const translateY = useSharedValue<number>(0);
-
-  const showSheet = () => {
-    translateY.value = withSpring(-height / 2);
-  };
-
-  useEffect(() => {
-    const sub = emitter.addListener('picture.selected', (asset: Asset) => {
-      // translateY.value = withTiming(0);
-      Navigation.push(componentId, {
-        component: {
-          name: Screens.EDITOR,
-          passProps: {asset},
-          options: {
-            animations: {
-              push: {
-                content: {
-                  alpha: {
-                    from: 0,
-                    to: 1,
-                    duration: 600,
-                  },
-                },
-                sharedElementTransitions: [
-                  {
-                    fromId: `asset-${asset.uri}`,
-                    toId: `asset-${asset.uri}-dest`,
-                    duration: 450,
-                  },
-                ],
-              },
-            },
-          },
-        },
-      });
-    });
-
-    const listener = Navigation.events().registerComponentDidDisappearListener(
-      () => {
-        translateY.value = withTiming(0);
-      },
-    );
-
-    return () => {
-      sub.remove();
-      listener.remove();
-    };
-  });
-
   return (
     <View style={styles.root}>
-      <Appbar parentComponentId={componentId} />
+      <Appbar title={'My Profile'} parentComponentId={componentId} />
       <UserInfo parentComponentId={componentId} />
       <UnitInfo />
+      <View style={styles.options}>
+        {actions.map((action, index) => {
+          return (
+            <View
+              style={styles.optionContaier}
+              key={`${action.title}-${index}`}>
+              <View style={styles.optionIconContainer}>
+                <Icon name={action.icon} size={25} color={'#000'} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={styles.optionText}>{action.title}</Text>
+              </View>
+              <Icon name="chevron-right" size={25} color={'#000'} />
+            </View>
+          );
+        })}
+      </View>
     </View>
   );
 };
@@ -96,8 +73,40 @@ Settings.options = {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFB',
     alignItems: 'center',
+  },
+  options: {
+    marginTop: 15,
+    flex: 1,
+    width,
+    paddingVertical: width * 0.05,
+    paddingHorizontal: width * 0.05,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+  },
+  optionContaier: {
+    width: width * 0.9,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  optionIconContainer: {
+    padding: 8,
+    borderRadius: 15,
+    backgroundColor: '#F3F3F4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  optionText: {
+    color: '#000',
+    fontFamily: 'UberBold',
+    fontSize: 14,
   },
 });
 

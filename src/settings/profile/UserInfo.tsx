@@ -7,30 +7,59 @@ import {
   Pressable,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
+import emitter from '../../utils/emitter';
 
 type UserInfoProps = {
   parentComponentId: string;
 };
 
 const {width} = Dimensions.get('window');
-const IMAGE_SIZE = 90;
+const IMAGE_SIZE = 85;
 
 const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
-  const editProfile = async () => {
-    await Navigation.push(parentComponentId, {
+  const [newPic, setNewPic] = useState<string | undefined>(undefined);
+
+  const editProfile = () => {
+    Navigation.push(parentComponentId, {
       component: {
         name: 'Edit.Profile',
+        options: {
+          animations: {
+            push: {
+              sharedElementTransitions: [
+                {
+                  fromId: 'ppf',
+                  toId: 'ppf-edit',
+                  duration: 450,
+                },
+              ],
+            },
+          },
+        },
       },
     });
   };
 
+  useEffect(() => {
+    const listener = emitter.addListener('np', (pic: string) => {
+      setNewPic(pic);
+    });
+
+    return () => {
+      listener.remove();
+    };
+  }, []);
+
   return (
     <View style={styles.infoContainer}>
       <Image
+        nativeID="ppf"
         style={styles.image}
-        source={{uri: 'https://randomuser.me/api/portraits/men/32.jpg'}}
+        source={{
+          uri: newPic ?? 'https://randomuser.me/api/portraits/men/32.jpg',
+        }}
         resizeMode={'cover'}
       />
       <View style={styles.userInfoContainer}>

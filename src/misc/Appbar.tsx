@@ -1,28 +1,47 @@
-import {View, Text, StyleSheet, Image, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Dimensions,
+  Pressable,
+} from 'react-native';
 import React from 'react';
-import FastImage from 'react-native-fast-image';
 import {Navigation} from 'react-native-navigation';
+import {Screens} from '../enums/screens';
 
-type AppbarProps = {};
+type AppbarProps = {
+  parentComponentId: string;
+};
 
 const {statusBarHeight} = Navigation.constantsSync();
 const {width} = Dimensions.get('window');
 const IMAGE_SIZE = 40;
 
-const Appbar: React.FC<AppbarProps> = ({}) => {
+const Appbar: React.FC<AppbarProps> = ({parentComponentId}) => {
+  const toProfile = () => {
+    Navigation.push(parentComponentId, {
+      component: {
+        name: Screens.SETTINGS,
+      },
+    });
+  };
+
   return (
     <View style={styles.root}>
       <View>
         <Text style={styles.hi}>Hi,</Text>
         <Text style={styles.username}>Glaze</Text>
       </View>
-      <Image
-        source={{
-          uri: 'https://pettime.net/wp-content/uploads/2021/04/Dalmatian-2-10.jpg',
-        }}
-        style={styles.image}
-        resizeMode={'cover'}
-      />
+      <Pressable onPress={toProfile}>
+        <Image
+          source={{
+            uri: 'https://pettime.net/wp-content/uploads/2021/04/Dalmatian-2-10.jpg',
+          }}
+          style={styles.image}
+          resizeMode={'cover'}
+        />
+      </Pressable>
     </View>
   );
 };
@@ -39,10 +58,12 @@ const styles = StyleSheet.create({
   },
   hi: {
     fontFamily: 'Uber',
+    color: '#000',
   },
   username: {
     fontFamily: 'UberBold',
     fontSize: 17,
+    color: '#000',
   },
   image: {
     height: IMAGE_SIZE,

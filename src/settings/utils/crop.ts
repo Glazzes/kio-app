@@ -6,10 +6,9 @@ type Resize = {
 };
 
 type CropPoint = {
-  x: number;
-  y: number;
-  size: number;
-  resize: Resize | null;
+  originX: number;
+  originY: number;
+  resize: Resize;
 };
 
 const crop = (
@@ -19,7 +18,7 @@ const crop = (
   scale: number,
   angle: number,
   radius: number,
-  outputSize?: number,
+  outputSize: number,
 ): CropPoint => {
   const offsetX = (layout.width * scale - radius * 2) / 2;
   const offsetY = (layout.height * scale - radius * 2) / 2;
@@ -27,27 +26,29 @@ const crop = (
   /*
     represents in a scale from 0 to 1 the maximun offset achievable
   */
-  const derivedWidth = 1 - (radius * 2) / (layout.width * scale);
-  const deriveHeight = 1 - (radius * 2) / (layout.height * scale);
+  const xFactor = 1 - (radius * 2) / (layout.width * scale);
+  const yFactor = 1 - (radius * 2) / (layout.height * scale);
 
   /*
-    represents the top left corner of the svg circle based on the current position on both axis
+    represents the top left corner (from 0 to 1)of the svg circle based on
+    the current position on both axis
   */
-  const positionX = interpolate(
+  let positionX = interpolate(
     position.x,
     [-offsetX, offsetX],
-    [derivedWidth, 0],
+    [xFactor, 0],
     Extrapolate.CLAMP,
   );
 
-  const positionY = interpolate(
+  let positionY = interpolate(
     position.y,
     [-offsetY, offsetY],
-    [deriveHeight, 0],
+    [yFactor, 0],
     Extrapolate.CLAMP,
   );
 
-  if (angle === Math.PI / 2 || angle === (3 * Math.PI) / 2) {
+  // if the angle sits over the y axis dimensions are flipped
+  if (angle === Math.PI / 2 || angle === (3 / 4) * 2 * Math.PI) {
     const dx = realDimensions.width;
     const dy = realDimensions.height;
 
@@ -66,7 +67,7 @@ const crop = (
   dividing the desired output size by the smaller dimension gives a value from 0 to 1 that
   can be used to resize the image by multiplyng it to the real image dimensions
   */
-  const resizeFactor = (outputSize ?? size) / size;
+  const resizeFactor = outputSize / size;
 
   const resizedDimensions: Resize = {
     width: Math.ceil(realDimensions.width * resizeFactor),
@@ -74,10 +75,9 @@ const crop = (
   };
 
   return {
-    x: originX * resizeFactor,
-    y: originY * resizeFactor,
-    size: size * resizeFactor,
-    resize: outputSize ? resizedDimensions : null,
+    originX: originX * resizeFactor,
+    originY: originY * resizeFactor,
+    resize: resizedDimensions,
   };
 };
 

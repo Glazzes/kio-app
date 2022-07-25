@@ -54,12 +54,10 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
     <View style={styles.root}>
       <View style={styles.infoContainer}>
         <Text style={styles.title}>Folders</Text>
-        {/*
         <Text style={styles.subtitle}>
           You've got <Text style={styles.count}>{data.length} </Text> subfolders
           within this folder
         </Text>
-          */}
       </View>
       <AnimatedFlashList
         ref={ref}
@@ -93,10 +91,10 @@ const styles = StyleSheet.create({
     fontFamily: 'UberBold',
     fontSize: 15,
     marginBottom: 5,
+    color: '#000',
   },
   subtitle: {
     fontFamily: 'Uber',
-    color: '#C5C8D7',
     fontSize: 12,
   },
   count: {

@@ -39,7 +39,7 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
         </View>
       ) : (
         <Image
-          nativeID={`asset-${asset.id}`}
+          nativeID={`asset-${asset.uri}`}
           source={{uri: asset.uri}}
           style={styles.image}
           resizeMode={'cover'}

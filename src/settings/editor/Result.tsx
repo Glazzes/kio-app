@@ -31,7 +31,7 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
 
   return (
     <KeyboardAvoidingView style={[styles.root]} behavior={'height'}>
-      <Appbar />
+      <Appbar parentComponentId={componentId} />
       <BreadCrumbs />
       <SearchBar />
       <Contributors />

@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     marginLeft: width * 0.05,
     fontFamily: 'UberBold',
     marginBottom: 5,
+    color: '#000',
   },
   plus: {
     borderWidth: 1,

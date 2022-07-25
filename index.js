@@ -12,6 +12,7 @@ import {Home, Camera, CreateFolderModal} from './src/home';
 import {Toast} from './src/misc';
 import DetailsDrawer from './src/navigation/DetailsDrawer';
 import ScrollTest from './src/misc/ScrollTest';
+import EditProfile from './src/settings/edit/EditProfile';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -89,6 +90,10 @@ Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
 // Settings tab Stack
 Navigation.registerComponent(Screens.SETTINGS, () =>
   gestureHandlerRootHOC(Settings),
+);
+
+Navigation.registerComponent('Edit.Profile', () =>
+  gestureHandlerRootHOC(EditProfile),
 );
 
 Navigation.registerComponent(Screens.EDITOR, () =>
