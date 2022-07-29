@@ -17,7 +17,7 @@ const {width} = Dimensions.get('window');
 const SIZE = 110;
 const SPACING = 10;
 
-const STROKE_WIDTH = 13;
+const STROKE_WIDTH = 12;
 
 const RADIUS = SIZE / 2 - STROKE_WIDTH;
 const LENGHT = 2 * Math.PI * RADIUS;
@@ -112,16 +112,16 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'UberBold',
-    fontSize: 20,
+    fontSize: 18,
     color: '#fff',
   },
   used: {
     color: '#fff',
-    fontFamily: 'UberBold',
+    fontFamily: 'Uber',
   },
   space: {
     color: '#6089fc',
-    fontFamily: 'UberBold',
+    fontFamily: 'Uber',
   },
   button: {
     padding: 10,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontFamily: 'UberBold',
+    fontFamily: 'Uber',
   },
 });
 

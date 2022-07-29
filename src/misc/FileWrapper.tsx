@@ -3,7 +3,7 @@ import React from 'react';
 
 type FileWrapperProps = {};
 
-const {width, height} = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 const FileWrapper: React.FC<FileWrapperProps> = ({}) => {
   return (

@@ -34,7 +34,7 @@ const DetailsDrawer: NavigationFunctionComponent = () => {
         <Text style={styles.data}>1334x1817</Text>
       </View>
       <View style={styles.textContainer}>
-        <Text style={styles.item}>CreatedAt</Text>
+        <Text style={styles.item}>Created</Text>
         <Text style={styles.data}>11st October, 2021</Text>
       </View>
       <View style={styles.textContainer}>

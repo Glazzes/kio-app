@@ -27,14 +27,6 @@ Navigation.setDefaultOptions({
   overlay: {
     interceptTouchOutside: false,
   },
-  layout: {
-    backgroundColor: 'transparent',
-  },
-  sideMenu: {
-    right: {
-      enabled: false,
-    },
-  },
 });
 
 Navigation.events().registerAppLaunchedListener(() => {
@@ -67,13 +59,11 @@ Navigation.events().registerAppLaunchedListener(() => {
 
 Navigation.registerComponent('ST', () => ScrollTest);
 
-Navigation.registerComponent(Screens.CAMERA, () =>
-  gestureHandlerRootHOC(Camera),
-);
-
 Navigation.registerComponent(Screens.MY_UNIT, () =>
   gestureHandlerRootHOC(Home),
 );
+
+Navigation.registerComponent(Screens.CAMERA, () => Camera);
 
 Navigation.registerComponent(Screens.IMAGE_DETAILS, () =>
   gestureHandlerRootHOC(ImageDetails),

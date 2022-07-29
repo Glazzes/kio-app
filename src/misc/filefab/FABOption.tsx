@@ -2,9 +2,6 @@ import {StyleSheet, Dimensions, Pressable} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
-import {Navigation} from 'react-native-navigation';
-import {Notification} from '../../enums/notification';
-import {Screens} from '../../enums/screens';
 import emitter from '../../utils/emitter';
 
 type FABOptionProps = {
@@ -23,8 +20,12 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
   const rStyle = useAnimatedStyle(() => {
     return {
       transform: [
-        {translateX: END_POSITION * Math.cos(action.angle) * progress.value},
-        {translateY: END_POSITION * -Math.sin(action.angle) * progress.value},
+        {
+          translateX: END_POSITION * Math.cos(action.angle) * progress.value,
+        },
+        {
+          translateY: END_POSITION * -Math.sin(action.angle) * progress.value,
+        },
       ],
     };
   });

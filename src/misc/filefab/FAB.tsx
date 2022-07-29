@@ -5,6 +5,7 @@ import Animated, {
   FadeOut,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -73,7 +74,7 @@ const FAB: React.FC<FABProps> = ({parentComponentId}) => {
       rotation.value = withTiming(0);
       setBlockBackInteraction(false);
     } else {
-      progress.value = withTiming(1);
+      progress.value = withSpring(1);
       buttonColor.value = withTiming('#b0b1b5');
       rotation.value = withTiming(Math.PI / 4);
       setBlockBackInteraction(true);

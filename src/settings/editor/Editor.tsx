@@ -1,15 +1,13 @@
-import {
-  View,
-  Dimensions,
-  StyleSheet,
-  Pressable,
-  ViewStyle,
-  Image,
-} from 'react-native';
+import {View, Dimensions, StyleSheet, Pressable, Image} from 'react-native';
 import React, {useEffect, useMemo, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import SVG, {Path} from 'react-native-svg';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {
+  Gesture,
+  GestureDetector,
+  gestureHandlerRootHOC,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
@@ -27,6 +25,9 @@ import imageStyles from '../utils/imageStyles';
 import {maxScale} from './utils';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import emitter from '../../utils/emitter';
+import navigationStore, {
+  findComponentIdByName,
+} from '../../store/navigationStore';
 
 type EditorProps = {
   asset?: Asset;
@@ -50,18 +51,19 @@ const path = [
 const CROP_SIZE = 180;
 
 const Editor: NavigationFunctionComponent<EditorProps> = ({
-  componentId,
   asset,
   path: imagePath,
 }) => {
+  const screens = navigationStore(s => s.screens);
+
   const [dimensions, setDimensions] = useState<{width: number; height: number}>(
     {
-      width: 1,
-      height: 1,
+      width: width / 2,
+      height: width / 2,
     },
   );
 
-  const imageStyle: ViewStyle = useMemo(() => {
+  const imageStyle = useMemo(() => {
     if (asset) {
       return imageStyles({width: asset.width, height: asset.height}, R);
     }
@@ -92,7 +94,7 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     const y = clamp(translate.y.value, -offsetY, offsetY);
 
     return {x, y};
-  }, [translate.x.value, translate.y.value, scale.value]);
+  }, [translate, scale]);
 
   const pan = Gesture.Pan()
     .maxPointers(1)
@@ -161,10 +163,6 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
   const cropImage = async () => {
     const actions = [];
 
-    /*
-      Rotation must always happen after flip, otherwise the cropped image
-      will differ by a lot to the one shown in the svg circle
-    */
     if (rotate.y.value === Math.PI) {
       actions.push({flip: FlipType.Horizontal});
     }
@@ -191,10 +189,6 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
 
     const image = asset?.uri ?? imagePath;
 
-    /*
-      reisze action must happen after all the other actions as the layout is not undefined
-      until the rotation action is complete
-    */
     const {uri} = await manipulateAsync(
       image,
       [
@@ -213,9 +207,16 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     );
 
     await impactAsync(ImpactFeedbackStyle.Medium);
+    popToEditProfile();
     emitter.emit('np', uri);
-    Navigation.pop(componentId);
   };
+
+  function popToEditProfile() {
+    const componentId = findComponentIdByName('Edit.Profile', screens);
+    if (componentId) {
+      Navigation.popTo(componentId);
+    }
+  }
 
   useAnimatedReaction(
     () => rotateImage.value,
@@ -224,9 +225,9 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
       set(translate, 0);
       set(offset, 0);
       layout.x.value =
-        value === Math.PI || value === 0 ? original.x.value : original.y.value;
+        value % Math.PI === 0 ? original.x.value : original.y.value;
       layout.y.value =
-        value === Math.PI || value === 0 ? original.y.value : original.x.value;
+        value % Math.PI === 0 ? original.y.value : original.x.value;
     },
   );
 
@@ -241,8 +242,20 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
     });
   }, [asset, imagePath]);
 
+  useEffect(() => {
+    const backButtonListener =
+      Navigation.events().registerNavigationButtonPressedListener(e => {
+        if (e.buttonId === 'RNN.hardwareBackButton') {
+          popToEditProfile();
+        }
+      });
+
+    return () => backButtonListener.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <View style={styles.root}>
+    <GestureHandlerRootView style={styles.root}>
       <Animated.View style={[styles.container, rStyle]}>
         <Animated.Image
           nativeID={`asset-${asset?.uri ?? imagePath}-dest`}
@@ -295,11 +308,14 @@ const Editor: NavigationFunctionComponent<EditorProps> = ({
           <MaterialCommunityIcons name="check" size={30} color={'#fff'} />
         </Pressable>
       </View>
-    </View>
+    </GestureHandlerRootView>
   );
 };
 
 Editor.options = {
+  hardwareBackButton: {
+    popStackOnPress: false,
+  },
   statusBar: {
     visible: false,
   },
@@ -308,6 +324,7 @@ Editor.options = {
   },
   sideMenu: {
     right: {
+      visible: false,
       enabled: false,
     },
   },

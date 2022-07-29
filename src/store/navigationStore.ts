@@ -2,15 +2,16 @@ import create from 'zustand';
 
 type NavigationScreen = {
   name: string;
-  folder: string;
+  folder?: string;
   componentId: string;
 };
 
 type Store = {
   screens: NavigationScreen[];
-  putIfAbsent: (newStr: NavigationScreen) => void;
+  push: (newStr: NavigationScreen) => void;
   pop: () => void;
   takeUntil: (selected: NavigationScreen) => void;
+  removeById: (componentId: string) => void;
 };
 
 function takeUntil(
@@ -29,26 +30,45 @@ function takeUntil(
   return newScreens;
 }
 
+export function findComponentIdByName(
+  name: string,
+  screens: NavigationScreen[],
+): string | null {
+  for (let screen of screens) {
+    if (screen.name === name) {
+      return screen.componentId;
+    }
+  }
+  return null;
+}
+
 const navigationStore = create<Store>(set => ({
   screens: [],
-  putIfAbsent: (newScreen: NavigationScreen) =>
-    set(state => {
-      const componentIds = state.screens.map(s => s.componentId);
-      if (componentIds.includes(newScreen.componentId)) {
-        return state;
-      }
 
-      return {...state, screens: [...state.screens, newScreen]};
+  push: (newScreen: NavigationScreen) =>
+    set(state => {
+      state.screens.push(newScreen);
+      return state;
     }),
+
   pop: () =>
     set(state => {
       state.screens.pop();
       return state;
     }),
+
   takeUntil: (selected: NavigationScreen) =>
     set(state => {
       const screens = takeUntil(selected, state.screens);
       return {...state, screens};
+    }),
+
+  removeById: componentId =>
+    set(state => {
+      const newScreens = state.screens.filter(
+        s => s.componentId !== componentId,
+      );
+      return {...state, screens: newScreens};
     }),
 }));
 

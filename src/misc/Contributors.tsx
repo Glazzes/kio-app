@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   content: {
-    paddingHorizontal: width * 0.05,
+    paddingLeft: width * 0.05,
   },
   title: {
     marginLeft: width * 0.05,

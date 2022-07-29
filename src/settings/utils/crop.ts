@@ -48,7 +48,7 @@ const crop = (
   );
 
   // if the angle sits over the y axis dimensions are flipped
-  if (angle === Math.PI / 2 || angle === (3 / 4) * 2 * Math.PI) {
+  if (angle % Math.PI === Math.PI / 2) {
     const dx = realDimensions.width;
     const dy = realDimensions.height;
 

@@ -18,7 +18,11 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
 import {useVector} from 'react-native-redash';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Controls from './Controls';
@@ -32,6 +36,7 @@ import {Event} from '../../enums/events';
 import {Screens} from '../../enums/screens';
 
 type Photos = {[id: string]: string};
+
 type AppCameraProps = {
   singlePicture: boolean;
 };
@@ -46,6 +51,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
 }) => {
   const devices = useCameraDevices();
 
+  const [isActive, setIsActive] = useState<boolean>(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const [selectedPhotos, setselectedPhotos] = useState<Photos>({});
   const [photoCount, setPhotoCount] = useState<number>(0);
@@ -64,6 +70,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
 
       cameraScale.value = withSequence(withTiming(0.75), withSpring(1));
       opacity.value = withTiming(0);
+
       const {path} = await cameraRef.current.takePhoto({
         flash: flash.current ? 'on' : 'off',
         skipMetadata: true,
@@ -78,6 +85,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
           component: {
             name: Screens.EDITOR,
             passProps: {
+              asset: null,
               path: endPath,
             },
           },
@@ -217,6 +225,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
       selectPhoto.remove();
       unselecPhoto.remove();
     };
+    // eslint-disable-next-linereact-hooks/exhaustive-deps
   }, []);
 
   useAnimatedReaction(
@@ -242,12 +251,25 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
     },
   );
 
+  useEffect(() => {
+    const listener = Navigation.events().registerComponentListener(
+      {
+        componentWillAppear: () => setIsActive(true),
+        componentDidDisappear: () => setIsActive(false),
+      },
+      componentId,
+    );
+
+    return () => listener.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (devices.back == null || devices.front == null) {
     return null;
   }
 
   return (
-    <View style={styles.root}>
+    <GestureHandlerRootView style={styles.root}>
       <PhotoPicker
         snap={snap}
         scrollY={scrollY}
@@ -256,10 +278,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
         photoCount={photoCount}
       />
       {photoCount > 0 && (
-        <UploadPhotoFAB
-          componentId={componentId}
-          selectedPhotos={selectedPhotos}
-        />
+        <UploadPhotoFAB componentId={componentId} selectedPhotos={[]} />
       )}
       <GestureDetector gesture={combinedGesture}>
         <Animated.View
@@ -309,7 +328,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
           )}
         </Animated.View>
       </GestureDetector>
-    </View>
+    </GestureHandlerRootView>
   );
 };
 
@@ -321,11 +340,8 @@ AppCamera.options = {
     visible: false,
   },
   sideMenu: {
-    left: {
-      visible: false,
-    },
     right: {
-      visible: false,
+      enabled: false,
     },
   },
 };

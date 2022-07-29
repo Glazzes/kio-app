@@ -1,76 +1,89 @@
-import {View, Dimensions, StyleSheet, Text} from 'react-native';
+import {View, Dimensions, StyleSheet, Text, FlatListProps} from 'react-native';
 import {
   FlashList,
   FlashListProps,
   ListRenderItemInfo,
 } from '@shopify/flash-list';
 import Folder from '../../src/home/Folder';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import Animated, {
   scrollTo,
   useAnimatedRef,
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
+import {FlatList} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
+import ImageThumbnail from '../home/files/thumnnails/ImageThumbnail';
+import {File} from '../utils/types';
+import SearchBar from './SearchBar';
+import emitter from '../utils/emitter';
 
 type FolderListProps = {};
 
 const {width} = Dimensions.get('window');
 const SIZE = width * 0.75;
 
-const data = new Array(10).fill(0);
+const data = new Array(5).fill(0);
 
-function keyExtractor(_: number, index: number) {
+function keyExtractor(item: number, index: number) {
   return `folder-${index}`;
 }
 
 function renderItem(info: ListRenderItemInfo<number>) {
-  return <Folder />;
+  return (
+    <ImageThumbnail
+      index={0}
+      image={{id: '', name: ''} as File}
+      selectedIndex={val}
+    />
+  );
 }
 
 const AnimatedFlashList =
   Animated.createAnimatedComponent<FlashListProps<number>>(FlashList);
 
+const AnimatedGHFlatlist =
+  Animated.createAnimatedComponent<FlatListProps<number>>(FlatList);
+
 const FolderList: React.FC<FolderListProps> = ({}) => {
-  const ref = useAnimatedRef();
+  const ref = useAnimatedRef<FlatList<string>>();
   const scrollX = useSharedValue<number>(0);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: e => {
       scrollX.value = e.contentOffset.x;
     },
-    onEndDrag: e => {
-      const points = data.map((_, index) => {
-        return width * 0.75 * index;
-      });
-
-      const snap = snapPoint(scrollX.value, e.velocity?.x ?? 0, points);
-      scrollTo(ref, snap, 0, true);
-    },
   });
 
   return (
     <View style={styles.root}>
-      <View style={styles.infoContainer}>
-        <Text style={styles.title}>Folders</Text>
-        <Text style={styles.subtitle}>
-          You've got <Text style={styles.count}>{data.length} </Text> subfolders
-          within this folder
-        </Text>
+      <View style={{height: 400, width, backgroundColor: 'tomato'}}>
+        <AnimatedGHFlatlist
+          ListHeaderComponent={() => {
+            return <SearchBar />;
+          }}
+          ref={ref}
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          data={data}
+          nestedScrollEnabled={true}
+          renderItem={info => {
+            return (
+              <ImageThumbnail
+                index={info.index}
+                image={{id: '', name: ''} as File}
+                selectedIndex={scrollX}
+              />
+            );
+          }}
+          keyExtractor={keyExtractor}
+          estimatedItemSize={150}
+          onScroll={onScroll}
+          contentContainerStyle={styles.content}
+          estimatedListSize={{height: 150 * (data.length / 2), width}}
+        />
       </View>
-      <AnimatedFlashList
-        ref={ref}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        estimatedItemSize={SIZE}
-        contentContainerStyle={styles.content}
-        estimatedListSize={{height: 135, width: SIZE * data.length}}
-        onScroll={onScroll}
-      />
     </View>
   );
 };

@@ -5,5 +5,10 @@
     "eas": {
       "projectId": "8c7f8b68-a73a-48ca-9a4b-612aaa0ac6c3"
     }
+  },
+  "splash": {
+    "image": "./assets/images/splash.png",
+    "backgroundColor": "#ffffff",
+    "resizeMode": "cover"
   }
 }

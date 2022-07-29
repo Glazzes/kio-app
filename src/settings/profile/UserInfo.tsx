@@ -76,7 +76,7 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
         </View>
       </View>
       <Pressable onPress={editProfile}>
-        <Icon name={'account-edit'} size={25} color={'#9E9EA7'} />
+        <Icon name={'pencil'} size={23} color={'#9E9EA7'} />
       </Pressable>
     </View>
   );
@@ -101,12 +101,11 @@ const styles = StyleSheet.create({
   },
   username: {
     fontFamily: 'UberBold',
-    fontSize: 20,
+    fontSize: 18,
     color: '#000',
   },
   email: {
     fontFamily: 'Uber',
-    fontSize: 15,
     color: '#9E9EA7',
   },
   margin: {

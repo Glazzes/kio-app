@@ -5,9 +5,15 @@ import Appbar from '../profile/Appbar';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../../utils/emitter';
 import ImagePicker from '../picker/ImagePicker';
-import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  withSpring,
+  withTiming,
+  ZoomIn,
+} from 'react-native-reanimated';
 import {Screens} from '../../enums/screens';
 import {Asset} from 'expo-media-library';
+import navigationStore from '../../store/navigationStore';
 
 type EditProfileProps = {};
 
@@ -20,6 +26,9 @@ const ANGLE = -Math.PI / 4;
 const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
   componentId,
 }) => {
+  const push = navigationStore(s => s.push);
+  const removeById = navigationStore(s => s.removeById);
+
   const [newPic, setNewPic] = useState<string | undefined>(undefined);
 
   const translateY = useSharedValue<number>(0);
@@ -67,10 +76,25 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       setNewPic(pic);
     });
 
+    const pushToCamera = emitter.addListener('push.camera', () => {
+      Navigation.push(componentId, {
+        component: {
+          name: Screens.CAMERA,
+          passProps: {
+            singlePicture: true,
+          },
+        },
+      });
+    });
+
+    push({name: 'Edit.Profile', componentId});
+
     return () => {
       listener.remove();
       navigationListener.remove();
+      pushToCamera.remove();
       sub.remove();
+      removeById(componentId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -86,10 +110,13 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
             source={{
               uri: newPic ?? 'https://randomuser.me/api/portraits/men/32.jpg',
             }}
+            resizeMode={'cover'}
           />
-          <View style={styles.badge}>
+          <Animated.View
+            style={styles.badge}
+            entering={ZoomIn.delay(450).duration(300)}>
             <Icon name="camera" size={20} color={'#fff'} />
-          </View>
+          </Animated.View>
         </Pressable>
       </View>
       <ImagePicker translateY={translateY} />
@@ -104,6 +131,11 @@ EditProfile.options = {
   },
   topBar: {
     visible: false,
+  },
+  sideMenu: {
+    right: {
+      enabled: false,
+    },
   },
 };
 

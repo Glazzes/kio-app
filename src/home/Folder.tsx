@@ -111,6 +111,7 @@ const Folder: React.FC<FolderProps> = ({}) => {
 const styles = StyleSheet.create({
   root: {
     width: width * 0.75,
+    maxWidth: 275,
     borderRadius: 10,
     padding: 10,
     paddingBottom: 0,

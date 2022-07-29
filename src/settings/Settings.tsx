@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
   optionText: {
     color: '#000',
     fontFamily: 'UberBold',
-    fontSize: 14,
   },
 });
 

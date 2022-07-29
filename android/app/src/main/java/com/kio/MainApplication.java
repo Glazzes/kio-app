@@ -19,6 +19,7 @@ import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
 import android.content.res.Configuration;
 import expo.modules.ApplicationLifecycleDispatcher;
+import com.zoontek.rnbootsplash.RNBootSplashPackage;
 
 public class MainApplication extends NavigationApplication {
 
@@ -33,6 +34,7 @@ public class MainApplication extends NavigationApplication {
         protected List<ReactPackage> getPackages() {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
+          // packages.add(new RNBootSplashPackage());
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
           return packages;

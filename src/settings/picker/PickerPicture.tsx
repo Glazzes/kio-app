@@ -18,6 +18,11 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
   const devices = useCameraDevices();
 
   const onSelectedPicture = () => {
+    if (index === 0) {
+      emitter.emit('push.camera');
+      return;
+    }
+
     emitter.emit('picture.selected', asset);
   };
 
