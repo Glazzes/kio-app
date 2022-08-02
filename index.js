@@ -13,6 +13,7 @@ import {Toast} from './src/misc';
 import DetailsDrawer from './src/navigation/DetailsDrawer';
 import ScrollTest from './src/misc/ScrollTest';
 import EditProfile from './src/settings/edit/EditProfile';
+import AudioPlayer from './src/misc/AudioPlayer';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -39,8 +40,8 @@ Navigation.events().registerAppLaunchedListener(() => {
             children: [
               {
                 component: {
-                  id: 'Camera',
-                  name: 'Result',
+                  id: Screens.MY_UNIT,
+                  name: 'AD',
                 },
               },
             ],
@@ -56,6 +57,8 @@ Navigation.events().registerAppLaunchedListener(() => {
     },
   });
 });
+
+Navigation.registerComponent('AD', () => gestureHandlerRootHOC(AudioPlayer));
 
 Navigation.registerComponent('ST', () => ScrollTest);
 
@@ -90,7 +93,7 @@ Navigation.registerComponent(Screens.EDITOR, () =>
   gestureHandlerRootHOC(Editor),
 );
 
-Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
+// Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
 
 // Miscelaneous
 Navigation.registerComponent(Screens.TOAST, () => Toast);

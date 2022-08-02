@@ -16,7 +16,7 @@ import {FlatList} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
 import ImageThumbnail from '../home/files/thumnnails/ImageThumbnail';
 import {File} from '../utils/types';
-import SearchBar from './SearchBar';
+import SearchBar from '../home/misc/SearchBar';
 import emitter from '../utils/emitter';
 
 type FolderListProps = {};
@@ -31,13 +31,7 @@ function keyExtractor(item: number, index: number) {
 }
 
 function renderItem(info: ListRenderItemInfo<number>) {
-  return (
-    <ImageThumbnail
-      index={0}
-      image={{id: '', name: ''} as File}
-      selectedIndex={val}
-    />
-  );
+  return <Folder />;
 }
 
 const AnimatedFlashList =
@@ -58,32 +52,17 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
 
   return (
     <View style={styles.root}>
-      <View style={{height: 400, width, backgroundColor: 'tomato'}}>
-        <AnimatedGHFlatlist
-          ListHeaderComponent={() => {
-            return <SearchBar />;
-          }}
-          ref={ref}
-          numColumns={2}
-          showsVerticalScrollIndicator={false}
-          data={data}
-          nestedScrollEnabled={true}
-          renderItem={info => {
-            return (
-              <ImageThumbnail
-                index={info.index}
-                image={{id: '', name: ''} as File}
-                selectedIndex={scrollX}
-              />
-            );
-          }}
-          keyExtractor={keyExtractor}
-          estimatedItemSize={150}
-          onScroll={onScroll}
-          contentContainerStyle={styles.content}
-          estimatedListSize={{height: 150 * (data.length / 2), width}}
-        />
-      </View>
+      <FlashList
+        ref={ref}
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        estimatedItemSize={150}
+        contentContainerStyle={styles.content}
+        estimatedListSize={{height: 140, width: SIZE * (data.length / 2)}}
+      />
     </View>
   );
 };

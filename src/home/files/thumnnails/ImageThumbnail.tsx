@@ -4,8 +4,6 @@ import {File} from '../../../utils/types';
 import authStore from '../../../store/authStore';
 import {useVector} from 'react-native-redash';
 import Animated, {
-  Extrapolate,
-  interpolate,
   measure,
   runOnJS,
   useAnimatedRef,
@@ -13,15 +11,14 @@ import Animated, {
   useSharedValue,
   withDelay,
   withTiming,
-  ZoomIn,
-  ZoomOut,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Star from '../folder/Star';
-import {pinch} from '../../../utils/animations';
+import {clamp, pinch} from '../../../utils/animations';
 import emitter from '../../../utils/emitter';
 
 type Reflection = {
+  dimensions: Animated.SharedValue<{width: number; height: number}>;
   rtranslateX: Animated.SharedValue<number>;
   rtranslateY: Animated.SharedValue<number>;
   rscale: Animated.SharedValue<number>;
@@ -32,14 +29,13 @@ type Reflection = {
 
 type ImageThumbnailProps = {
   image: File;
+  pic: string;
   index: number;
-  selectedIndex: Animated.SharedValue<number>;
 };
 
-const {height} = Dimensions.get('window');
-const uri = 'file:///storage/sdcard0/Descargas/fox.jpg';
+const {width, height} = Dimensions.get('window');
 
-const SIZE = 140;
+const SIZE = (width * 0.9 - 10) / 2;
 const center = {
   x: SIZE / 2,
   y: SIZE / 2,
@@ -47,8 +43,9 @@ const center = {
 
 const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   image,
-  selectedIndex,
+  pic,
   index,
+  dimensions,
   rtranslateX,
   rtranslateY,
   rscale,
@@ -60,21 +57,21 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
 
   const aref = useAnimatedRef<Animated.View>();
 
-  const dimensions = useVector(0, 0);
   const borderRadius = useSharedValue<number>(10);
-  const translate = useVector(0, 0);
   const origin = useVector(0, 0);
-  const scale = useSharedValue<number>(1);
   const canPinch = useSharedValue<boolean>(true);
   const opacity = useSharedValue<number>(1);
-
-  const elevation = useSharedValue<number>(1);
+  const os = useSharedValue<0 | 1>(1);
 
   const setPic = () => {
-    emitter.emit('sp', uri);
+    emitter.emit('sp', pic);
+    os.value = 0;
   };
 
-  const setEmpty = () => emitter.emit('empty');
+  const setEmpty = () => {
+    emitter.emit('empty');
+    os.value = 1;
+  };
 
   const pinchG = Gesture.Pinch()
     .hitSlop({vertical: 20, horizontal: 20})
@@ -86,8 +83,12 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
 
       borderRadius.value = withTiming(0);
       rBorderRadius.value = withTiming(0);
-      opacity.value = withTiming(0, {duration: 150});
-      selectedIndex.value = index;
+
+      opacity.value = withTiming(0, {duration: 150}, hasFinished => {
+        if (hasFinished) {
+          os.value = 0;
+        }
+      });
     })
     .onChange(e => {
       const {translateX, translateY} = pinch(
@@ -98,108 +99,66 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
         canPinch,
       );
 
-      translate.x.value = translateX;
       rtranslateX.value = translateX;
-
-      translate.y.value = translateY;
       rtranslateY.value = translateY;
-
-      scale.value = e.scale;
-      rscale.value = e.scale;
+      rscale.value = clamp(e.scale, 1, 4);
     })
     .onEnd(() => {
-      runOnJS(setEmpty)();
       canPinch.value = true;
       origin.x.value = 0;
       origin.y.value = 0;
 
-      scale.value = withTiming(1, {duration: 150}, hasFinished => {
+      rscale.value = withTiming(1, undefined, hasFinished => {
         if (hasFinished) {
           opacity.value = withDelay(150, withTiming(1));
-          selectedIndex.value = 0;
         }
       });
-      rscale.value = withTiming(1, {duration: 150});
 
-      borderRadius.value = withTiming(10);
       rBorderRadius.value = withTiming(10);
+      borderRadius.value = withTiming(10);
 
-      translate.x.value = withTiming(0);
       rtranslateX.value = withTiming(0, undefined, hasFinished => {
         if (hasFinished) {
+          runOnJS(setEmpty)();
+          os.value = 1;
           rx.value = -height;
           ry.value = -height;
         }
       });
 
-      translate.y.value = withTiming(0);
       rtranslateY.value = withTiming(0);
     });
 
-  const reanimatedContainerStyles = useAnimatedStyle(() => {
-    const isWider = dimensions.x.value > dimensions.y.value;
-    const aspectRatio = dimensions.x.value / dimensions.y.value;
+  const cc = useAnimatedStyle(() => ({
+    opacity: os.value,
+  }));
 
-    const resizer = isWider
-      ? SIZE / dimensions.x.value
-      : SIZE / dimensions.y.value;
-
-    return {
-      height: isWider
-        ? interpolate(
-            scale.value,
-            [1, 2],
-            [SIZE, Math.round((dimensions.x.value / aspectRatio) * resizer)],
-            Extrapolate.CLAMP,
-          )
-        : SIZE,
-      width: SIZE,
-      transform: [
-        {translateX: translate.x.value},
-        {translateY: translate.y.value},
-        {scale: scale.value},
-      ],
-    };
-  });
-
-  const reanimatedImageStyles = useAnimatedStyle(() => ({
-    position: 'absolute',
-    top: 0,
-    left: 0,
+  const thumbContainer = useAnimatedStyle(() => ({
+    overflow: 'hidden',
     borderRadius: borderRadius.value,
   }));
 
-  const cc = useAnimatedStyle(() => ({
-    opacity: elevation.value,
-  }));
-
   useEffect(() => {
-    Image.getSize(uri, (w, h) => {
-      dimensions.x.value = w;
-      dimensions.y.value = h;
+    Image.getSize(pic, (w: number, h: number) => {
+      dimensions.value = {width: w, height: h};
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <Animated.View
-      ref={aref}
-      entering={ZoomIn.delay(index * 300)}
-      exiting={ZoomOut.delay(300)}
-      style={[styles.root, cc]}>
+    <Animated.View ref={aref} style={[styles.root]}>
       <GestureDetector gesture={pinchG}>
         {/*
            Wrapping the view that's gonna be pinched within a dummy animated view
            for some reason allows for a better pinch gesture
            */}
-        <Animated.View style={[styles.thumb]}>
-          <Animated.View style={[styles.thumb, reanimatedContainerStyles]}>
+        <Animated.View style={[styles.thumb, thumbContainer]}>
+          <Animated.View style={[styles.thumb, styles.thumbContainer]}>
             <Animated.Image
               nativeID={`img-${image.id}`}
-              style={[styles.image, reanimatedImageStyles]}
-              source={{uri, headers: {Authorization: accessToken}}}
+              style={[styles.image, cc]}
+              source={{uri: pic, headers: {Authorization: accessToken}}}
               resizeMode={'cover'}
-              resizeMethod={'scale'}
             />
             <Star opacity={opacity} />
           </Animated.View>
@@ -211,19 +170,21 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
 
 const styles = StyleSheet.create({
   root: {
-    width: 160,
-    height: 140,
-    marginVertical: 20,
-  },
-  thumb: {
-    height: 140,
-    width: 140,
-    borderRadius: 10,
-    backgroundColor: 'lightgrey',
-  },
-  image: {
     width: SIZE,
     height: SIZE,
+    marginVertical: 10,
+  },
+  thumbContainer: {
+    borderRadius: 10,
+    backgroundColor: '#F3F3F4',
+  },
+  thumb: {
+    height: SIZE,
+    width: SIZE,
+    borderRadius: 10,
+  },
+  image: {
+    flex: 1,
   },
 });
 

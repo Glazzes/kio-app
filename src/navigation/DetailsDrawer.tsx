@@ -16,7 +16,7 @@ const DetailsDrawer: NavigationFunctionComponent = () => {
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <Text style={styles.name}>Glaceon.jpg</Text>
       <Image
-        source={require('./glaceon.jpg')}
+        source={{uri: 'file:///storage/sdcard0/Descargas/glaceon.jpg'}}
         resizeMethod={'scale'}
         style={styles.image}
       />
@@ -60,7 +60,10 @@ const DetailsDrawer: NavigationFunctionComponent = () => {
       <View style={styles.textContainer}>
         <Text style={styles.item}>Owner</Text>
         <View style={styles.ownerContainer}>
-          <Image source={require('./glaceon.jpg')} style={styles.avatar} />
+          <Image
+            source={{uri: 'file:///storage/sdcard0/Descargas/glaceon.jpg'}}
+            style={styles.avatar}
+          />
           <CollapsableText text="You" />
         </View>
       </View>

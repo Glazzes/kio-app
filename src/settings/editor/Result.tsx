@@ -3,8 +3,8 @@ import React, {useEffect, useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import FAB from '../../misc/filefab/FAB';
-import SearchBar from '../../misc/SearchBar';
-import Appbar from '../../misc/Appbar';
+import SearchBar from '../../home/misc/SearchBar';
+import Appbar from '../../home/misc/Appbar';
 import FileWrapper from '../../misc/FileWrapper';
 import ImageThumbnail from '../../home/files/thumnnails/ImageThumbnail';
 import {useSharedValue} from 'react-native-reanimated';
@@ -22,6 +22,7 @@ type ResultProps = {
   uri?: string;
 };
 
+const SIZE = 140;
 const {height} = Dimensions.get('window');
 
 const Result: NavigationFunctionComponent<ResultProps> = ({
@@ -30,10 +31,13 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
 }) => {
   const val = useSharedValue(0);
 
+  const selectedIndex = useSharedValue<number>(0);
   const translateX = useSharedValue<number>(0);
   const translateY = useSharedValue<number>(0);
   const scale = useSharedValue<number>(0);
   const borderRadius = useSharedValue<number>(10);
+  const width = useSharedValue<number>(SIZE);
+  const rHeight = useSharedValue<number>(SIZE);
   const x = useSharedValue<number>(-height);
   const y = useSharedValue<number>(-height);
 
@@ -44,15 +48,34 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
       <SearchBar />
       <ImageThumbnail
         index={0}
+        pic={'file:///storage/sdcard0/Descargas/glaceon.jpg'}
         image={{id: '', name: ''} as File}
-        selectedIndex={val}
+        selectedIndex={selectedIndex}
         rtranslateX={translateX}
         rtranslateY={translateY}
         rscale={scale}
         rBorderRadius={borderRadius}
+        rHeight={rHeight}
+        rWidth={width}
         rx={x}
         ry={y}
       />
+
+      <ImageThumbnail
+        index={1}
+        pic={'file:///storage/sdcard0/Descargas/bigsur.jpg'}
+        image={{id: '', name: ''} as File}
+        selectedIndex={selectedIndex}
+        rtranslateX={translateX}
+        rtranslateY={translateY}
+        rscale={scale}
+        rBorderRadius={borderRadius}
+        rHeight={rHeight}
+        rWidth={width}
+        rx={x}
+        ry={y}
+      />
+
       <FAB parentComponentId={componentId} />
 
       <PinchableImageReflection
@@ -60,6 +83,8 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
         translateY={translateY}
         scale={scale}
         borderRadius={borderRadius}
+        height={rHeight}
+        width={width}
         x={x}
         y={y}
       />

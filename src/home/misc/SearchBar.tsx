@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import emitter from '../utils/emitter';
-import {TypingEvent} from '../enums/events';
+import emitter from '../../utils/emitter';
+import {TypingEvent} from '../../enums/events';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
-import {withKeyboard} from '../utils/hoc';
+import {withKeyboard} from '../../utils/hoc';
 
 const {width} = Dimensions.get('window');
 const CLOSE_ICON_SIZE = 20;
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginVertical: 10,
   },
   icon: {
     marginHorizontal: 10,

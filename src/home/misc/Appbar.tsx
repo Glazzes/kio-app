@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import React from 'react';
 import {Navigation} from 'react-native-navigation';
-import {Screens} from '../enums/screens';
+import {Screens} from '../../enums/screens';
+import SearchBar from './SearchBar';
 
 type AppbarProps = {
   parentComponentId: string;
@@ -18,7 +19,7 @@ const {statusBarHeight} = Navigation.constantsSync();
 const {width} = Dimensions.get('window');
 const IMAGE_SIZE = 40;
 
-const Appbar: React.FC<AppbarProps> = ({parentComponentId}) => {
+const Appbar: React.FC<AppbarProps> = ({scrollY, parentComponentId}) => {
   const toProfile = () => {
     Navigation.push(parentComponentId, {
       component: {
@@ -29,32 +30,37 @@ const Appbar: React.FC<AppbarProps> = ({parentComponentId}) => {
 
   return (
     <View style={styles.root}>
-      <View>
-        <Text style={styles.hi}>Hi,</Text>
-        <Text style={styles.username}>Glaze</Text>
+      <View style={styles.appbar}>
+        <View>
+          <Text style={styles.hi}>Hi,</Text>
+          <Text style={styles.username}>Glaze</Text>
+        </View>
+        <Pressable onPress={toProfile}>
+          <Image
+            source={{
+              uri: 'https://pettime.net/wp-content/uploads/2021/04/Dalmatian-2-10.jpg',
+            }}
+            style={styles.image}
+            resizeMode={'cover'}
+          />
+        </Pressable>
       </View>
-      <Pressable onPress={toProfile}>
-        <Image
-          source={{
-            uri: 'https://pettime.net/wp-content/uploads/2021/04/Dalmatian-2-10.jpg',
-          }}
-          style={styles.image}
-          resizeMode={'cover'}
-        />
-      </Pressable>
+      <SearchBar />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   root: {
+    width: width,
+    paddingTop: statusBarHeight + 5,
+    backgroundColor: '#fff',
+  },
+  appbar: {
+    width,
+    paddingHorizontal: width * 0.05,
     flexDirection: 'row',
-    width: width * 0.9,
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: statusBarHeight + 5,
-    marginBottom: 0,
-    marginHorizontal: width * 0.05,
   },
   hi: {
     fontFamily: 'Uber',
