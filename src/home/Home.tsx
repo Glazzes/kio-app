@@ -14,9 +14,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import ImageThumbnail from './files/thumnnails/ImageThumbnail';
 import {File} from '../utils/types';
-import PinchableImageReflection from './files/thumnnails/PinchableImageReflection';
 import Appbar from './misc/Appbar';
 import {FAB} from '../misc';
+import PinchableReflection from './files/thumnnails/PinchableReflection';
+import {Dimension} from '../shared/types';
 
 type HomeProps = {
   folderId?: string;
@@ -29,20 +30,15 @@ function keyExtractor(item: string): string {
 }
 
 const {width: windowWidth, height: windowHeight} = Dimensions.get('window');
-const SPACING = 10;
-const SIZE = windowWidth - SPACING * 5;
 
 const AnimatedFlashList =
   Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
 
-const Home: NavigationFunctionComponent = ({componentId}) => {
+const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
   const scrollY = useSharedValue<number>(0);
 
-  const dimensions = useSharedValue<{height: number; width: number}>({
-    width: 1,
-    height: 1,
-  });
-
+  const isWider = useSharedValue<boolean>(false);
+  const dimensions = useSharedValue<Dimension>({width: 1, height: 1});
   const translateX = useSharedValue<number>(0);
   const translateY = useSharedValue<number>(0);
   const scale = useSharedValue<number>(1);
@@ -64,16 +60,21 @@ const Home: NavigationFunctionComponent = ({componentId}) => {
     return (info: ListRenderItemInfo<string>): React.ReactElement => {
       return (
         <ImageThumbnail
+          isWider={isWider}
           index={info.index}
-          pic={'file:///storage/sdcard0/Descargas/glaceon.jpg'}
-          image={{} as File}
+          pic={
+            info.index % 2 === 0
+              ? 'file:///storage/sdcard0/Descargas/glaceon.jpg'
+              : 'file:///storage/sdcard0/Descargas/bigsur.jpg'
+          }
           dimensions={dimensions}
-          rtranslateX={translateX}
-          rtranslateY={translateY}
-          rscale={scale}
+          image={{} as File}
+          translateX={translateX}
+          translateY={translateY}
+          scale={scale}
           rBorderRadius={borderRadius}
-          rx={x}
-          ry={y}
+          x={x}
+          y={y}
         />
       );
     };
@@ -96,7 +97,8 @@ const Home: NavigationFunctionComponent = ({componentId}) => {
         estimatedListSize={{width: windowWidth, height: data.length * 65}}
       />
 
-      <PinchableImageReflection
+      <PinchableReflection
+        isWider={isWider}
         dimensions={dimensions}
         translateX={translateX}
         translateY={translateY}

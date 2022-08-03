@@ -1,14 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  ActivityIndicator,
-  Text,
-  Pressable,
-} from 'react-native';
+import {View, StyleSheet, Dimensions, Text} from 'react-native';
 import React, {useEffect, useMemo, useState} from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Sound from 'react-native-sound';
 import Animated, {
   cancelAnimation,
@@ -27,17 +20,22 @@ import {clamp} from '../utils/animations';
 import {durationToText} from './assets/utils';
 import {ReText} from 'react-native-redash';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import FastImage from 'react-native-fast-image';
+import Action from '../audio_player/components/Action';
+import AuidoControls from '../audio_player/components/AuidoControls';
+import TimeLine from '../audio_player/components/TimeLine';
 
 Sound.setCategory('Playback');
 
 type AudioPlayerProps = {};
 
+const {statusBarHeight} = Navigation.constantsSync();
 const {width} = Dimensions.get('window');
 
 const WIDTH = width * 0.9;
-const SIZE = 21;
+const SIZE = 20;
+const ICON_SIZE = 23;
 const UPPER_BOUND = width * 0.9 - SIZE;
-const BUTTON_SIZE = width * 0.2;
 
 const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
   const [duration, setDuration] = useState<number>(0);
@@ -84,21 +82,6 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
     await impactAsync(ImpactFeedbackStyle.Light);
   };
 
-  const toggleLoops = async () => {
-    await impactAsync(ImpactFeedbackStyle.Light);
-    setLoops(l => {
-      if (l === 0) {
-        return 1;
-      }
-
-      if (l === 1) {
-        return -1;
-      }
-
-      return 0;
-    });
-  };
-
   const animateProgressBar = () => {
     translateX.value = withTiming(
       UPPER_BOUND,
@@ -108,55 +91,40 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
       },
       hasFinished => {
         if (hasFinished) {
-          runOnJS(restart)();
+          runOnJS(onAudioEnd)();
         }
       },
     );
   };
 
-  const play = () => {
-    if (translateX.value === UPPER_BOUND) {
-      restart();
-      setIsPlaying(true);
-      return;
-    }
-
-    setIsPlaying(p => !p);
-    if (sound.isPlaying()) {
-      sound.pause();
-      cancelAnimation(translateX);
-      return;
-    }
-
-    sound.play();
-    animateProgressBar();
-  };
-
-  const pause = () => {
-    sound.pause();
-    cancelAnimation(translateX);
-  };
-
   const onEndDrag = () => {
     sound.setCurrentTime(progress.value * duration);
     if (isPlaying) {
-      sound.play(playing => {
-        if (playing) {
-          animateProgressBar();
+      animateProgressBar();
+      sound.play(success => {
+        if (!success) {
+          cancelAnimation(translateX);
         }
       });
     }
   };
 
-  const restart = () => {
-    sound.setCurrentTime(0);
+  const onAudioEnd = () => {
     translateX.value = 0;
+    setIsPlaying(false);
 
-    if (loops === 0) {
-      console.log('stop!!');
-      setIsPlaying(false);
-      sound.stop();
+    if (loops !== 0) {
+      sound.setCurrentTime(0);
+      sound.play();
+      animateProgressBar();
+      setIsPlaying(true);
+      setLoops(l => (l === 1 ? 0 : -1));
     }
+  };
+
+  const pause = () => {
+    cancelAnimation(translateX);
+    sound.pause();
   };
 
   const pan = Gesture.Pan()
@@ -177,10 +145,10 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
   }));
 
   const progressLineStyles = useAnimatedStyle(() => ({
-    height: 4,
+    height: 3,
     borderRadius: 1,
     width: progress.value * width * 0.9,
-    backgroundColor: '#3366ff',
+    backgroundColor: '#1c1514',
   }));
 
   useEffect(() => {
@@ -191,67 +159,69 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
 
   return (
     <View style={styles.root}>
-      <View style={styles.titleContainer}>
+      <View style={styles.appbar}>
+        <Icon name={'chevron-left'} color={'#1c1514'} size={ICON_SIZE} />
+        <Text style={styles.title}>Now playing</Text>
+        <Icon name={'dots-vertical'} size={ICON_SIZE} />
+      </View>
+
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+        <FastImage
+          style={styles.vynil}
+          source={require('./assets/vynil.png')}
+        />
+
         <View>
-          <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
-            Barricades - Attack on titan
-          </Text>
-        </View>
-        <Pressable onPress={toggleFavorite} hitSlop={20}>
-          <Icon
-            name={'heart'}
-            color={isFavorite ? '#ee3060' : '#F3F3F4'}
-            size={27}
-          />
-        </Pressable>
-      </View>
+          <View>
+            <View style={styles.titleContainer}>
+              <View style={{maxWidth: width * 0.8}}>
+                <Text
+                  style={styles.title}
+                  numberOfLines={2}
+                  ellipsizeMode={'tail'}>
+                  Barricades - Attack on titan
+                </Text>
+              </View>
+              <Action
+                icon={'heart'}
+                color={isFavorite ? '#ee3060' : '#EBEBEB'}
+                size={27}
+                callback={toggleFavorite}
+              />
+            </View>
 
-      <View>
-        <View style={styles.view}>
-          <View style={styles.progressLine}>
-            <Animated.View style={progressLineStyles} />
+            <View style={styles.view}>
+              <View style={styles.progressLine}>
+                <Animated.View style={progressLineStyles} />
+              </View>
+              <GestureDetector gesture={pan}>
+                <Animated.View style={[styles.ball, ballStyles]} />
+              </GestureDetector>
+            </View>
+            <View style={styles.timeline}>
+              <ReText text={currentTime} style={styles.time} />
+              <Text style={styles.time}>
+                {duration === 0 ? null : durationToText(duration)}
+              </Text>
+            </View>
           </View>
-          <GestureDetector gesture={pan}>
-            <Animated.View style={[styles.ball, ballStyles]}>
-              <View style={styles.innerBall} />
-            </Animated.View>
-          </GestureDetector>
-        </View>
-        <View style={styles.timeline}>
-          <ReText text={currentTime} style={styles.time} />
-          <Text style={styles.time}>
-            {duration === 0 ? null : durationToText(duration)}
-          </Text>
-        </View>
-      </View>
 
-      <View style={styles.controls}>
-        <Icon name={'download'} color={'#000'} size={25} />
-        <Icon name={'rewind-10'} color={'#000'} size={25} />
-        <Pressable
-          onPress={play}
-          style={[
-            styles.playButton,
-            {backgroundColor: loaded ? '#3366ff' : '#F3F3F4'},
-          ]}>
-          {loaded ? (
-            <Icon
-              name={isPlaying ? 'pause' : 'play'}
-              color={'#fff'}
-              size={40}
-            />
-          ) : (
-            <ActivityIndicator size={40} color={'#C5C8D7'} />
-          )}
-        </Pressable>
-        <Icon name={'fast-forward-10'} color={'#000'} size={25} />
-        <Pressable hitSlop={20} onPress={toggleLoops}>
-          <Icon
-            name={loops === -1 ? 'repeat-once' : 'repeat'}
-            color={loops !== 0 ? '#ee3060' : '#000'}
-            size={28}
+          <AuidoControls
+            sound={sound}
+            loaded={loaded}
+            isPlaying={isPlaying}
+            setIsPlaying={setIsPlaying}
+            loops={loops}
+            setLoops={setLoops}
+            translateX={translateX}
+            animateTimeLine={animateProgressBar}
           />
-        </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -259,7 +229,8 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
 
 AudioPlayer.options = {
   statusBar: {
-    visible: false,
+    visible: true,
+    drawBehind: false,
   },
   topBar: {
     visible: false,
@@ -270,13 +241,25 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: width * 0.05,
+  },
+  appbar: {
+    width: WIDTH,
+    height: statusBarHeight * 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  vynil: {
+    width: width * 0.55,
+    maxWidth: 200,
+    aspectRatio: 1,
+    marginVertical: 10,
   },
   view: {
     width: width * 0.9,
     height: SIZE,
-    marginTop: 30,
     justifyContent: 'center',
   },
   titleContainer: {
@@ -284,58 +267,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 20,
+  },
+  heartStyles: {
+    marginLeft: 10,
   },
   title: {
     fontFamily: 'UberBold',
-    fontSize: 18,
-    color: '#000',
+    fontSize: 17,
+    color: '#1c1514',
   },
   time: {
-    fontFamily: 'UberBold',
-    color: '#C5C8D7',
-    padding: 0,
+    fontFamily: 'Uber',
+    color: '#1c1514',
     margin: 0,
+    padding: 0,
   },
   progressLine: {
-    height: 4,
+    height: 3,
     width: width * 0.9,
     borderRadius: 1,
-    backgroundColor: '#F3F3F4',
+    backgroundColor: '#EBEBEB',
   },
   ball: {
     width: SIZE,
     height: SIZE,
     borderRadius: SIZE / 2,
-    backgroundColor: '#3366ff',
+    backgroundColor: '#1c1514',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-  },
-  innerBall: {
-    width: SIZE / 2,
-    height: SIZE / 2,
-    borderRadius: SIZE / 4,
-    backgroundColor: '#fff',
   },
   timeline: {
     width: WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 5,
-  },
-  controls: {
-    width: WIDTH,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  playButton: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 30,
   },
 });
 

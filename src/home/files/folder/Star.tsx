@@ -26,9 +26,9 @@ const Star: React.FC<StarProps> = ({opacity}) => {
       <GestureDetector gesture={tap}>
         <Animated.View>
           <AnimatedAntDesign
-            name={isSelected ? 'star' : 'star-outline'}
-            color={isSelected ? '#3366ff' : '#fff'}
-            size={30}
+            name={isSelected ? 'heart' : 'heart-outline'}
+            color={isSelected ? '#ee3060' : '#fff'}
+            size={25}
             style={rStyle}
           />
         </Animated.View>

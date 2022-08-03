@@ -5,7 +5,6 @@ import {Screens} from './src/enums/screens';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import Notifications from './src/notifications/Notifications';
 import {Settings, Editor} from './src/settings';
-import Result from './src/settings/editor/Result';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
 import {Home, Camera, CreateFolderModal} from './src/home';
@@ -14,10 +13,15 @@ import DetailsDrawer from './src/navigation/DetailsDrawer';
 import ScrollTest from './src/misc/ScrollTest';
 import EditProfile from './src/settings/edit/EditProfile';
 import AudioPlayer from './src/misc/AudioPlayer';
+import VideoPlayer from './src/video_player/VideoPlayer';
+import Result from './src/settings/editor/Result';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
 Navigation.setDefaultOptions({
+  layout: {
+    orientation: ['portrait'],
+  },
   topBar: {
     visible: false,
   },
@@ -41,7 +45,7 @@ Navigation.events().registerAppLaunchedListener(() => {
               {
                 component: {
                   id: Screens.MY_UNIT,
-                  name: 'AD',
+                  name: Screens.MY_UNIT,
                 },
               },
             ],
@@ -59,6 +63,7 @@ Navigation.events().registerAppLaunchedListener(() => {
 });
 
 Navigation.registerComponent('AD', () => gestureHandlerRootHOC(AudioPlayer));
+Navigation.registerComponent('VP', () => VideoPlayer);
 
 Navigation.registerComponent('ST', () => ScrollTest);
 
@@ -93,7 +98,7 @@ Navigation.registerComponent(Screens.EDITOR, () =>
   gestureHandlerRootHOC(Editor),
 );
 
-// Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
+Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
 
 // Miscelaneous
 Navigation.registerComponent(Screens.TOAST, () => Toast);

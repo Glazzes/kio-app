@@ -1,4 +1,10 @@
-import {View, StyleSheet, KeyboardAvoidingView, Dimensions} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Dimensions,
+  Image,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
@@ -7,7 +13,12 @@ import SearchBar from '../../home/misc/SearchBar';
 import Appbar from '../../home/misc/Appbar';
 import FileWrapper from '../../misc/FileWrapper';
 import ImageThumbnail from '../../home/files/thumnnails/ImageThumbnail';
-import {useSharedValue} from 'react-native-reanimated';
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import {File} from '../../utils/types';
 import OptionsMenu from '../../misc/OptionsMenu';
 import BreadCrumbs from '../../misc/BreadCrumbs';
@@ -17,6 +28,7 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import FolderListSkeleton from '../../misc/skeleton/FolderListSkeleton';
 import Contributors from '../../misc/Contributors';
 import PinchableImageReflection from '../../home/files/thumnnails/PinchableImageReflection';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 
 type ResultProps = {
   uri?: string;
@@ -30,64 +42,47 @@ const Result: NavigationFunctionComponent<ResultProps> = ({
   componentId,
 }) => {
   const val = useSharedValue(0);
+  const tx = useSharedValue(0);
+  const off = useSharedValue(0);
 
-  const selectedIndex = useSharedValue<number>(0);
-  const translateX = useSharedValue<number>(0);
-  const translateY = useSharedValue<number>(0);
-  const scale = useSharedValue<number>(0);
-  const borderRadius = useSharedValue<number>(10);
-  const width = useSharedValue<number>(SIZE);
-  const rHeight = useSharedValue<number>(SIZE);
-  const x = useSharedValue<number>(-height);
-  const y = useSharedValue<number>(-height);
+  const scale = useSharedValue(1);
+  const h = useSharedValue(100);
+  const w = useSharedValue(100);
+
+  const pan = Gesture.Pinch()
+    .hitSlop({vertical: 50, horizontal: 50})
+    .onStart(e => {
+      off.value = tx.value;
+    })
+    .onChange(e => {
+      scale.value = e.scale;
+      h.value = interpolate(scale.value, [1, 3], [100, 400]);
+      w.value = interpolate(scale.value, [1, 3], [100, 200]);
+    })
+    .onEnd(_ => {
+      scale.value = withTiming(1);
+    });
+
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      width: w.value,
+      height: h.value,
+      transform: [{scale: scale.value}],
+      backgroundColor: 'tomato',
+    };
+  });
 
   return (
     <View style={[styles.root]}>
-      <Appbar parentComponentId={componentId} />
-      <BreadCrumbs />
-      <SearchBar />
-      <ImageThumbnail
-        index={0}
-        pic={'file:///storage/sdcard0/Descargas/glaceon.jpg'}
-        image={{id: '', name: ''} as File}
-        selectedIndex={selectedIndex}
-        rtranslateX={translateX}
-        rtranslateY={translateY}
-        rscale={scale}
-        rBorderRadius={borderRadius}
-        rHeight={rHeight}
-        rWidth={width}
-        rx={x}
-        ry={y}
-      />
-
-      <ImageThumbnail
-        index={1}
-        pic={'file:///storage/sdcard0/Descargas/bigsur.jpg'}
-        image={{id: '', name: ''} as File}
-        selectedIndex={selectedIndex}
-        rtranslateX={translateX}
-        rtranslateY={translateY}
-        rscale={scale}
-        rBorderRadius={borderRadius}
-        rHeight={rHeight}
-        rWidth={width}
-        rx={x}
-        ry={y}
-      />
-
-      <FAB parentComponentId={componentId} />
-
-      <PinchableImageReflection
-        translateX={translateX}
-        translateY={translateY}
-        scale={scale}
-        borderRadius={borderRadius}
-        height={rHeight}
-        width={width}
-        x={x}
-        y={y}
-      />
+      <GestureDetector gesture={pan}>
+        <Animated.View style={rStyle}>
+          <Image
+            style={{flex: 1}}
+            source={{uri: 'file:///storage/sdcard0/Descargas/glaceon.jpg'}}
+            resizeMethod={'scale'}
+          />
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 };
@@ -105,6 +100,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   box: {
     height: 100,
