@@ -3,6 +3,8 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import emitter from '../../utils/emitter';
+import {getDocumentAsync} from 'expo-document-picker';
+import {DocumentPickResult} from './types';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -14,7 +16,15 @@ const {width} = Dimensions.get('window');
 const BUTTON_RADIUS = 40;
 const END_POSITION = width / 2 - BUTTON_RADIUS;
 
-const AnimatedTouchable = Animated.createAnimatedComponent(Pressable);
+const openDocumentPicker = async () => {
+  const result = (await getDocumentAsync({
+    copyToCacheDirectory: false,
+    type: '*/*',
+    multiple: true,
+  })) as DocumentPickResult;
+};
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
   const rStyle = useAnimatedStyle(() => {
@@ -30,15 +40,19 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     };
   });
 
-  const onPress = () => {
+  const onPress = async () => {
     toggle();
+    if (action.icon === 'file') {
+      await openDocumentPicker();
+      return;
+    }
     emitter.emit('press', 'camera');
   };
 
   return (
-    <AnimatedTouchable style={[styles.button, rStyle]} onPress={onPress}>
+    <AnimatedPressable style={[styles.button, rStyle]} onPress={onPress}>
       <Icon name={action.icon} color={'#fff'} size={20} />
-    </AnimatedTouchable>
+    </AnimatedPressable>
   );
 };
 

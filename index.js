@@ -12,9 +12,10 @@ import {Toast} from './src/misc';
 import DetailsDrawer from './src/navigation/DetailsDrawer';
 import ScrollTest from './src/misc/ScrollTest';
 import EditProfile from './src/settings/edit/EditProfile';
-import AudioPlayer from './src/misc/AudioPlayer';
+import AudioPlayer from './src/audio_player';
 import VideoPlayer from './src/video_player/VideoPlayer';
 import Result from './src/settings/editor/Result';
+import PDFViewer from './src/misc/PDFViewer';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -44,8 +45,8 @@ Navigation.events().registerAppLaunchedListener(() => {
             children: [
               {
                 component: {
-                  id: Screens.MY_UNIT,
-                  name: Screens.MY_UNIT,
+                  id: Screens.AUDIO_PLAYER,
+                  name: Screens.AUDIO_PLAYER,
                 },
               },
             ],
@@ -62,7 +63,10 @@ Navigation.events().registerAppLaunchedListener(() => {
   });
 });
 
-Navigation.registerComponent('AD', () => gestureHandlerRootHOC(AudioPlayer));
+Navigation.registerComponent(Screens.AUDIO_PLAYER, () =>
+  gestureHandlerRootHOC(AudioPlayer),
+);
+
 Navigation.registerComponent('VP', () => VideoPlayer);
 
 Navigation.registerComponent('ST', () => ScrollTest);

@@ -9,15 +9,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {AnimatedButton, Folder} from '../../utils/types';
+import {Folder} from '../../utils/types';
 import FABOption from './FABOption';
 import emitter from '../../utils/emitter';
 import {Event} from '../../enums/events';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../enums/screens';
 import AppCamera from '../../home/camera/AppCamera';
-
-type Action = 'camera' | 'folder' | 'person';
+import {FabAction, FabActionIcon} from './types';
 
 type FABProps = {
   parent?: Folder;
@@ -28,7 +27,7 @@ const {width, height} = Dimensions.get('window');
 
 const FAB_RADIUS = 25;
 
-const actions: AnimatedButton[] = [
+const actions: FabAction[] = [
   {
     icon: 'account',
     angle: Math.PI / 2,
@@ -82,16 +81,18 @@ const FAB: React.FC<FABProps> = ({parentComponentId}) => {
   };
 
   useEffect(() => {
-    const optionPress = emitter.addListener('press', async (type: Action) => {
-      if (type === 'camera') {
-        console.log('ses');
-        await Navigation.push(parentComponentId, {
-          component: {
-            name: Screens.CAMERA,
-          },
-        });
-      }
-    });
+    const optionPress = emitter.addListener(
+      'press',
+      async (type: FabActionIcon) => {
+        if (type === 'camera') {
+          await Navigation.push(parentComponentId, {
+            component: {
+              name: Screens.CAMERA,
+            },
+          });
+        }
+      },
+    );
 
     const moveUp = emitter.addListener(Event.FAB_MOVE_UP, (ty: number) => {
       translateY.value = withTiming(-ty, {duration: 200});

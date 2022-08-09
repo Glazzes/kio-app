@@ -4,6 +4,7 @@ import Appbar from './Appbar';
 import Contributors from '../../misc/Contributors';
 import FolderList from '../../misc/FolderList';
 import Animated from 'react-native-reanimated';
+import FileHeader from '../../misc/FileHeader';
 
 type AppHeaderProps = {
   scrollY: Animated.SharedValue<number>;
@@ -12,8 +13,9 @@ type AppHeaderProps = {
 export default function AppHeader({scrollY}: AppHeaderProps) {
   return (
     <View>
-      <Contributors />
       <FolderList />
+      <Contributors />
+      <FileHeader title={'Files'} itemLength={8} />
     </View>
   );
 }

@@ -3,21 +3,16 @@ import {View, StyleSheet, Dimensions} from 'react-native';
 import React, {useCallback, useMemo} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/AppHeader';
-import {
-  FlashList,
-  ListRenderItemInfo,
-  FlashListProps,
-} from '@shopify/flash-list';
-import Animated, {
-  useAnimatedScrollHandler,
-  useSharedValue,
-} from 'react-native-reanimated';
+import {FlashList, ListRenderItemInfo} from '@shopify/flash-list';
+import {useSharedValue} from 'react-native-reanimated';
 import ImageThumbnail from './files/thumnnails/ImageThumbnail';
 import {File} from '../utils/types';
 import Appbar from './misc/Appbar';
 import {FAB} from '../misc';
 import PinchableReflection from './files/thumnnails/PinchableReflection';
 import {Dimension} from '../shared/types';
+import FileWrapper from './FileWrapper';
+import {FlatList} from 'react-native-gesture-handler';
 
 type HomeProps = {
   folderId?: string;
@@ -31,13 +26,9 @@ function keyExtractor(item: string): string {
 
 const {width: windowWidth, height: windowHeight} = Dimensions.get('window');
 
-const AnimatedFlashList =
-  Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
-
 const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
   const scrollY = useSharedValue<number>(0);
 
-  const isWider = useSharedValue<boolean>(false);
   const dimensions = useSharedValue<Dimension>({width: 1, height: 1});
   const translateX = useSharedValue<number>(0);
   const translateY = useSharedValue<number>(0);
@@ -50,32 +41,27 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
     return <AppHeader scrollY={scrollY} />;
   }, [scrollY]);
 
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: e => {
-      scrollY.value = e.contentOffset.y;
-    },
-  });
-
-  const renderItem2 = useMemo(() => {
+  const renderItem = useMemo(() => {
     return (info: ListRenderItemInfo<string>): React.ReactElement => {
       return (
-        <ImageThumbnail
-          isWider={isWider}
-          index={info.index}
-          pic={
-            info.index % 2 === 0
-              ? 'file:///storage/sdcard0/Descargas/glaceon.jpg'
-              : 'file:///storage/sdcard0/Descargas/bigsur.jpg'
-          }
-          dimensions={dimensions}
-          image={{} as File}
-          translateX={translateX}
-          translateY={translateY}
-          scale={scale}
-          rBorderRadius={borderRadius}
-          x={x}
-          y={y}
-        />
+        <FileWrapper index={info.index}>
+          <ImageThumbnail
+            index={info.index}
+            pic={
+              info.index % 2 === 0
+                ? 'file:///storage/sdcard0/Descargas/glaceon.jpg'
+                : 'file:///storage/sdcard0/Descargas/bigsur.jpg'
+            }
+            dimensions={dimensions}
+            image={{} as File}
+            translateX={translateX}
+            translateY={translateY}
+            scale={scale}
+            rBorderRadius={borderRadius}
+            x={x}
+            y={y}
+          />
+        </FileWrapper>
       );
     };
   }, []);
@@ -84,21 +70,19 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
     <View style={styles.root}>
       <Appbar parentComponentId={componentId} />
 
-      <AnimatedFlashList
+      <FlashList
         data={data}
         keyExtractor={keyExtractor}
-        renderItem={renderItem2}
+        renderItem={renderItem}
         numColumns={2}
-        onScroll={onScroll}
         nestedScrollEnabled={true}
         ListHeaderComponent={renderHeader}
-        contentContainerStyle={{padding: 10}}
         estimatedItemSize={data.length}
         estimatedListSize={{width: windowWidth, height: data.length * 65}}
+        contentContainerStyle={styles.content}
       />
 
       <PinchableReflection
-        isWider={isWider}
         dimensions={dimensions}
         translateX={translateX}
         translateY={translateY}
@@ -120,9 +104,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
-  container: {
-    flex: 1,
-    width: windowWidth * 0.9,
+  content: {
+    paddingBottom: 50 + windowWidth * 0.05,
   },
 });
 

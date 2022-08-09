@@ -15,6 +15,8 @@ export enum Screens {
   LEFT_DRAWER = 'Left drawer',
   TOAST = 'Toast',
 
+  AUDIO_PLAYER = 'Audio.Player',
+
   // modals
   CREATE_FOLDER_MODAL = 'Create folder modal',
 }

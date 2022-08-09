@@ -10,7 +10,6 @@ import emitter from '../../../utils/emitter';
 import {Dimension} from '../../../shared/types';
 
 type PinchableReflectionProps = {
-  isWider: Animated.SharedValue<boolean>;
   dimensions: Animated.SharedValue<Dimension>;
   translateX: Animated.SharedValue<number>;
   translateY: Animated.SharedValue<number>;

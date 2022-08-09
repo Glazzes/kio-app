@@ -1,5 +1,5 @@
-import {Dimensions, Image, StyleSheet} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {Dimensions, StyleSheet, ViewStyle} from 'react-native';
+import React, {useEffect} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
@@ -14,21 +14,26 @@ import Animated, {
 import {snapPoint, useVector} from 'react-native-redash';
 import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
 import {maxScale} from '../../../settings/editor/utils';
+import {Dimension} from '../../../shared/types';
+import emitter from '../../../utils/emitter';
 
-type ImageDetailsProps = {};
-
-const uri = 'file:///storage/sdcard0/Descargas/fox.jpg';
+type ImageDetailsProps = {
+  index: number;
+  uri: string;
+  dimensions: Dimension;
+};
 
 const {width, height} = Dimensions.get('window');
 
 const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   componentId,
+  index,
+  uri,
+  dimensions,
 }) => {
-  const [d, setD] = useState({width: 1, height: 1});
-  const s = imageStyles(d);
+  const imageS: ViewStyle = imageStyles(dimensions);
 
   const layout = useVector(1, 1);
-
   const translate = useVector(0, 0);
   const offset = useVector(0, 0);
 
@@ -60,14 +65,18 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   }, [translate.y.value]);
 
   const wrapper = () => {
+    emitter.emit('sss');
     Navigation.dismissModal(componentId, {
       animations: {
         dismissModal: {
           sharedElementTransitions: [
             {
-              fromId: 'img-dest',
-              toId: 'img',
+              fromId: `img-${uri}-${index}-dest`,
+              toId: `img-${uri}-${index}`,
               duration: 300,
+              interpolation: {
+                type: 'linear',
+              },
             },
           ],
         },
@@ -140,7 +149,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
     .onStart(e => {
-      const toMaxScale = maxScale(layout, d, 0);
+      const toMaxScale = maxScale(layout, dimensions, 0);
 
       let toScale = scale.value * 2;
       if (toScale > toMaxScale) {
@@ -187,25 +196,30 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   }));
 
   useEffect(() => {
-    Image.getSize(uri, (w, h) => {
-      setD({width: w, height: h});
-    });
+    const backListener =
+      Navigation.events().registerNavigationButtonPressedListener(e => {
+        if (e.buttonId === 'RNN.hardwareBackButton') {
+          wrapper();
+        }
+      });
+
+    return () => backListener.remove();
   }, []);
 
   return (
     <Animated.View style={[styles.root, rootRStyles]} nativeID={'bg'}>
       <GestureDetector gesture={combinedGesture}>
-        <Animated.View style={s}>
+        <Animated.View style={imageS}>
           <Animated.Image
             onLayout={({nativeEvent}) => {
               layout.x.value = nativeEvent.layout.width;
               layout.y.value = nativeEvent.layout.height;
             }}
-            nativeID="img-dest"
+            nativeID={`img-${uri}-${index}-dest`}
             source={{uri}}
             resizeMethod={'scale'}
             resizeMode={'cover'}
-            style={[s, rStyle]}
+            style={[imageS as any, rStyle]}
           />
         </Animated.View>
       </GestureDetector>
@@ -219,6 +233,12 @@ ImageDetails.options = {
   },
   topBar: {
     visible: false,
+  },
+  layout: {
+    backgroundColor: 'transparent',
+  },
+  hardwareBackButton: {
+    dismissModalOnPress: false,
   },
 };
 

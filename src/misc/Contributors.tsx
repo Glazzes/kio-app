@@ -1,4 +1,4 @@
-import {View, StyleSheet, Dimensions, Image, Text} from 'react-native';
+import {View, StyleSheet, Dimensions, Text, Image} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
@@ -12,6 +12,13 @@ import {
   FlashListProps,
   ListRenderItemInfo,
 } from '@shopify/flash-list';
+import {
+  Canvas,
+  Circle,
+  LinearGradient,
+  Paint,
+  vec,
+} from '@shopify/react-native-skia';
 
 type ContributorsProps = {};
 
@@ -23,13 +30,17 @@ const photos = [
   'https://randomuser.me/api/portraits/women/10.jpg',
   'https://randomuser.me/api/portraits/men/81.jpg',
   'https://randomuser.me/api/portraits/men/68.jpg',
-  'https://randomuser.me/api/portraits/men/81.jpg',
-  'https://randomuser.me/api/portraits/men/68.jpg',
-  'https://randomuser.me/api/portraits/women/10.jpg',
-  'https://randomuser.me/api/portraits/men/81.jpg',
 ];
 
-const SIZE = 45;
+const STROKE_WIDTH = 1.5;
+const SIZE = 45 - STROKE_WIDTH * 2;
+const CANVAS_SIZE = 50;
+
+const gradients = [
+  ['#223843', '#d77a61'],
+  ['#ffb600', '#F69A97'],
+  ['#d9ed92', '#184e77'],
+];
 
 const AnimatedFlashList =
   Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
@@ -39,7 +50,26 @@ function keyExtractor(item: string, index: number): string {
 }
 
 function renderItem(info: ListRenderItemInfo<string>) {
-  return <Image source={{uri: info.item}} style={styles.photo} />;
+  return (
+    <View style={styles.photoContainer}>
+      <Canvas style={styles.canvas}>
+        <Circle
+          r={CANVAS_SIZE / 2 - STROKE_WIDTH}
+          cx={CANVAS_SIZE / 2}
+          cy={CANVAS_SIZE / 2}
+          color={'transparent'}>
+          <Paint style={'stroke'} strokeWidth={STROKE_WIDTH}>
+            <LinearGradient
+              start={vec(0, 0)}
+              end={vec(CANVAS_SIZE, CANVAS_SIZE)}
+              colors={gradients[info.index % gradients.length]}
+            />
+          </Paint>
+        </Circle>
+      </Canvas>
+      <Image source={{uri: info.item}} style={styles.photo} />
+    </View>
+  );
 }
 
 const Contributors: React.FC<ContributorsProps> = ({}) => {
@@ -58,7 +88,7 @@ const Contributors: React.FC<ContributorsProps> = ({}) => {
 
   return (
     <View style={styles.root}>
-      <Text style={styles.title}>Contributors</Text>
+      <Text style={styles.title}>Co-owners</Text>
       <AnimatedFlashList
         ref={ref}
         data={photos}
@@ -84,7 +114,7 @@ const Contributors: React.FC<ContributorsProps> = ({}) => {
 const styles = StyleSheet.create({
   root: {
     width,
-    marginVertical: 5,
+    marginBottom: 15,
   },
   content: {
     paddingLeft: width * 0.05,
@@ -92,27 +122,37 @@ const styles = StyleSheet.create({
   title: {
     marginLeft: width * 0.05,
     fontFamily: 'UberBold',
-    marginBottom: 5,
+    fontSize: 15,
     color: '#000',
+    marginBottom: 10,
   },
   plus: {
     borderWidth: 1,
     borderColor: '#C5C8D7',
     borderStyle: 'dashed',
-    height: SIZE,
-    width: SIZE,
-    borderRadius: SIZE / 2,
+    height: CANVAS_SIZE,
+    width: CANVAS_SIZE,
+    borderRadius: CANVAS_SIZE / 2,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 5,
+  },
+  photoContainer: {
+    width: CANVAS_SIZE,
+    height: CANVAS_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  canvas: {
+    width: CANVAS_SIZE,
+    height: CANVAS_SIZE,
+    position: 'absolute',
   },
   photo: {
     height: SIZE,
     width: SIZE,
     borderRadius: SIZE / 2,
-    marginHorizontal: 5,
-    borderWidth: 1,
-    borderColor: '#3366ff',
   },
 });
 

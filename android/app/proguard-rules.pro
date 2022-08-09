@@ -14,6 +14,8 @@
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
 
+-keep class com.shopify.reactnative.skia.** { *; }
+
 -keep public class com.horcrux.svg.** {*;}
 
 -keep public class com.dylanvann.fastimage.* {*;}

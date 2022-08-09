@@ -1,11 +1,12 @@
-import {View, Text, StyleSheet, Image, ViewStyle} from 'react-native';
+import {View, Text, StyleSheet, ViewStyle} from 'react-native';
 import React, {useRef} from 'react';
+import FastImage from 'react-native-fast-image';
 
 type AvatarGroupProps = {
   photos: string[];
 };
 
-const SIZE = 30;
+const SIZE = 35;
 const SPACER = 0.6;
 
 const photos = [
@@ -34,10 +35,11 @@ const AvatarGroup: React.FC<AvatarGroupProps> = ({}) => {
         };
 
         return (
-          <Image
+          <FastImage
             key={`${uri}${index}`}
             source={{uri}}
             style={[styles.circle, position]}
+            resizeMode={'cover'}
           />
         );
       })}
