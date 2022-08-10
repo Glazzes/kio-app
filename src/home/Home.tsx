@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {View, StyleSheet, Dimensions} from 'react-native';
-import React, {useCallback, useMemo} from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import React, {useCallback, useEffect, useMemo} from 'react';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/AppHeader';
 import {FlashList, ListRenderItemInfo} from '@shopify/flash-list';
 import {useSharedValue} from 'react-native-reanimated';
@@ -12,7 +12,7 @@ import {FAB} from '../misc';
 import PinchableReflection from './files/thumnnails/PinchableReflection';
 import {Dimension} from '../shared/types';
 import FileWrapper from './FileWrapper';
-import {FlatList} from 'react-native-gesture-handler';
+import {Overlays} from '../shared/enum/Overlays';
 
 type HomeProps = {
   folderId?: string;

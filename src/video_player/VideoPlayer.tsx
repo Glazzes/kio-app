@@ -9,7 +9,6 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({}) => {
   return (
     <View style={styles.root}>
       <Video
-        nativeID="video"
         source={{
           uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
         }}
@@ -35,7 +34,7 @@ VideoPlayer.options = {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#000 ',
     justifyContent: 'center',
     alignItems: 'center',
   },

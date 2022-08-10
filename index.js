@@ -4,7 +4,7 @@ import {Navigation} from 'react-native-navigation';
 import {Screens} from './src/enums/screens';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import Notifications from './src/notifications/Notifications';
-import {Settings, Editor} from './src/settings';
+import {Settings} from './src/settings';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
 import {Home, Camera, CreateFolderModal} from './src/home';
@@ -12,10 +12,11 @@ import {Toast} from './src/misc';
 import DetailsDrawer from './src/navigation/DetailsDrawer';
 import ScrollTest from './src/misc/ScrollTest';
 import EditProfile from './src/settings/edit/EditProfile';
-import AudioPlayer from './src/audio_player';
+import {AudioPlayer} from './src/audio_player';
 import VideoPlayer from './src/video_player/VideoPlayer';
-import Result from './src/settings/editor/Result';
-import PDFViewer from './src/misc/PDFViewer';
+import {CropEditor} from './src/crop_editor';
+import {Overlays} from './src/shared/enum/Overlays';
+import {PictureInPictureVideo} from './src/overlays';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -30,9 +31,6 @@ Navigation.setDefaultOptions({
     visible: false,
   },
   modalPresentationStyle: 'overCurrentContext',
-  overlay: {
-    interceptTouchOutside: false,
-  },
 });
 
 Navigation.events().registerAppLaunchedListener(() => {
@@ -45,7 +43,7 @@ Navigation.events().registerAppLaunchedListener(() => {
             children: [
               {
                 component: {
-                  id: Screens.AUDIO_PLAYER,
+                  id: Screens.VIDEO_PLAYER,
                   name: Screens.AUDIO_PLAYER,
                 },
               },
@@ -63,11 +61,16 @@ Navigation.events().registerAppLaunchedListener(() => {
   });
 });
 
+Navigation.registerComponent(
+  Overlays.PICTURE_IN_PICTURE_VIDEO,
+  () => PictureInPictureVideo,
+);
+
 Navigation.registerComponent(Screens.AUDIO_PLAYER, () =>
   gestureHandlerRootHOC(AudioPlayer),
 );
 
-Navigation.registerComponent('VP', () => VideoPlayer);
+Navigation.registerComponent(Screens.VIDEO_PLAYER, () => VideoPlayer);
 
 Navigation.registerComponent('ST', () => ScrollTest);
 
@@ -99,10 +102,8 @@ Navigation.registerComponent('Edit.Profile', () =>
 );
 
 Navigation.registerComponent(Screens.EDITOR, () =>
-  gestureHandlerRootHOC(Editor),
+  gestureHandlerRootHOC(CropEditor),
 );
-
-Navigation.registerComponent('Result', () => gestureHandlerRootHOC(Result));
 
 // Miscelaneous
 Navigation.registerComponent(Screens.TOAST, () => Toast);

@@ -13,9 +13,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import {snapPoint, useVector} from 'react-native-redash';
 import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
-import {maxScale} from '../../../settings/editor/utils';
 import {Dimension} from '../../../shared/types';
 import emitter from '../../../utils/emitter';
+import {getMaxImageScale} from '../../../crop_editor/utils/functions/getMaxImageScale';
 
 type ImageDetailsProps = {
   index: number;
@@ -149,7 +149,11 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
     .onStart(e => {
-      const toMaxScale = maxScale(layout, dimensions, 0);
+      const toMaxScale = getMaxImageScale(
+        {width: layout.x.value, height: layout.y.value},
+        {...dimensions},
+        0,
+      );
 
       let toScale = scale.value * 2;
       if (toScale > toMaxScale) {
@@ -204,6 +208,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       });
 
     return () => backListener.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

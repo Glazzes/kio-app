@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import AuidoControls from './Controls';
 import Waves from './Waves';
+import {Overlays} from '../../shared/enum/Overlays';
 
 Sound.setCategory('Playback');
 
@@ -101,10 +102,21 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
     };
   }, []);
 
+  useEffect(() => {
+    Navigation.showOverlay({
+      component: {
+        name: Overlays.PICTURE_IN_PICTURE_VIDEO,
+        passProps: {
+          uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        },
+      },
+    });
+  }, []);
+
   return (
     <View style={styles.root}>
       <View style={styles.appbar}>
-        <Icon name={'chevron-right'} color={'#1c1514'} size={ICON_SIZE} />
+        <Icon name={'chevron-left'} color={'#1c1514'} size={ICON_SIZE} />
         {/*<Text style={styles.title}>Now playing</Text> */}
         <Icon name={'dots-vertical'} size={ICON_SIZE} />
       </View>
@@ -154,6 +166,9 @@ AudioPlayer.options = {
   topBar: {
     visible: false,
   },
+  overlay: {
+    interceptTouchOutside: false,
+  },
 };
 
 const styles = StyleSheet.create({
@@ -173,13 +188,13 @@ const styles = StyleSheet.create({
   wavesContainer: {
     position: 'absolute',
     bottom: 0,
-    marginBottom: 20,
+    marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
   titleContainer: {
     width: WIDTH,
-    height: 120,
+    height: 100,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

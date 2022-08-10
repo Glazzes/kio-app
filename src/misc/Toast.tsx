@@ -61,7 +61,7 @@ const information: Color = {
 
 const SPACING = 15;
 const TOAST_WIDTH = width * 0.9;
-const DURATION = 6000;
+const DURATION = 30000;
 
 const entering = new Keyframe({
   from: {
@@ -173,12 +173,12 @@ Toast.options = {
 const styles = StyleSheet.create({
   toast: {
     width: TOAST_WIDTH,
+    position: 'absolute',
+    overflow: 'hidden',
     bottom: SPACING,
     borderRadius: 10,
     alignItems: 'center',
     alignSelf: 'center',
-    position: 'absolute',
-    overflow: 'hidden',
   },
   icon: {
     alignSelf: 'center',

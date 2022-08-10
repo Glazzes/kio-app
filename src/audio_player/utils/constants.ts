@@ -7,7 +7,7 @@ export const MAX_AUDIO_POINT = 127;
 export const CANVAS_HEIGHT = 180;
 
 export const UPPER_BAR_HEIGHT = 140;
-export const LOWER_BAR_HEIGHT = 40;
+export const LOWER_BAR_HEIGHT = 30;
 
 export const WAVEFORMS_MARGIN = 2;
 

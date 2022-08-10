@@ -1,1 +1,1 @@
-export {default as AudioPLayer} from './components/AudioPlayer';
+export {default as AudioPlayer} from './components/AudioPlayer';

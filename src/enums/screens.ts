@@ -15,6 +15,7 @@ export enum Screens {
   LEFT_DRAWER = 'Left drawer',
   TOAST = 'Toast',
 
+  VIDEO_PLAYER = 'Video.Player',
   AUDIO_PLAYER = 'Audio.Player',
 
   // modals
