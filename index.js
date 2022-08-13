@@ -10,13 +10,14 @@ import Shared from './src/shared/Shared';
 import {Home, Camera, CreateFolderModal} from './src/home';
 import {Toast} from './src/misc';
 import DetailsDrawer from './src/navigation/DetailsDrawer';
-import ScrollTest from './src/misc/ScrollTest';
 import EditProfile from './src/settings/edit/EditProfile';
 import {AudioPlayer} from './src/audio_player';
 import VideoPlayer from './src/video_player/VideoPlayer';
 import {CropEditor} from './src/crop_editor';
 import {Overlays} from './src/shared/enum/Overlays';
 import {PictureInPictureVideo} from './src/overlays';
+import {Drawers} from './src/navigation/drawers';
+import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
 
 LogBox.ignoreLogs(['ViewPropTypes']);
 
@@ -43,8 +44,8 @@ Navigation.events().registerAppLaunchedListener(() => {
             children: [
               {
                 component: {
-                  id: Screens.VIDEO_PLAYER,
-                  name: Screens.AUDIO_PLAYER,
+                  id: Screens.MY_UNIT,
+                  name: 'Pdf',
                 },
               },
             ],
@@ -54,6 +55,12 @@ Navigation.events().registerAppLaunchedListener(() => {
           component: {
             id: Screens.LEFT_DRAWER,
             name: Screens.LEFT_DRAWER,
+          },
+        },
+        left: {
+          component: {
+            id: Drawers.PDF_CONTENT_DRAWER,
+            name: Drawers.PDF_CONTENT_DRAWER,
           },
         },
       },
@@ -66,13 +73,14 @@ Navigation.registerComponent(
   () => PictureInPictureVideo,
 );
 
+Navigation.registerComponent('Pdf', () => PdfViewer);
+Navigation.registerComponent(Drawers.PDF_CONTENT_DRAWER, () => PdfContentTable);
+
 Navigation.registerComponent(Screens.AUDIO_PLAYER, () =>
   gestureHandlerRootHOC(AudioPlayer),
 );
 
 Navigation.registerComponent(Screens.VIDEO_PLAYER, () => VideoPlayer);
-
-Navigation.registerComponent('ST', () => ScrollTest);
 
 Navigation.registerComponent(Screens.MY_UNIT, () =>
   gestureHandlerRootHOC(Home),

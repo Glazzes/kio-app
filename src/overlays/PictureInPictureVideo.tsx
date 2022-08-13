@@ -14,7 +14,7 @@ type PictureInPictureVideoProps = {
 };
 
 const {width, height} = Dimensions.get('window');
-const BASE_WIDTH = 250;
+const BASE_WIDTH = 200;
 
 /*
 When a GestureHandlerRootView is on top of a Gesture Detector it will cause the one on top
@@ -44,10 +44,12 @@ const PictureInPictureVideo: NavigationFunctionComponent<
     return {
       width: BASE_WIDTH,
       height: BASE_WIDTH * (720 / 1280),
-      backgroundColor: 'lime',
+      backgroundColor: '#f3f3f3',
       position: 'absolute',
       left: (width - BASE_WIDTH) / 2,
       top: (height - derivedHeight) / 2,
+      borderRadius: 5,
+      overflow: 'hidden',
     };
   }, []);
 
@@ -61,8 +63,16 @@ const PictureInPictureVideo: NavigationFunctionComponent<
         viewStyle,
         [{transform: [{translateX: translate.x}, {translateY: translate.y}]}],
       ]}
-      {...panResponder.panHandlers}
-    />
+      {...panResponder.panHandlers}>
+      <Video
+        ref={videoRef}
+        source={require('./assets/gru.mp4')}
+        style={styles.video}
+        controls={false}
+        paused={false}
+        resizeMode={'contain'}
+      />
+    </Animated.View>
   );
 };
 

@@ -66,6 +66,19 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
     };
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      Navigation.showOverlay({
+        component: {
+          name: Overlays.PICTURE_IN_PICTURE_VIDEO,
+          passProps: {
+            uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          },
+        },
+      });
+    }, 30000);
+  }, []);
+
   return (
     <View style={styles.root}>
       <Appbar parentComponentId={componentId} />
