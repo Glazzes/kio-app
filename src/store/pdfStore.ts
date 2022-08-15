@@ -7,8 +7,15 @@ export type PdfContent = {
   mNativePtr: number;
 };
 
-export type Indexes = {[id: number]: {prev: number; next: number}};
-export type Index = {prev: number; next: number};
+export type SubIndex = {pageIdx: number; prev: number; next: number};
+export type TopLevelIndex = {
+  prev: number;
+  next: number;
+  subIndexes: SubIndex[];
+};
+export type Indexes = {
+  [id: number]: TopLevelIndex;
+};
 
 type Store = {
   content: PdfContent[];
