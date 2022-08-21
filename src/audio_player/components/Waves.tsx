@@ -35,7 +35,7 @@ import {convertCurrentTimeToTextTime} from '../utils/functions/convertCurrentTim
 import {ReText} from 'react-native-redash';
 import Sound from 'react-native-sound';
 
-import json from '../assets/waves.json';
+import json from '../assets/forest.json';
 
 type WavesProps = {
   sound: Sound;

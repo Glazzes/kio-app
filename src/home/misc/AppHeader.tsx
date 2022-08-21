@@ -1,21 +1,25 @@
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import React from 'react';
-import Appbar from './Appbar';
 import Contributors from '../../misc/Contributors';
-import FolderList from '../../misc/FolderList';
-import Animated from 'react-native-reanimated';
+import FolderList from '../folders/FolderList';
 import FileHeader from '../../misc/FileHeader';
+import BreadCrumbs from '../../misc/BreadCrumbs';
 
-type AppHeaderProps = {
-  scrollY: Animated.SharedValue<number>;
-};
+type AppHeaderProps = {};
 
-export default function AppHeader({scrollY}: AppHeaderProps) {
+export default function AppHeader({}: AppHeaderProps) {
   return (
-    <View>
+    <View style={styles.root}>
+      <BreadCrumbs />
       <FolderList />
       <Contributors />
       <FileHeader title={'Files'} itemLength={8} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    alignItems: 'center',
+  },
+});

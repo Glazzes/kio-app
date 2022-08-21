@@ -13,13 +13,14 @@ const SIZE = (width * 0.9 - 10) / 2;
 const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
   const wrapperMargin: ViewStyle = useMemo(() => {
     return {marginLeft: index % 2 === 0 ? width * 0.05 : 5};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <View style={[styles.root, wrapperMargin]}>
       {children}
       <View style={styles.infoContainer}>
-        <View style={{flex: 1}}>
+        <View style={styles.flex}>
           <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
             Glaceon.png
           </Text>
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  titleContainer: {
+  flex: {
     flex: 1,
   },
   title: {

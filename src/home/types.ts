@@ -1,4 +1,4 @@
 export enum TypingEvent {
-  START_TYPING = 'start_styping',
-  END_TYPING = 'end_typing',
+  BEGIN_TYPING = 'Being.Typing',
+  END_TYPING = 'End.Typing',
 }

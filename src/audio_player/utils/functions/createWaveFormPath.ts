@@ -11,15 +11,17 @@ import {WaveFormType} from '../types';
 export function createWaveFormPath(
   barPoints: number[],
   type: WaveFormType,
+  barHeight?: number,
 ): SkPath {
   const path = Skia.Path.Make();
+  const currentBarHeight = barHeight ?? UPPER_BAR_HEIGHT;
 
   const x = STROKE_WIDTH + STROKE_MARGIN;
-  const y = UPPER_BAR_HEIGHT + WAVEFORMS_MARGIN;
+  const y = currentBarHeight + WAVEFORMS_MARGIN;
   for (let i = 0; i < barPoints.length; i++) {
     if (type === 'upper') {
-      path.moveTo(x * i, UPPER_BAR_HEIGHT);
-      path.lineTo(x * i, UPPER_BAR_HEIGHT - UPPER_BAR_HEIGHT * barPoints[i]);
+      path.moveTo(x * i, currentBarHeight);
+      path.lineTo(x * i, currentBarHeight - currentBarHeight * barPoints[i]);
     }
 
     if (type === 'lower') {

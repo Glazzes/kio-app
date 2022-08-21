@@ -1,3 +1,13 @@
+// File
+export type FileMetadata = {
+  width: number | undefined;
+  height: number | undefined;
+  duration: number | undefined;
+  pages: number | undefined;
+  thumbnail: number | undefined; // pdf only, does not apply to videos
+};
+
+// miscelaneous
 export type Dimension = {
   width: number;
   height: number;

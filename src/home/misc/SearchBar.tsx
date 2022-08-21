@@ -9,9 +9,9 @@ import {
 import React, {useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../../utils/emitter';
-import {TypingEvent} from '../../enums/events';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {withKeyboard} from '../../utils/hoc';
+import {TypingEvent} from '../types';
 
 const {width} = Dimensions.get('window');
 const CLOSE_ICON_SIZE = 20;
@@ -30,7 +30,7 @@ const SearchBar: React.FC = ({}) => {
     setSearchTerm(text);
 
     if (Math.abs(lastTextLength - text.length) === 1) {
-      emitter.emit(TypingEvent.TYPING);
+      emitter.emit(TypingEvent.BEGIN_TYPING);
     }
 
     if (timer) {
@@ -38,11 +38,12 @@ const SearchBar: React.FC = ({}) => {
     }
 
     const showResults = setTimeout(() => {
-      setLastTextLength(text.length);
-      emitter.emit(TypingEvent.STOPPED_TYPIMG, text);
-    }, 600);
+      Keyboard.dismiss();
+      emitter.emit(TypingEvent.END_TYPING, text);
+    }, 2000);
 
     setTimer(showResults);
+    setLastTextLength(text.length);
   };
 
   const restoreTextInput = () => {

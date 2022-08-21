@@ -18,34 +18,44 @@ import {Overlays} from './src/shared/enum/Overlays';
 import {PictureInPictureVideo} from './src/overlays';
 import {Drawers} from './src/navigation/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
+import {GetStarted} from './src/onboarding';
+import {FFprobeKit} from 'ffmpeg-kit-react-native';
 
-LogBox.ignoreLogs(['ViewPropTypes']);
-
-Navigation.setDefaultOptions({
-  layout: {
-    orientation: ['portrait'],
-  },
-  topBar: {
-    visible: false,
-  },
-  statusBar: {
-    visible: false,
-  },
-  modalPresentationStyle: 'overCurrentContext',
-});
+LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
 Navigation.events().registerAppLaunchedListener(() => {
+  // Dummy command to have ffprobe loaded before using it
+  FFprobeKit.execute('-v quiet')
+    .then(() => {})
+    .catch(() => {});
+
   Navigation.setRoot({
     root: {
       sideMenu: {
         center: {
           stack: {
             id: 'Stack',
+            options: {
+              statusBar: {
+                visible: false,
+              },
+              topBar: {
+                visible: false,
+              },
+              sideMenu: {
+                right: {
+                  enabled: false,
+                },
+                left: {
+                  enabled: false,
+                },
+              },
+            },
             children: [
               {
                 component: {
                   id: Screens.MY_UNIT,
-                  name: 'Pdf',
+                  name: Screens.MY_UNIT,
                 },
               },
             ],
@@ -55,12 +65,28 @@ Navigation.events().registerAppLaunchedListener(() => {
           component: {
             id: Screens.LEFT_DRAWER,
             name: Screens.LEFT_DRAWER,
+            options: {
+              statusBar: {
+                visible: false,
+              },
+              topBar: {
+                visible: false,
+              },
+            },
           },
         },
         left: {
           component: {
             id: Drawers.PDF_CONTENT_DRAWER,
             name: Drawers.PDF_CONTENT_DRAWER,
+            options: {
+              statusBar: {
+                visible: false,
+              },
+              topBar: {
+                visible: false,
+              },
+            },
           },
         },
       },

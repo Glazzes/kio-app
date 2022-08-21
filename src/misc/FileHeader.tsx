@@ -19,18 +19,17 @@ const FileHeader: React.FC<FileHeaderProps> = ({title, itemLength}) => {
 const styles = StyleSheet.create({
   infoContainer: {
     width: width * 0.9,
-    marginLeft: width * 0.05,
-    marginVertical: 5,
+    marginTop: 10,
   },
   title: {
     fontFamily: 'UberBold',
     fontSize: 16,
-    color: '#9Ba4b3',
+    color: '#000',
   },
   subtitle: {
     fontFamily: 'UberBold',
     fontSize: 12,
-    color: '#9Ba4b3',
+    color: '#000',
   },
   count: {
     fontFamily: 'Uber',

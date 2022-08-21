@@ -14,8 +14,8 @@ import Animated, {
 import {snapPoint, useVector} from 'react-native-redash';
 import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
 import {Dimension} from '../../../shared/types';
-import emitter from '../../../utils/emitter';
 import {getMaxImageScale} from '../../../crop_editor/utils/functions/getMaxImageScale';
+import emitter from '../../../utils/emitter';
 
 type ImageDetailsProps = {
   index: number;
@@ -58,30 +58,15 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       ? interpolateColor(
           translate.y.value,
           [-height / 2, 0, height / 2],
-          ['transparent', 'rgba(0, 0, 0, 1)', 'transparent'],
+          ['rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 1)', 'rgba(0, 0, 0, 0.2)'],
           'RGB',
         )
       : 'rgba(0, 0, 0, 1)';
   }, [translate.y.value]);
 
-  const wrapper = () => {
+  const dismissModal = () => {
     emitter.emit('sss');
-    Navigation.dismissModal(componentId, {
-      animations: {
-        dismissModal: {
-          sharedElementTransitions: [
-            {
-              fromId: `img-${uri}-${index}-dest`,
-              toId: `img-${uri}-${index}`,
-              duration: 300,
-              interpolation: {
-                type: 'linear',
-              },
-            },
-          ],
-        },
-      },
-    });
+    Navigation.dismissModal(componentId);
   };
 
   const pan = Gesture.Pan()
@@ -103,7 +88,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
 
       if (scale.value === 1) {
         if (snap === -height || snap === height) {
-          runOnJS(wrapper)();
+          runOnJS(dismissModal)();
         }
 
         if (snap === 0) {
@@ -203,7 +188,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
     const backListener =
       Navigation.events().registerNavigationButtonPressedListener(e => {
         if (e.buttonId === 'RNN.hardwareBackButton') {
-          wrapper();
+          dismissModal();
         }
       });
 
@@ -232,7 +217,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   );
 };
 
-ImageDetails.options = {
+ImageDetails.options = ({uri, index}) => ({
   statusBar: {
     visible: false,
   },
@@ -242,10 +227,22 @@ ImageDetails.options = {
   layout: {
     backgroundColor: 'transparent',
   },
+  modalPresentationStyle: 'overCurrentContext',
   hardwareBackButton: {
     dismissModalOnPress: false,
   },
-};
+  animations: {
+    dismissModal: {
+      sharedElementTransitions: [
+        {
+          fromId: `img-${uri}-${index}-dest`,
+          toId: `img-${uri}-${index}`,
+          duration: 300,
+        },
+      ],
+    },
+  },
+});
 
 const styles = StyleSheet.create({
   root: {

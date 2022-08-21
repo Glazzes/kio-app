@@ -10,14 +10,25 @@ import React from 'react';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../enums/screens';
 import SearchBar from './SearchBar';
+import {
+  BlurMask,
+  Canvas,
+  Rect,
+  useSharedValueEffect,
+  useValue,
+} from '@shopify/react-native-skia';
+import Animated, {Extrapolate, interpolate} from 'react-native-reanimated';
 
 type AppbarProps = {
+  scrollY: Animated.SharedValue<number>;
   parentComponentId: string;
 };
 
 const {statusBarHeight} = Navigation.constantsSync();
 const {width} = Dimensions.get('window');
 const IMAGE_SIZE = 40;
+
+const CANVAS_SIZE = 132;
 
 const Appbar: React.FC<AppbarProps> = ({scrollY, parentComponentId}) => {
   const toProfile = () => {
@@ -28,8 +39,31 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, parentComponentId}) => {
     });
   };
 
+  const opacity = useValue(0);
+
+  useSharedValueEffect(() => {
+    opacity.current = interpolate(
+      scrollY.value,
+      [0, 50],
+      [0, 1],
+      Extrapolate.CLAMP,
+    );
+  }, scrollY);
+
   return (
-    <View style={styles.root}>
+    <Animated.View style={styles.root}>
+      <Canvas style={styles.canvas}>
+        <Rect
+          x={0}
+          y={CANVAS_SIZE - 72}
+          width={width}
+          height={50}
+          color={'#0b4199'}
+          opacity={opacity}>
+          <BlurMask blur={18} style={'normal'} />
+        </Rect>
+        <Rect x={0} y={0} width={width} height={CANVAS_SIZE} color={'#fff'} />
+      </Canvas>
       <View style={styles.appbar}>
         <View>
           <Text style={styles.hi}>Hi,</Text>
@@ -46,7 +80,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, parentComponentId}) => {
         </Pressable>
       </View>
       <SearchBar />
-    </View>
+    </Animated.View>
   );
 };
 
@@ -54,13 +88,17 @@ const styles = StyleSheet.create({
   root: {
     width: width,
     paddingTop: statusBarHeight + 5,
-    backgroundColor: '#fff',
   },
   appbar: {
     width,
     paddingHorizontal: width * 0.05,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  canvas: {
+    position: 'absolute',
+    height: CANVAS_SIZE + 25,
+    width,
   },
   hi: {
     fontFamily: 'Uber',

@@ -1,11 +1,16 @@
 import {MAX_AUDIO_POINT, MAX_WAVES} from '../constants';
 
-export function convertAudioPointsToBarPoints(audioPoints: number[]): number[] {
-  if (audioPoints.length < MAX_WAVES) {
+export function convertAudioPointsToBarPoints(
+  audioPoints: number[],
+  waves?: number,
+): number[] {
+  const maxWaves = waves ?? MAX_WAVES;
+
+  if (audioPoints.length < maxWaves) {
     return audioPoints.map(point => Math.abs(point));
   }
 
-  const step = Math.max(1, Math.floor(audioPoints.length / MAX_WAVES));
+  const step = Math.max(1, Math.floor(audioPoints.length / maxWaves));
   const points: number[] = [];
 
   for (let i = 0; i < audioPoints.length; i += step) {

@@ -19,7 +19,6 @@ import Animated, {
   ZoomOut,
 } from 'react-native-reanimated';
 import {withKeyboard} from '../../utils/hoc';
-import {ShadowView} from '@dimaportenko/react-native-shadow-view';
 
 type CreateFolderModalProps = {
   parentComponentId?: string;

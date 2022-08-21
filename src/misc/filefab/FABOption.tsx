@@ -3,8 +3,10 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import emitter from '../../utils/emitter';
-import {getDocumentAsync} from 'expo-document-picker';
-import {DocumentPickResult} from './types';
+import Sound from 'react-native-sound';
+import {pickMultiple} from 'react-native-document-picker';
+import {FFprobeKit} from 'ffmpeg-kit-react-native';
+import useUploadStore from '../../store/uploadUtil';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -12,29 +14,76 @@ type FABOptionProps = {
   toggle: () => void;
 };
 
-const {width} = Dimensions.get('window');
-const BUTTON_RADIUS = 40;
-const END_POSITION = width / 2 - BUTTON_RADIUS;
+Sound.setCategory('Playback');
 
-const openDocumentPicker = async () => {
-  const result = (await getDocumentAsync({
-    copyToCacheDirectory: false,
-    type: '*/*',
-    multiple: true,
-  })) as DocumentPickResult;
-};
+const {width: windowWidth} = Dimensions.get('window');
+const BUTTON_RADIUS = 40;
+const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
+  const pushFile = useUploadStore(s => s.pushFile);
+  const setFilesToUpload = useUploadStore(s => s.setFilesToUpload);
+
+  const openDocumentPicker = async () => {
+    // @ts-ignore
+    const result = await pickMultiple({
+      allowMultiSelection: true,
+      copyTo: 'documentDirectory',
+    });
+
+    setFilesToUpload(result.length);
+
+    for (let file of result) {
+      let mediaLogs: String[] = [];
+      await FFprobeKit.executeAsync(
+        `-v error -show_entries stream=width,height,duration -of json ${result[0].fileCopyUri}`,
+        undefined,
+        logs => {
+          mediaLogs.push(logs.getMessage());
+        },
+      );
+
+      // FFProbes takes a long time to print the required info
+      const timeout = setTimeout(() => {
+        const ffProbeLogData = JSON.parse(mediaLogs.join(''))['streams'][0];
+        const width: number | undefined = ffProbeLogData.width;
+        const height: number | undefined = ffProbeLogData.height;
+        let duration: string | undefined = ffProbeLogData.duration;
+
+        let realDuration: number | undefined;
+        if (duration) {
+          realDuration = Math.floor(parseFloat(duration));
+        }
+
+        pushFile({
+          file: {
+            name: file.name,
+            filename: file.name,
+            fileType: file.type ?? '',
+            uri: file.fileCopyUri ?? '',
+          },
+          metadata: {
+            width,
+            height,
+            duration: realDuration,
+          },
+        });
+
+        clearTimeout(timeout);
+      }, 1000);
+    }
+  };
+
   const rStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
-          translateX: END_POSITION * Math.cos(action.angle) * progress.value,
+          translateX: CENTER * Math.cos(action.angle) * progress.value,
         },
         {
-          translateY: END_POSITION * -Math.sin(action.angle) * progress.value,
+          translateY: CENTER * -1 * Math.sin(action.angle) * progress.value,
         },
       ],
     };

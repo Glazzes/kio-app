@@ -33,7 +33,7 @@ const photos = [
 ];
 
 const STROKE_WIDTH = 1.5;
-const SIZE = 45 - STROKE_WIDTH * 2;
+const SIZE = 45 - STROKE_WIDTH * 2.5;
 const CANVAS_SIZE = 50;
 
 const gradients = [
@@ -72,6 +72,10 @@ function renderItem(info: ListRenderItemInfo<string>) {
   );
 }
 
+function separatorComponent() {
+  return <View style={styles.separator} />;
+}
+
 const Contributors: React.FC<ContributorsProps> = ({}) => {
   const ref = useAnimatedRef();
 
@@ -99,6 +103,7 @@ const Contributors: React.FC<ContributorsProps> = ({}) => {
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.content}
+        ItemSeparatorComponent={separatorComponent}
         ListHeaderComponent={() => {
           return (
             <View style={styles.plus}>
@@ -112,12 +117,15 @@ const Contributors: React.FC<ContributorsProps> = ({}) => {
 };
 
 const styles = StyleSheet.create({
+  separator: {
+    width: 10,
+  },
   root: {
     width,
     marginBottom: 15,
   },
   content: {
-    paddingLeft: width * 0.05,
+    paddingHorizontal: width * 0.05,
   },
   title: {
     marginLeft: width * 0.05,
@@ -142,7 +150,6 @@ const styles = StyleSheet.create({
     height: CANVAS_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 5,
   },
   canvas: {
     width: CANVAS_SIZE,

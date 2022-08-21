@@ -86,7 +86,11 @@ const PdfIndexView: React.FC<PdfIndexViewProps> = ({
       hitSlop={{bottom: 10, top: 10}}>
       <View style={styles.title}>
         {currentIndex.subIndexes.length > 0 ? (
-          <Icon name="play" color={open ? '#3366ff' : '#000'} size={15} />
+          <Icon
+            name={open ? 'chevron-down' : 'chevron-right'}
+            color={open ? '#3366ff' : '#000'}
+            size={15}
+          />
         ) : (
           <View style={styles.placeHolder} />
         )}

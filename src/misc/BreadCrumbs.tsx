@@ -22,7 +22,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = ({}) => {
       <ScrollView
         showsHorizontalScrollIndicator={false}
         horizontal={true}
-        style={styles.scrollview}>
+        style={styles.scrollview}
+        contentContainerStyle={styles.content}>
         {folders.map((folder, index) => {
           return (
             <View key={`${folder}-${index}`} style={styles.container}>
@@ -47,8 +48,11 @@ const styles = StyleSheet.create({
   scrollview: {
     height: 35,
     maxHeight: 35,
-    width: width * 0.9,
+    width: width,
     marginVertical: 5,
+  },
+  content: {
+    paddingHorizontal: width * 0.05,
   },
   container: {
     flexDirection: 'row',

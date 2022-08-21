@@ -1,18 +1,28 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {View, StyleSheet, Dimensions} from 'react-native';
-import React, {useCallback, useEffect, useMemo} from 'react';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {StyleSheet, Dimensions, View} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/AppHeader';
-import {FlashList, ListRenderItemInfo} from '@shopify/flash-list';
-import {useSharedValue} from 'react-native-reanimated';
-import ImageThumbnail from './files/thumnnails/ImageThumbnail';
+import {
+  FlashList,
+  FlashListProps,
+  ListRenderItemInfo,
+} from '@shopify/flash-list';
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
 import {File} from '../utils/types';
 import Appbar from './misc/Appbar';
 import {FAB} from '../misc';
-import PinchableReflection from './files/thumnnails/PinchableReflection';
 import {Dimension} from '../shared/types';
 import FileWrapper from './FileWrapper';
-import {Overlays} from '../shared/enum/Overlays';
+import {
+  ImageThumbnail,
+  PinchableReflection,
+  VideoThumbnail,
+} from './files/thumnnails';
+import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
 
 type HomeProps = {
   folderId?: string;
@@ -25,6 +35,8 @@ function keyExtractor(item: string): string {
 }
 
 const {width: windowWidth, height: windowHeight} = Dimensions.get('window');
+const AnimatedFlashList =
+  Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
 
 const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
   const scrollY = useSharedValue<number>(0);
@@ -33,57 +45,64 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
   const translateX = useSharedValue<number>(0);
   const translateY = useSharedValue<number>(0);
   const scale = useSharedValue<number>(1);
-  const borderRadius = useSharedValue<number>(10);
   const x = useSharedValue<number>(-windowHeight);
   const y = useSharedValue<number>(-windowHeight);
 
   const renderHeader = useCallback(() => {
-    return <AppHeader scrollY={scrollY} />;
-  }, [scrollY]);
+    return <AppHeader />;
+  }, []);
 
   const renderItem = useMemo(() => {
     return (info: ListRenderItemInfo<string>): React.ReactElement => {
+      if (info.index === 0) {
+        return (
+          <FileWrapper index={info.index}>
+            <VideoThumbnail
+              parentComponentId={componentId}
+              index={info.index}
+            />
+          </FileWrapper>
+        );
+      }
+
       return (
         <FileWrapper index={info.index}>
-          <ImageThumbnail
-            index={info.index}
-            pic={
-              info.index % 2 === 0
-                ? 'file:///storage/sdcard0/Descargas/glaceon.jpg'
-                : 'file:///storage/sdcard0/Descargas/bigsur.jpg'
-            }
-            dimensions={dimensions}
-            image={{} as File}
-            translateX={translateX}
-            translateY={translateY}
-            scale={scale}
-            rBorderRadius={borderRadius}
-            x={x}
-            y={y}
-          />
+          {info.index % 2 === 0 ? (
+            <AudioThumbnail
+              index={info.index}
+              parentComponentId={componentId}
+            />
+          ) : (
+            <ImageThumbnail
+              image={{} as File}
+              pic={
+                'https://images.unsplash.com/photo-1616567214738-22fc0c6332b3?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8c2liZXJpYW4lMjBodXNreXxlbnwwfHwwfHw%3D&w=1000&q=80'
+              }
+              index={info.index}
+              scale={scale}
+              dimensions={dimensions}
+              translateX={translateX}
+              translateY={translateY}
+              x={x}
+              y={y}
+            />
+          )}
         </FileWrapper>
       );
     };
   }, []);
 
-  useEffect(() => {
-    setTimeout(() => {
-      Navigation.showOverlay({
-        component: {
-          name: Overlays.PICTURE_IN_PICTURE_VIDEO,
-          passProps: {
-            uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-          },
-        },
-      });
-    }, 30000);
-  }, []);
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: e => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
 
   return (
     <View style={styles.root}>
-      <Appbar parentComponentId={componentId} />
+      <Appbar scrollY={scrollY} parentComponentId={componentId} />
 
-      <FlashList
+      <AnimatedFlashList
         data={data}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
@@ -93,6 +112,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
         estimatedItemSize={data.length}
         estimatedListSize={{width: windowWidth, height: data.length * 65}}
         contentContainerStyle={styles.content}
+        onScroll={onScroll}
       />
 
       <PinchableReflection
@@ -100,7 +120,6 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
         translateX={translateX}
         translateY={translateY}
         scale={scale}
-        borderRadius={borderRadius}
         x={x}
         y={y}
       />
@@ -112,7 +131,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    height: windowHeight,
+    width: windowWidth,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
@@ -128,6 +148,11 @@ Home.options = {
   },
   topBar: {
     visible: false,
+  },
+  sideMenu: {
+    right: {
+      enabled: true,
+    },
   },
 };
 

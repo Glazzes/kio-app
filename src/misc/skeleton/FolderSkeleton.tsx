@@ -56,6 +56,7 @@ const FolderSkeleton: React.FC<FolderSkeletonProps> = ({}) => {
 const styles = StyleSheet.create({
   root: {
     width: SIZE,
+    height: 150,
     padding: 10,
     borderRadius: 10,
   },

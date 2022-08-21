@@ -16,7 +16,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import AuidoControls from './Controls';
 import Waves from './Waves';
-import {Overlays} from '../../shared/enum/Overlays';
 
 Sound.setCategory('Playback');
 
@@ -28,7 +27,9 @@ const {width} = Dimensions.get('window');
 const WIDTH = width * 0.9;
 const ICON_SIZE = 23;
 
-const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
+const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
+  componentId,
+}) => {
   const [duration, setDuration] = useState<number>(0);
   const [loaded, setLoaded] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -96,27 +97,23 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({}) => {
     }
   };
 
+  const goBack = () => {
+    Navigation.pop(componentId);
+  };
+
   useEffect(() => {
     return () => {
       sound.release();
     };
   }, []);
 
-  useEffect(() => {
-    Navigation.showOverlay({
-      component: {
-        name: Overlays.PICTURE_IN_PICTURE_VIDEO,
-        passProps: {
-          uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        },
-      },
-    });
-  }, []);
-
   return (
     <View style={styles.root}>
       <View style={styles.appbar}>
-        <Icon name={'chevron-left'} color={'#1c1514'} size={ICON_SIZE} />
+        <Pressable onPress={goBack}>
+          <Icon name={'chevron-left'} color={'#1c1514'} size={ICON_SIZE} />
+        </Pressable>
+
         {/*<Text style={styles.title}>Now playing</Text> */}
         <Icon name={'dots-vertical'} size={ICON_SIZE} />
       </View>
@@ -168,6 +165,11 @@ AudioPlayer.options = {
   },
   overlay: {
     interceptTouchOutside: false,
+  },
+  sideMenu: {
+    left: {
+      enabled: false,
+    },
   },
 };
 
