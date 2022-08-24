@@ -4,6 +4,7 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
   Platform,
+  Image,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
@@ -81,14 +82,17 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
       const endPath = Platform.OS === 'android' ? 'file://' + path : path;
 
       if (singlePicture) {
-        Navigation.push(componentId, {
-          component: {
-            name: Screens.EDITOR,
-            passProps: {
-              asset: null,
-              path: endPath,
+        Image.getSize(endPath, (w, h) => {
+          Navigation.push(componentId, {
+            component: {
+              name: Screens.EDITOR,
+              passProps: {
+                uri: endPath,
+                width: w,
+                height: h,
+              },
             },
-          },
+          });
         });
 
         return;

@@ -17,10 +17,10 @@ import navigationStore from '../../store/navigationStore';
 
 type EditProfileProps = {};
 
-const {height} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const IMAGE_SIZE = 100;
-const BAGDE_SIZE = IMAGE_SIZE / 2.5;
+const BAGDE_SIZE = IMAGE_SIZE / 3;
 const ANGLE = -Math.PI / 4;
 
 const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
@@ -39,10 +39,15 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
 
   useEffect(() => {
     const sub = emitter.addListener('picture.selected', (asset: Asset) => {
+      console.log(asset);
       Navigation.push(componentId, {
         component: {
           name: Screens.EDITOR,
-          passProps: {asset},
+          passProps: {
+            uri: asset.uri,
+            width: asset.width,
+            height: asset.height,
+          },
           options: {
             animations: {
               push: {
@@ -114,11 +119,12 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
           />
           <Animated.View
             style={styles.badge}
-            entering={ZoomIn.delay(450).duration(300)}>
-            <Icon name="camera" size={20} color={'#fff'} />
+            entering={ZoomIn.delay(1000).duration(300)}>
+            <Icon name="camera" size={18} color={'#fff'} />
           </Animated.View>
         </Pressable>
       </View>
+
       <ImagePicker translateY={translateY} />
     </View>
   );

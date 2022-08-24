@@ -22,7 +22,7 @@ const crop = (
 
   /*
     represents the top left corner (from 0 to 1)of the svg circle based on
-    the current position on both axis
+    the current position on both axis and the layout dimensions
   */
   let positionX = interpolate(
     position.x,
@@ -38,13 +38,12 @@ const crop = (
     Extrapolate.CLAMP,
   );
 
+  const actualDimensions = {...realDimensions};
+
   // if the angle sits over the y axis dimensions are flipped
   if (angle % Math.PI === Math.PI / 2) {
-    const dx = realDimensions.width;
-    const dy = realDimensions.height;
-
-    realDimensions.width = dy;
-    realDimensions.height = dx;
+    actualDimensions.width = realDimensions.height;
+    actualDimensions.height = realDimensions.width;
   }
 
   // images are cropped based on their real dimensions and their current position
@@ -52,7 +51,8 @@ const crop = (
   const originY = realDimensions.height * positionY;
 
   // the smalller dimension is the one used to determine the crop size
-  const size = Math.min(realDimensions.width, realDimensions.height) / scale;
+  const size =
+    Math.min(actualDimensions.width, actualDimensions.height) / scale;
 
   /*
   dividing the desired output size by the smaller dimension gives a value from 0 to 1 that

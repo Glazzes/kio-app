@@ -1,5 +1,5 @@
 import {View, Dimensions, StyleSheet, Pressable, Image} from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import SVG, {Path} from 'react-native-svg';
 import {
@@ -8,6 +8,7 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import Animated, {
+  FadeIn,
   useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
@@ -17,7 +18,6 @@ import {useVector} from 'react-native-redash';
 import {clamp, pinch, set} from '../../utils/animations';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
-import {Asset} from 'expo-media-library';
 import EffectIndicator from './EffectIndicator';
 import crop from '../utils/functions/crop';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
@@ -29,8 +29,9 @@ import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';
 
 type CropEditorProps = {
-  asset?: Asset;
-  path: string;
+  uri: string;
+  width: number;
+  height: number;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -49,26 +50,19 @@ const path = [
 
 const CROP_SIZE = 180;
 
+const AnimatedSvg = Animated.createAnimatedComponent(SVG);
+
 const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
-  asset,
-  path: imagePath,
+  uri: imagePath,
+  width: imageWidth,
+  height: imageHeight,
 }) => {
   const screens = navigationStore(s => s.screens);
 
-  const [dimensions, setDimensions] = useState<{width: number; height: number}>(
-    {
-      width: width / 2,
-      height: width / 2,
-    },
-  );
-
   const imageStyle = useMemo(() => {
-    if (asset) {
-      return getImageStyles({width: asset.width, height: asset.height}, R);
-    }
-
-    return getImageStyles(dimensions, R);
-  }, [dimensions, asset]);
+    return getImageStyles({width: imageWidth, height: imageHeight}, R);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const layout = useVector(0, 0);
   const original = useVector(0, 0);
@@ -115,7 +109,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
     .onChange(e => {
       const maxinumScale = getMaxImageScale(
         {width: layout.x.value, height: layout.y.value},
-        dimensions,
+        {width: imageWidth, height: imageHeight},
         rotateImage.value,
       );
 
@@ -183,7 +177,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
 
     const {originX, originY, resize} = crop(
       {width: layout.x.value, height: layout.y.value},
-      {...dimensions},
+      {width: imageWidth, height: imageHeight},
       {x: translate.x.value, y: translate.y.value},
       scale.value,
       rotateImage.value,
@@ -191,13 +185,11 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
       CROP_SIZE,
     );
 
-    const image = asset?.uri ?? imagePath;
-
     const {uri} = await manipulateAsync(
-      image,
+      imagePath,
       [
-        ...actions,
         {resize},
+        ...actions,
         {
           crop: {
             originX,
@@ -207,7 +199,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
           },
         },
       ],
-      {base64: false, compress: 1, format: SaveFormat.PNG},
+      {base64: false, compress: 0.5, format: SaveFormat.PNG},
     );
 
     await impactAsync(ImpactFeedbackStyle.Medium);
@@ -236,17 +228,10 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   );
 
   useEffect(() => {
-    if (asset) {
-      setDimensions({width: asset.width, height: asset.height});
-      return;
-    }
+    let tes = {w: 1, h: 1};
+    Image.getSize(imagePath, (w, h) => (tes = {w, h}));
+    console.log(tes);
 
-    Image.getSize(imagePath, (w, h) => {
-      setDimensions({width: w, height: h});
-    });
-  }, [asset, imagePath]);
-
-  useEffect(() => {
     const backButtonListener =
       Navigation.events().registerNavigationButtonPressedListener(e => {
         if (e.buttonId === 'RNN.hardwareBackButton') {
@@ -262,7 +247,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
     <GestureHandlerRootView style={styles.root}>
       <Animated.View style={[styles.container, rStyle]}>
         <Animated.Image
-          nativeID={`asset-${asset?.uri ?? imagePath}-dest`}
+          nativeID={`asset-${imagePath}-dest`}
           onLayout={e => {
             layout.x.value = e.nativeEvent.layout.width;
             layout.y.value = e.nativeEvent.layout.height;
@@ -271,17 +256,18 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
           }}
           resizeMethod={'scale'}
           resizeMode={'cover'}
-          source={{uri: asset ? asset.uri : imagePath}}
+          source={{uri: imagePath}}
           style={[imageStyle as any, effectStyles]}
         />
       </Animated.View>
-      <SVG
+      <AnimatedSvg
+        entering={FadeIn.delay(1000).duration(300)}
         width={width}
         height={height}
         style={StyleSheet.absoluteFillObject}
         nativeID={'svg'}>
         <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.45)'} />
-      </SVG>
+      </AnimatedSvg>
       <View style={styles.reflection}>
         <GestureDetector gesture={gesture}>
           <Animated.View>
@@ -340,15 +326,7 @@ CropEditor.options = {
           alpha: {
             from: 0,
             to: 1,
-            duration: 450,
-          },
-        },
-        {
-          id: 'svg',
-          alpha: {
-            from: 0,
-            to: 1,
-            duration: 450,
+            duration: 300,
           },
         },
       ],

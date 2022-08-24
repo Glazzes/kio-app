@@ -17,7 +17,7 @@ const SIZE = width / 3 - PADDING * 2;
 const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
   const devices = useCameraDevices();
 
-  const onSelectedPicture = () => {
+  const onSelectedPicture = async () => {
     if (index === 0) {
       emitter.emit('push.camera');
       return;

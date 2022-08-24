@@ -149,6 +149,18 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
     };
   });
 
+  const placeHolderStyles = useAnimatedStyle(() => {
+    return {
+      position: 'absolute',
+      width,
+      height,
+      backgroundColor:
+        translateY.value !== 0
+          ? withTiming('rgba(0, 0, 0, 0.2)')
+          : withTiming('transparent'),
+    };
+  });
+
   useEffect(() => {
     (async () => {
       const {granted} = await requestPermissionsAsync();
@@ -162,29 +174,36 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   }, []);
 
   return (
-    <GestureDetector gesture={pan}>
-      <Animated.View style={[styles.root, rStyle]}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Select a picture</Text>
-        </View>
-        <FlatList
-          ref={ref}
-          data={assets}
-          numColumns={COL}
-          scrollEnabled={false}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          getItemLayout={getItemLayout}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={false}
-          contentContainerStyle={styles.content}
-        />
-      </Animated.View>
-    </GestureDetector>
+    <View style={styles.rootContainer}>
+      <GestureDetector gesture={pan}>
+        <Animated.View style={[styles.root, rStyle]}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Select a picture</Text>
+          </View>
+          <FlatList
+            ref={ref}
+            data={assets}
+            numColumns={COL}
+            scrollEnabled={false}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            getItemLayout={getItemLayout}
+            showsVerticalScrollIndicator={false}
+            removeClippedSubviews={false}
+            contentContainerStyle={styles.content}
+          />
+        </Animated.View>
+      </GestureDetector>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  rootContainer: {
+    position: 'absolute',
+    width,
+    height,
+  },
   root: {
     position: 'absolute',
     top: height,
