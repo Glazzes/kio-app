@@ -16,7 +16,7 @@ type UserInfoProps = {
 };
 
 const {width} = Dimensions.get('window');
-const IMAGE_SIZE = 85;
+const IMAGE_SIZE = 70;
 
 const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
   const [newPic, setNewPic] = useState<string | undefined>(undefined);
@@ -25,19 +25,6 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
     Navigation.push(parentComponentId, {
       component: {
         name: 'Edit.Profile',
-        options: {
-          animations: {
-            push: {
-              sharedElementTransitions: [
-                {
-                  fromId: 'ppf',
-                  toId: 'ppf-edit',
-                  duration: 450,
-                },
-              ],
-            },
-          },
-        },
       },
     });
   };
@@ -55,7 +42,7 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
   return (
     <View style={styles.infoContainer}>
       <Image
-        nativeID="ppf"
+        nativeID="pfp"
         style={styles.image}
         source={{
           uri: newPic ?? 'https://randomuser.me/api/portraits/men/32.jpg',
@@ -75,8 +62,8 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
           </Text>
         </View>
       </View>
-      <Pressable onPress={editProfile}>
-        <Icon name={'pencil'} size={23} color={'#9E9EA7'} />
+      <Pressable onPress={editProfile} hitSlop={30}>
+        <Icon name={'pencil'} size={20} color={'#9E9EA7'} />
       </Pressable>
     </View>
   );

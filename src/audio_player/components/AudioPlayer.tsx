@@ -87,9 +87,9 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   const onAudioEnd = () => {
     translateX.value = width / 2;
     setIsPlaying(false);
+    sound.stop();
 
     if (loops !== 0) {
-      sound.setCurrentTime(0);
       sound.play();
       animateProgressBar();
       setIsPlaying(true);

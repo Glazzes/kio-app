@@ -30,7 +30,7 @@ const Appbar: React.FC<AppbarProps> = ({title, parentComponentId}) => {
 
   return (
     <View style={styles.appbar}>
-      <Pressable onPress={goBack} style={styles.pressable}>
+      <Pressable onPress={goBack} style={styles.pressable} hitSlop={50}>
         <Icon name={'chevron-left'} size={25} color={'#000'} />
       </Pressable>
       <View style={styles.titleContainer}>

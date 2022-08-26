@@ -13,12 +13,14 @@ import Animated, {
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import emitter from '../../../../utils/emitter';
-import authStore from '../../../../store/authStore';
+import authState from '../../../../store/authStore';
 import {Screens} from '../../../../enums/screens';
 import {clamp} from '../../../../shared/functions/clamp';
 import {pinch} from '../../../../utils/animations';
 import {Dimension} from '../../../../shared/types';
 import {File} from '../../../../utils/types';
+import {useSnapshot} from 'valtio';
+import {SIZE} from '../utils/constants';
 
 type Reflection = {
   dimensions: Animated.SharedValue<Dimension>;
@@ -35,9 +37,8 @@ type ImageThumbnailProps = {
   index: number;
 };
 
-const {width, height} = Dimensions.get('window');
+const {height} = Dimensions.get('window');
 
-const SIZE = (width * 0.9 - 10) / 2;
 const center = {
   x: SIZE / 2,
   y: SIZE / 2,
@@ -63,7 +64,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
     height: SIZE,
   });
 
-  const accessToken = authStore(state => state.accessToken);
+  const snap = useSnapshot(authState);
 
   const setPic = () => {
     emitter.emit('sp', pic);
@@ -81,25 +82,6 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
           index,
           uri: pic,
           dimensions: imageDimensions,
-        },
-        options: {
-          layout: {
-            backgroundColor: 'transparent',
-          },
-          animations: {
-            showModal: {
-              sharedElementTransitions: [
-                {
-                  fromId: `img-${pic}-${index}`,
-                  toId: `img-${pic}-${index}-dest`,
-                  duration: 300,
-                  interpolation: {
-                    type: 'linear',
-                  },
-                },
-              ],
-            },
-          },
         },
       },
     }).then(() => {
@@ -197,7 +179,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
           <Animated.Image
             nativeID={`img-${pic}-${index}`}
             style={[styles.image, cc]}
-            source={{uri: pic, headers: {Authorization: accessToken}}}
+            source={{uri: pic, headers: {Authorization: snap.accessToken}}}
             resizeMode={'cover'}
           />
         </Animated.View>

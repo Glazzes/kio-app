@@ -1,4 +1,4 @@
-import create from 'zustand';
+import {proxy} from 'valtio';
 
 type User = {
   username: string;
@@ -10,16 +10,12 @@ type Store = {
   user: User;
   accessToken: string;
   refreshToken: string;
-  setAccessToken: (accessToken: string) => void;
-  setRefreshToken: (refreshToken: string) => void;
 };
 
-const useAuthStore = create<Store>(set => ({
-  user: {username: '', email: '', profilePicture: ''},
+const authState = proxy<Store>({
+  user: {} as User,
   accessToken: '',
   refreshToken: '',
-  setAccessToken: accessToken => set(state => ({...state, accessToken})),
-  setRefreshToken: refreshToken => set(state => ({...state, refreshToken})),
-}));
+});
 
-export default useAuthStore;
+export default authState;

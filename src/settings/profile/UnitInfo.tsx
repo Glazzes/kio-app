@@ -1,40 +1,51 @@
 import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
 import React, {useEffect} from 'react';
-import {ShadowView} from '@dimaportenko/react-native-shadow-view';
-import Animated, {
-  useAnimatedProps,
+import {
   useDerivedValue,
   useSharedValue,
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, {Circle} from 'react-native-svg';
 import {ReText} from 'react-native-redash';
+import {
+  BlurMask,
+  Canvas,
+  RoundedRect,
+  Circle,
+  Skia,
+  Path,
+  useSharedValueEffect,
+  useValue,
+} from '@shopify/react-native-skia';
 
 type UnitInfoProps = {};
 
 const {width} = Dimensions.get('window');
-const SIZE = 110;
+const SIZE = 120;
 const SPACING = 10;
 
-const STROKE_WIDTH = 12;
-
+const STROKE_WIDTH = 10;
 const RADIUS = SIZE / 2 - STROKE_WIDTH;
-const LENGHT = 2 * Math.PI * RADIUS;
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const path = Skia.Path.Make();
+path.moveTo(0, 0);
+path.addArc(
+  {x: SPACING * 2, y: SPACING * 2, width: RADIUS * 2, height: RADIUS * 2},
+  270,
+  360,
+);
 
 const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
+  const end = useValue(0);
   const progress = useSharedValue<number>(0);
 
   const percentage = useDerivedValue(() => {
     return `${Math.round(100 * progress.value).toString()}%`;
   }, [progress]);
 
-  const animatedProps = useAnimatedProps(() => ({
-    transform: [{rotateZ: `${-Math.PI / 2}rad`}],
-    strokeDashoffset: LENGHT * (1 - progress.value),
-  }));
+  useSharedValueEffect(() => {
+    end.current = progress.value;
+  }, progress);
 
   useEffect(() => {
     progress.value = withDelay(1000, withTiming(0.2, {duration: 1000}));
@@ -42,30 +53,46 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
   }, []);
 
   return (
-    <ShadowView style={styles.unit}>
-      <View style={styles.svgContainer}>
-        <Svg width={SIZE} height={SIZE} style={styles.svg}>
-          <Circle
-            r={RADIUS}
-            x={SIZE / 2}
-            y={RADIUS + STROKE_WIDTH}
-            stroke={'#6089fc'}
-            strokeWidth={STROKE_WIDTH}
-          />
-          <AnimatedCircle
-            animatedProps={animatedProps}
-            r={RADIUS}
-            x={SIZE / 2}
-            y={RADIUS + STROKE_WIDTH}
-            stroke={'#fff'}
-            strokeWidth={STROKE_WIDTH}
-            strokeDasharray={LENGHT}
-            strokeLinecap={'round'}
-          />
-        </Svg>
+    <View style={styles.unit}>
+      <Canvas style={styles.canvas}>
+        <RoundedRect
+          y={(SIZE + SPACING) / 2}
+          x={width * 0.1}
+          width={width * 0.9 * 0.75}
+          height={55}
+          color={'#0b4199'}>
+          <BlurMask blur={18} style={'normal'} />
+        </RoundedRect>
+        <RoundedRect
+          x={0}
+          y={0}
+          width={width * 0.9}
+          height={SIZE + SPACING * 2}
+          r={5}
+          color={'#3366ff'}
+        />
+        <Circle
+          cy={SPACING * 2 + RADIUS}
+          cx={SPACING * 2 + RADIUS}
+          r={RADIUS}
+          color={'#6089fc'}
+          strokeWidth={STROKE_WIDTH}
+          style={'stroke'}
+        />
+        <Path
+          path={path}
+          style={'stroke'}
+          color={'#fff'}
+          strokeCap={'round'}
+          strokeWidth={STROKE_WIDTH}
+          end={end}>
+          <BlurMask blur={7} style={'solid'} />
+        </Path>
+      </Canvas>
+      <View style={styles.placeholder}>
         <ReText text={percentage} style={styles.percentage} />
       </View>
-      <View>
+      <View style={styles.storage}>
         <Text style={styles.title}>My Unit</Text>
         <Text style={styles.space}>
           <Text style={styles.used}>1GB</Text> of 5GB used
@@ -74,41 +101,38 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
           <Text style={styles.buttonText}>Buy Storage</Text>
         </Pressable>
       </View>
-    </ShadowView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   unit: {
     width: width * 0.9,
-    height: SIZE + 20,
-    paddingVertical: SPACING,
-    paddingHorizontal: SPACING / 2,
-    backgroundColor: '#1b47c4',
-    borderRadius: SPACING,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 4,
-      height: 2,
-    },
+    height: SIZE + SPACING * 2,
+    marginVertical: SPACING / 2,
     flexDirection: 'row',
-    alignItems: 'center',
   },
-  svgContainer: {
+  canvas: {
+    position: 'absolute',
+    width: '100%',
+    height: SIZE + SPACING * 4,
+  },
+  placeholder: {
+    margin: SPACING,
+    width: RADIUS * 2 + STROKE_WIDTH + SPACING,
+    height: RADIUS * 2 + STROKE_WIDTH + SPACING,
     justifyContent: 'center',
     alignItems: 'center',
-    width: SIZE,
-    marginRight: 5,
-  },
-  svg: {
-    position: 'absolute',
   },
   percentage: {
     color: '#fff',
     fontSize: 20,
     fontFamily: 'UberBold',
+  },
+  storage: {
+    marginVertical: SPACING,
+    height: RADIUS * 2 + STROKE_WIDTH + SPACING,
+    justifyContent: 'center',
   },
   title: {
     fontFamily: 'UberBold',
@@ -120,7 +144,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Uber',
   },
   space: {
-    color: '#6089fc',
+    color: 'rgba(255, 255, 255, 0.6)',
     fontFamily: 'Uber',
   },
   button: {

@@ -197,7 +197,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   }, []);
 
   return (
-    <Animated.View style={[styles.root, rootRStyles]} nativeID={'bg'}>
+    <Animated.View style={[styles.root, rootRStyles]}>
       <GestureDetector gesture={combinedGesture}>
         <Animated.View style={imageS}>
           <Animated.Image
@@ -232,6 +232,15 @@ ImageDetails.options = ({uri, index}) => ({
     dismissModalOnPress: false,
   },
   animations: {
+    showModal: {
+      sharedElementTransitions: [
+        {
+          fromId: `img-${uri}-${index}`,
+          toId: `img-${uri}-${index}-dest`,
+          duration: 300,
+        },
+      ],
+    },
     dismissModal: {
       sharedElementTransitions: [
         {

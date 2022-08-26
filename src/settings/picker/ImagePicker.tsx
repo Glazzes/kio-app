@@ -1,11 +1,11 @@
 import {
   Dimensions,
-  ListRenderItemInfo,
   StyleSheet,
-  FlatList,
   Alert,
   View,
   Text,
+  FlatList,
+  ListRenderItemInfo,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Animated, {
@@ -13,6 +13,7 @@ import Animated, {
   Extrapolate,
   interpolate,
   scrollTo,
+  useAnimatedReaction,
   useAnimatedRef,
   useAnimatedStyle,
   useDerivedValue,
@@ -33,6 +34,7 @@ import {
 } from 'expo-media-library';
 import PickerPicture from './PickerPicture';
 import {snapPoint} from 'react-native-redash';
+import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 
 type ImagePickerProps = {
   translateY: Animated.SharedValue<number>;
@@ -74,8 +76,8 @@ function getItemLayout(
   };
 }
 
-function keyExtractor(asset: Asset, _: number): string {
-  return `tile-${asset.uri}`;
+function keyExtractor(asset: Asset, index: number): string {
+  return `tile-${asset.uri}-${index}`;
 }
 
 function renderItem(info: ListRenderItemInfo<Asset>): React.ReactElement {
@@ -91,10 +93,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
   const translation = useDerivedValue<number>(() => {
     return clamp(translateY.value, -actualHeight, actualHeight);
   }, [translateY.value]);
-
-  useDerivedValue(() => {
-    scrollTo(ref, 0, -1 * translateY.value - height, false);
-  }, [translateY]);
 
   const pan = Gesture.Pan()
     .onStart(_ => {
@@ -149,24 +147,19 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
     };
   });
 
-  const placeHolderStyles = useAnimatedStyle(() => {
-    return {
-      position: 'absolute',
-      width,
-      height,
-      backgroundColor:
-        translateY.value !== 0
-          ? withTiming('rgba(0, 0, 0, 0.2)')
-          : withTiming('transparent'),
-    };
-  });
+  useAnimatedReaction(
+    () => -1 * translateY.value - height,
+    scroll => {
+      scrollTo(ref, 0, scroll, false);
+    },
+  );
 
   useEffect(() => {
     (async () => {
       const {granted} = await requestPermissionsAsync();
       if (granted) {
         const allAssets = await getAssets();
-        setAssets(allAssets);
+        setAssets([...allAssets]);
       } else {
         Alert.alert('Error xd');
       }
@@ -178,8 +171,20 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.root, rStyle]}>
           <View style={styles.header}>
+            <Canvas style={styles.canvas}>
+              <RoundedRect
+                x={0}
+                y={15}
+                width={width}
+                height={40}
+                r={10}
+                color={'#fff'}>
+                <Shadow color={'#a1a1a1'} blur={10} dx={0} dy={9} />
+              </RoundedRect>
+            </Canvas>
             <Text style={styles.title}>Select a picture</Text>
           </View>
+
           <FlatList
             ref={ref}
             data={assets}
@@ -210,14 +215,20 @@ const styles = StyleSheet.create({
     width,
     height: height - statusBarHeight,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    overflow: 'hidden',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    // overflow: 'hidden',
   },
   header: {
     width,
     paddingHorizontal: 10,
     paddingVertical: 10,
+  },
+  canvas: {
+    position: 'absolute',
+    width,
+    height: 25,
+    transform: [{translateY: -statusBarHeight * 0.6}],
   },
   title: {
     fontFamily: 'UberBold',

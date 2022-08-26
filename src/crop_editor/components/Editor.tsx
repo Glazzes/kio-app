@@ -1,7 +1,6 @@
-import {View, Dimensions, StyleSheet, Pressable, Image} from 'react-native';
+import {View, Dimensions, StyleSheet, Pressable} from 'react-native';
 import React, {useEffect, useMemo} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import SVG, {Path} from 'react-native-svg';
 import {
   Gesture,
   GestureDetector,
@@ -22,11 +21,10 @@ import EffectIndicator from './EffectIndicator';
 import crop from '../utils/functions/crop';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import emitter from '../../utils/emitter';
-import navigationStore, {
-  findComponentIdByName,
-} from '../../store/navigationStore';
+import {findLastByName} from '../../store/navigationStore';
 import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';
+import {Canvas, Skia, Path} from '@shopify/react-native-skia';
 
 type CropEditorProps = {
   uri: string;
@@ -37,28 +35,20 @@ type CropEditorProps = {
 const {width, height} = Dimensions.get('window');
 const R = (width / 2) * 0.8;
 const center = {x: width / 2, y: height * 0.4};
-const path = [
-  'M 0 0',
-  `h ${width}`,
-  `v ${height}`,
-  `h ${-width}`,
-  `v ${-height}`,
-  `M ${center.x - R} ${center.y}`,
-  `a 1 1 0 0 0 ${R * 2} 0`,
-  `a 1 1 0 0 0 ${-R * 2} 0`,
-];
+
+const path = Skia.Path.MakeFromSVGString(
+  `M 0 0 h ${width} v ${height} h ${-width} v ${-height} M ${center.x - R} ${
+    center.y
+  } a 1 1 0 0 0 ${R * 2} 0 a 1 1 0 0 0 ${-R * 2} 0`,
+);
 
 const CROP_SIZE = 180;
-
-const AnimatedSvg = Animated.createAnimatedComponent(SVG);
 
 const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   uri: imagePath,
   width: imageWidth,
   height: imageHeight,
 }) => {
-  const screens = navigationStore(s => s.screens);
-
   const imageStyle = useMemo(() => {
     return getImageStyles({width: imageWidth, height: imageHeight}, R);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -208,7 +198,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   };
 
   function popToEditProfile() {
-    const componentId = findComponentIdByName('Edit.Profile', screens);
+    const componentId = findLastByName('Edit.Profile');
     if (componentId) {
       Navigation.popTo(componentId);
     }
@@ -228,10 +218,6 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   );
 
   useEffect(() => {
-    let tes = {w: 1, h: 1};
-    Image.getSize(imagePath, (w, h) => (tes = {w, h}));
-    console.log(tes);
-
     const backButtonListener =
       Navigation.events().registerNavigationButtonPressedListener(e => {
         if (e.buttonId === 'RNN.hardwareBackButton') {
@@ -260,14 +246,13 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
           style={[imageStyle as any, effectStyles]}
         />
       </Animated.View>
-      <AnimatedSvg
-        entering={FadeIn.delay(1000).duration(300)}
-        width={width}
-        height={height}
+      <Animated.View
         style={StyleSheet.absoluteFillObject}
-        nativeID={'svg'}>
-        <Path d={path.join(' ')} fill={'rgba(0, 0, 0, 0.45)'} />
-      </AnimatedSvg>
+        entering={FadeIn.delay(1000).duration(300)}>
+        <Canvas style={StyleSheet.absoluteFill}>
+          <Path path={path!} color={'rgba(0, 0, 0, 0.45)'} />
+        </Canvas>
+      </Animated.View>
       <View style={styles.reflection}>
         <GestureDetector gesture={gesture}>
           <Animated.View>
@@ -302,7 +287,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   );
 };
 
-CropEditor.options = {
+CropEditor.options = ({uri}) => ({
   hardwareBackButton: {
     popStackOnPress: false,
   },
@@ -320,6 +305,13 @@ CropEditor.options = {
   },
   animations: {
     push: {
+      sharedElementTransitions: [
+        {
+          fromId: `asset-${uri}`,
+          toId: `asset-${uri}-dest`,
+          duration: 450,
+        },
+      ],
       elementTransitions: [
         {
           id: 'effects',
@@ -332,7 +324,7 @@ CropEditor.options = {
       ],
     },
   },
-};
+});
 
 const styles = StyleSheet.create({
   root: {

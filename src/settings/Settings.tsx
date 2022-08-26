@@ -34,6 +34,7 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
       <Appbar title={'My Profile'} parentComponentId={componentId} />
       <UserInfo parentComponentId={componentId} />
       <UnitInfo />
+
       <View style={styles.options}>
         {actions.map((action, index) => {
           return (
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   options: {
-    marginTop: 15,
+    marginTop: 20,
     flex: 1,
     width,
     paddingVertical: width * 0.05,
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   },
   optionIconContainer: {
     padding: 8,
-    borderRadius: 15,
+    borderRadius: 10,
     backgroundColor: '#F3F3F4',
     justifyContent: 'center',
     alignItems: 'center',

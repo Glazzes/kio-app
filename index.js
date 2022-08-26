@@ -19,16 +19,10 @@ import {PictureInPictureVideo} from './src/overlays';
 import {Drawers} from './src/navigation/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
 import {GetStarted} from './src/onboarding';
-import {FFprobeKit} from 'ffmpeg-kit-react-native';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
 Navigation.events().registerAppLaunchedListener(() => {
-  // Dummy command to have ffprobe loaded before using it
-  FFprobeKit.execute('-v quiet')
-    .then(() => {})
-    .catch(() => {});
-
   Navigation.setRoot({
     root: {
       sideMenu: {
@@ -50,6 +44,10 @@ Navigation.events().registerAppLaunchedListener(() => {
                   enabled: false,
                 },
               },
+              layout: {
+                backgroundColor: 'transparent',
+              },
+              modalPresentationStyle: 'overCurrentContext',
             },
             children: [
               {

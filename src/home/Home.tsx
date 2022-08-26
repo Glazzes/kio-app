@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Dimensions, View} from 'react-native';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/AppHeader';
 import {
@@ -23,6 +23,9 @@ import {
   VideoThumbnail,
 } from './files/thumnnails';
 import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
+import {push, removeByComponentId} from '../store/navigationStore';
+import PdfThumnail from './files/thumnnails/components/PdfThumnail';
+import GenericThumbnail from './files/thumnnails/components/GenericThumbnail';
 
 type HomeProps = {
   folderId?: string;
@@ -68,10 +71,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
       return (
         <FileWrapper index={info.index}>
           {info.index % 2 === 0 ? (
-            <AudioThumbnail
-              index={info.index}
-              parentComponentId={componentId}
-            />
+            <GenericThumbnail />
           ) : (
             <ImageThumbnail
               image={{} as File}
@@ -97,6 +97,13 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
       scrollY.value = e.contentOffset.y;
     },
   });
+
+  useEffect(() => {
+    push({id: '', name: '', componentId});
+    return () => {
+      removeByComponentId(componentId);
+    };
+  }, []);
 
   return (
     <View style={styles.root}>

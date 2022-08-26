@@ -2,6 +2,7 @@
 import {View, StyleSheet, Dimensions} from 'react-native';
 import React, {useMemo} from 'react';
 import {
+  BlurMask,
   Canvas,
   Mask,
   Path,
@@ -35,7 +36,7 @@ import {convertCurrentTimeToTextTime} from '../utils/functions/convertCurrentTim
 import {ReText} from 'react-native-redash';
 import Sound from 'react-native-sound';
 
-import json from '../assets/forest.json';
+import json from '../assets/waves.json';
 
 type WavesProps = {
   sound: Sound;
@@ -181,8 +182,9 @@ const Waves: React.FC<WavesProps> = ({
                     path={upperWaveForm}
                     strokeWidth={STROKE_WIDTH}
                     style={'stroke'}
-                    color={'#fff'}
-                  />
+                    color={'#fff'}>
+                    <BlurMask blur={1} style={'solid'} />
+                  </Path>
                 }>
                 <Rect
                   x={0}
@@ -197,8 +199,9 @@ const Waves: React.FC<WavesProps> = ({
                 path={lowerWaveForm}
                 strokeWidth={STROKE_WIDTH}
                 style={'stroke'}
-                color={'#f3f3f3'}
-              />
+                color={'#f3f3f3'}>
+                <BlurMask blur={1} style={'solid'} />
+              </Path>
               <Mask
                 mode="luminance"
                 mask={
@@ -214,7 +217,7 @@ const Waves: React.FC<WavesProps> = ({
                   y={UPPER_BAR_HEIGHT + WAVEFORMS_MARGIN}
                   width={skWidth}
                   height={LOWER_BAR_HEIGHT}
-                  color={'rgba(51, 102, 205, 0.6)'}
+                  color={'rgba(51, 102, 205, 0.7)'}
                 />
               </Mask>
             </Canvas>
@@ -238,7 +241,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 25,
   },
   canvas: {
     width: width,

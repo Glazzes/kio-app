@@ -6,29 +6,26 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../../utils/emitter';
 import ImagePicker from '../picker/ImagePicker';
 import Animated, {
+  BounceIn,
   useSharedValue,
   withSpring,
   withTiming,
-  ZoomIn,
 } from 'react-native-reanimated';
 import {Screens} from '../../enums/screens';
 import {Asset} from 'expo-media-library';
-import navigationStore from '../../store/navigationStore';
+import {push, removeByComponentId} from '../../store/navigationStore';
 
 type EditProfileProps = {};
 
-const {width, height} = Dimensions.get('window');
+const {height} = Dimensions.get('window');
 
-const IMAGE_SIZE = 100;
+const IMAGE_SIZE = 90;
 const BAGDE_SIZE = IMAGE_SIZE / 3;
 const ANGLE = -Math.PI / 4;
 
 const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
   componentId,
 }) => {
-  const push = navigationStore(s => s.push);
-  const removeById = navigationStore(s => s.removeById);
-
   const [newPic, setNewPic] = useState<string | undefined>(undefined);
 
   const translateY = useSharedValue<number>(0);
@@ -58,13 +55,6 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
                     duration: 600,
                   },
                 },
-                sharedElementTransitions: [
-                  {
-                    fromId: `asset-${asset.uri}`,
-                    toId: `asset-${asset.uri}-dest`,
-                    duration: 450,
-                  },
-                ],
               },
             },
           },
@@ -99,7 +89,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       navigationListener.remove();
       pushToCamera.remove();
       sub.remove();
-      removeById(componentId);
+      removeByComponentId(componentId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -110,7 +100,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       <View style={styles.imageContainer}>
         <Pressable onPress={openSheet}>
           <Image
-            nativeID="ppf-edit"
+            nativeID="pfp-dest"
             style={styles.image}
             source={{
               uri: newPic ?? 'https://randomuser.me/api/portraits/men/32.jpg',
@@ -119,7 +109,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
           />
           <Animated.View
             style={styles.badge}
-            entering={ZoomIn.delay(1000).duration(300)}>
+            entering={BounceIn.delay(1000).duration(300)}>
             <Icon name="camera" size={18} color={'#fff'} />
           </Animated.View>
         </Pressable>
@@ -141,6 +131,26 @@ EditProfile.options = {
   sideMenu: {
     right: {
       enabled: false,
+    },
+  },
+  animations: {
+    push: {
+      sharedElementTransitions: [
+        {
+          fromId: 'pfp',
+          toId: 'pfp-dest',
+          duration: 300,
+        },
+      ],
+    },
+    pop: {
+      sharedElementTransitions: [
+        {
+          fromId: 'pfp-dest',
+          toId: 'pfp',
+          duration: 300,
+        },
+      ],
     },
   },
 };

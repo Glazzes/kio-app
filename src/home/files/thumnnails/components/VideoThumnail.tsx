@@ -1,4 +1,4 @@
-import {Dimensions, Image, Pressable, StyleSheet} from 'react-native';
+import {Image, Pressable, StyleSheet} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {File} from '../../../../utils/types';
@@ -6,15 +6,13 @@ import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
 import Video from 'react-native-video';
+import {SIZE} from '../utils/constants';
 
 type VideoThumnailProps = {
   file?: File;
   index: number;
   parentComponentId: string;
 };
-
-const {width} = Dimensions.get('window');
-const SIZE = (width * 0.9 - 10) / 2;
 
 const VideoThumnail: React.FC<VideoThumnailProps> = ({
   index,

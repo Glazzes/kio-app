@@ -4,11 +4,12 @@ import Pdf from 'react-native-pdf';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 import PdfProgressIndicator from './PdfProgressIndicator';
-import usePdfStore from '../../store/pdfStore';
+import {pdfState, setPdfContents, setPdfIndexes} from '../../store/pdfStore';
 import emitter from '../../utils/emitter';
 import {PdfEvent} from '../enums';
 import {convertTableContentsIntoIndexes} from '../utils/functions/convertTableContentsIntoIndexes';
 import PageIndicator from './PageIndicator';
+import {useSnapshot} from 'valtio';
 
 type PDFViewerProps = {};
 
@@ -21,11 +22,10 @@ function onPageChanged(pageNumber: number) {
 const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
   componentId,
 }) => {
-  const setContents = usePdfStore(s => s.setContents);
-  const setIndexes = usePdfStore(s => s.setIndexes);
+  const pdf = useSnapshot(pdfState);
 
   const progress = useSharedValue<number>(0);
-  const ref = useRef<typeof Pdf>();
+  const ref = useRef<Pdf>();
 
   const mergeOptions = () => {
     Navigation.mergeOptions(componentId, {
@@ -48,13 +48,23 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
     return () => listener.remove();
   }, []);
 
+  useEffect(() => {
+    Navigation.mergeOptions(componentId, {
+      sideMenu: {
+        left: {
+          enabled: pdf.content.length !== 0,
+        },
+      },
+    });
+  }, [pdf.content, componentId]);
+
   return (
     <View style={styles.root}>
       <Pdf
         ref={ref}
         style={styles.pdf}
         source={{
-          uri: 'https://raw.githubusercontent.com/divyesh008/eBooks/main/Clean%20Coder.pdf',
+          uri: '',
         }}
         trustAllCerts={false}
         onLoadProgress={percent => (progress.value = withTiming(percent))}
@@ -65,8 +75,8 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
         onLoadComplete={(pages, path, size, contents) => {
           if (contents !== undefined) {
             const indexes = convertTableContentsIntoIndexes(contents, pages);
-            setContents(contents);
-            setIndexes(indexes);
+            setPdfContents(contents);
+            setPdfIndexes(indexes);
 
             mergeOptions();
             emitter.emit(PdfEvent.NUMBER_OF_PAGES, pages);
@@ -80,9 +90,16 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
 };
 
 PDFViewer.options = {
+  statusBar: {
+    visible: true,
+    backgroundColor: '#3366ff',
+  },
   sideMenu: {
     left: {
-      enabled: false,
+      enabled: true,
+    },
+    right: {
+      enabled: true,
     },
   },
 };

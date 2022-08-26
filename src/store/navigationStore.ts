@@ -1,75 +1,56 @@
-import create from 'zustand';
+import {proxy} from 'valtio';
 
 type NavigationScreen = {
   name: string;
-  folder?: string;
   componentId: string;
 };
 
-type Store = {
+type State = {
   screens: NavigationScreen[];
-  push: (newStr: NavigationScreen) => void;
-  pop: () => void;
-  takeUntil: (selected: NavigationScreen) => void;
-  removeById: (componentId: string) => void;
 };
 
-function takeUntil(
-  selectedScreen: NavigationScreen,
-  screens: NavigationScreen[],
-): NavigationScreen[] {
-  const newScreens = [];
-  for (let screen of screens) {
-    newScreens.push(screen);
+export const navigationState = proxy<State>({screens: []});
 
-    if (selectedScreen.componentId === screen.componentId) {
-      break;
+// actions
+export function push(screen: NavigationScreen) {
+  navigationState.screens.push(screen);
+}
+
+export function peekLast(): NavigationScreen {
+  return navigationState.screens[navigationState.screens.length - 1];
+}
+
+export function removeLast() {
+  navigationState.screens.pop();
+}
+
+export function findLastByName(name: string): string {
+  let componentId: string | null = null;
+  for (let s of navigationState.screens) {
+    if (s.name === name) {
+      componentId = s.componentId;
     }
   }
 
-  return newScreens;
+  if (componentId === null) {
+    throw Error(`Could not find a component with name ${name}`);
+  }
+
+  return componentId;
 }
 
-export function findComponentIdByName(
-  name: string,
-  screens: NavigationScreen[],
-): string | null {
-  for (let screen of screens) {
-    if (screen.name === name) {
-      return screen.componentId;
+export function removeByComponentId(componentId: string) {
+  navigationState.screens = navigationState.screens.filter(
+    s => s.componentId !== componentId,
+  );
+}
+
+export function takeUntil(componentId: string) {
+  const remainingScreens = [];
+  for (let screen of navigationState.screens) {
+    remainingScreens.push(screen);
+    if (screen.componentId === componentId) {
+      return;
     }
   }
-  return null;
 }
-
-const navigationStore = create<Store>(set => ({
-  screens: [],
-
-  push: (newScreen: NavigationScreen) =>
-    set(state => {
-      state.screens.push(newScreen);
-      return state;
-    }),
-
-  pop: () =>
-    set(state => {
-      state.screens.pop();
-      return state;
-    }),
-
-  takeUntil: (selected: NavigationScreen) =>
-    set(state => {
-      const screens = takeUntil(selected, state.screens);
-      return {...state, screens};
-    }),
-
-  removeById: componentId =>
-    set(state => {
-      const newScreens = state.screens.filter(
-        s => s.componentId !== componentId,
-      );
-      return {...state, screens: newScreens};
-    }),
-}));
-
-export default navigationStore;

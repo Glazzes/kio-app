@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {View, StyleSheet, Dimensions, Pressable} from 'react-native';
+import {StyleSheet, Pressable} from 'react-native';
 import React, {useMemo} from 'react';
 import {BlurMask, Canvas, Path} from '@shopify/react-native-skia';
 import {convertAudioPointsToBarPoints} from '../../../../audio_player/utils/functions/convertAudioPointsToBarPoints';
@@ -9,14 +9,12 @@ import forest from '../assets/forest.json';
 import {STROKE_WIDTH} from '../../../../audio_player/utils/constants';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
+import {SIZE} from '../utils/constants';
 
 type AudioThumbnailProps = {
   parentComponentId: string;
   index: number;
 };
-
-const {width} = Dimensions.get('window');
-const SIZE = (width * 0.9 - 10) / 2;
 
 const AudioThumbnail: React.FC<AudioThumbnailProps> = ({
   index,

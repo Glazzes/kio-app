@@ -3,6 +3,7 @@ import React from 'react';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import emitter from '../../utils/emitter';
 import {Asset} from 'expo-media-library';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type PickerPictureProps = {
   asset: Asset;
@@ -13,6 +14,7 @@ const {width} = Dimensions.get('window');
 
 const PADDING = 5;
 const SIZE = width / 3 - PADDING * 2;
+const ICON_SIZE = 35;
 
 const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
   const devices = useCameraDevices();
@@ -41,6 +43,12 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
               style={styles.image}
             />
           )}
+          <Icon
+            name={'camera'}
+            size={ICON_SIZE}
+            color={'#fff'}
+            style={styles.icon}
+          />
         </View>
       ) : (
         <Image
@@ -64,6 +72,11 @@ const styles = StyleSheet.create({
   },
   image: {
     flex: 1,
+  },
+  icon: {
+    position: 'absolute',
+    top: SIZE / 2 - ICON_SIZE / 2,
+    left: SIZE / 2 - ICON_SIZE / 2,
   },
 });
 

@@ -14,14 +14,12 @@ const crop = (
   const offsetX = (layout.width * scale - radius * 2) / 2;
   const offsetY = (layout.height * scale - radius * 2) / 2;
 
-  /*
-    represents in a scale from 0 to 1 the maximun offset achievable
-  */
+  // represents in a scale from 0 to 1 the maximun offset achievable
   const xFactor = 1 - (radius * 2) / (layout.width * scale);
   const yFactor = 1 - (radius * 2) / (layout.height * scale);
 
   /*
-    represents the top left corner (from 0 to 1)of the svg circle based on
+    represents the top left corner (from 0 to 1) of the svg circle based on
     the current position on both axis and the layout dimensions
   */
   let positionX = interpolate(
@@ -47,8 +45,8 @@ const crop = (
   }
 
   // images are cropped based on their real dimensions and their current position
-  const originX = realDimensions.width * positionX;
-  const originY = realDimensions.height * positionY;
+  const originX = actualDimensions.width * positionX;
+  const originY = actualDimensions.height * positionY;
 
   // the smalller dimension is the one used to determine the crop size
   const size =

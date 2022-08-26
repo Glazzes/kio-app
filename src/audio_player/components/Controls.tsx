@@ -86,12 +86,7 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
             r={BUTTON_SIZE / 2}
             cx={BUTTON_SIZE / 2 + PADDING / 2}
             cy={BUTTON_SIZE / 2 + PADDING / 2}
-            blendMode={'multiply'}>
-            <LinearGradient
-              start={vec(PADDING, PADDING)}
-              end={vec(BUTTON_SIZE - PADDING / 2, BUTTON_SIZE - PADDING / 2)}
-              colors={['#3366ff', '#ee3060']}
-            />
+            color={'#3366ff'}>
             <BlurMask blur={3} style={'solid'} />
           </Circle>
         </Canvas>

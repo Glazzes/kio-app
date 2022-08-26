@@ -5,8 +5,8 @@ import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import emitter from '../../utils/emitter';
 import Sound from 'react-native-sound';
 import {pickMultiple} from 'react-native-document-picker';
-import {FFprobeKit} from 'ffmpeg-kit-react-native';
-import useUploadStore from '../../store/uploadUtil';
+import {Navigation} from 'react-native-navigation';
+import {Screens} from '../../enums/screens';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -23,57 +23,44 @@ const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
-  const pushFile = useUploadStore(s => s.pushFile);
-  const setFilesToUpload = useUploadStore(s => s.setFilesToUpload);
+  const onPress = async () => {
+    toggle();
+
+    if (action.icon === 'file') {
+      await openDocumentPicker();
+      return;
+    }
+
+    if (action.icon === 'folder') {
+      createFolder();
+      return;
+    }
+
+    emitter.emit('press', 'camera');
+  };
 
   const openDocumentPicker = async () => {
     // @ts-ignore
     const result = await pickMultiple({
       allowMultiSelection: true,
-      copyTo: 'documentDirectory',
+      copyTo: 'cachesDirectory',
     });
 
-    setFilesToUpload(result.length);
+    console.log(JSON.stringify(result, null, 2));
+  };
 
-    for (let file of result) {
-      let mediaLogs: String[] = [];
-      await FFprobeKit.executeAsync(
-        `-v error -show_entries stream=width,height,duration -of json ${result[0].fileCopyUri}`,
-        undefined,
-        logs => {
-          mediaLogs.push(logs.getMessage());
+  const createFolder = () => {
+    Navigation.showModal({
+      component: {
+        name: Screens.CREATE_FOLDER_MODAL,
+        options: {
+          layout: {
+            backgroundColor: 'transparent',
+          },
+          modalPresentationStyle: 'overCurrentContext',
         },
-      );
-
-      // FFProbes takes a long time to print the required info
-      const timeout = setTimeout(() => {
-        const ffProbeLogData = JSON.parse(mediaLogs.join(''))['streams'][0];
-        const width: number | undefined = ffProbeLogData.width;
-        const height: number | undefined = ffProbeLogData.height;
-        let duration: string | undefined = ffProbeLogData.duration;
-
-        let realDuration: number | undefined;
-        if (duration) {
-          realDuration = Math.floor(parseFloat(duration));
-        }
-
-        pushFile({
-          file: {
-            name: file.name,
-            filename: file.name,
-            fileType: file.type ?? '',
-            uri: file.fileCopyUri ?? '',
-          },
-          metadata: {
-            width,
-            height,
-            duration: realDuration,
-          },
-        });
-
-        clearTimeout(timeout);
-      }, 1000);
-    }
+      },
+    });
   };
 
   const rStyle = useAnimatedStyle(() => {
@@ -88,15 +75,6 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       ],
     };
   });
-
-  const onPress = async () => {
-    toggle();
-    if (action.icon === 'file') {
-      await openDocumentPicker();
-      return;
-    }
-    emitter.emit('press', 'camera');
-  };
 
   return (
     <AnimatedPressable style={[styles.button, rStyle]} onPress={onPress}>

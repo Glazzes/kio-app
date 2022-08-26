@@ -9,12 +9,17 @@ import {
   Keyboard,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
+  Easing,
   FadeIn,
   FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
   ZoomIn,
   ZoomOut,
 } from 'react-native-reanimated';
@@ -27,7 +32,7 @@ type CreateFolderModalProps = {
 };
 
 const {width} = Dimensions.get('window');
-const MODAL_WIDTH = width * 0.8;
+const MODAL_WIDTH = width * 0.75;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -66,12 +71,30 @@ const CreateFolderModal: NavigationFunctionComponent<
     Navigation.dismissModal(componentId);
   };
 
+  const scale = useSharedValue<number>(0);
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scale.value}],
+    };
+  });
+
+  useEffect(() => {
+    scale.value = withDelay(
+      100,
+      withTiming(1, {
+        duration: 300,
+        easing: Easing.bezierFn(0.34, 1.56, 0.64, 1), // https://easings.net/#easeOutBack
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Pressable style={styles.root} onPress={hideModal}>
-      <Pressable>
+      <AnimatedPressable style={rStyle}>
         <View style={styles.modal}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Create Folder</Text>
+            <Text style={styles.title}>New Folder</Text>
             <Image
               source={require('./assets/folder.png')}
               resizeMode={'contain'}
@@ -83,8 +106,9 @@ const CreateFolderModal: NavigationFunctionComponent<
               ref={ref}
               editable={!loading}
               style={styles.input}
-              placeholder={'New folder name'}
+              placeholder={'Folder name'}
               keyboardType={'default'}
+              autoFocus={true}
               onFocus={toggle}
               onChangeText={onChangeText}
             />
@@ -145,20 +169,9 @@ const CreateFolderModal: NavigationFunctionComponent<
             </Pressable>
           </View>
         </View>
-      </Pressable>
+      </AnimatedPressable>
     </Pressable>
   );
-};
-
-CreateFolderModal.options = {
-  sideMenu: {
-    right: {
-      visible: false,
-    },
-  },
-  hardwareBackButton: {
-    dismissModalOnPress: false,
-  },
 };
 
 const styles = StyleSheet.create({
@@ -166,17 +179,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   modal: {
     width: MODAL_WIDTH,
     padding: 10,
     borderRadius: 5,
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 2, height: 4},
-    shadowRadius: 10,
-    elevation: 8,
+    elevation: 1,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -197,11 +207,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   input: {
     flex: 1,
-    padding: 5,
+    padding: 3,
     fontFamily: 'Uber',
     color: '#C5C8D7',
     borderRadius: 3,
@@ -227,7 +237,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: MODAL_WIDTH / 2 - 20,
-    padding: 8,
+    padding: 5,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 3,

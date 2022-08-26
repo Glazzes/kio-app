@@ -1,6 +1,6 @@
 import {Text, Pressable, TextStyle, StyleSheet, View} from 'react-native';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import usePdfStore, {PdfContent} from '../../store/pdfStore';
+import {pdfState, PdfContent} from '../../store/pdfStore';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,6 +9,7 @@ import Animated, {
 import emitter from '../../utils/emitter';
 import {PdfEvent} from '../enums';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useSnapshot} from 'valtio';
 
 type PdfIndexViewProps = {
   index: number;
@@ -23,8 +24,8 @@ const PdfIndexView: React.FC<PdfIndexViewProps> = ({
   contents: {pageIdx, title, children: contentChildren},
   index,
 }) => {
-  const indexes = usePdfStore(s => s.indexes);
-  const currentIndex = useRef(indexes[pageIdx]).current;
+  const pdf = useSnapshot(pdfState);
+  const currentIndex = useRef(pdf.indexes[pageIdx]).current;
   const [open, setOpen] = useState<boolean>(false);
   const [listMeasured, setListMeasure] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -108,7 +109,7 @@ const PdfIndexView: React.FC<PdfIndexViewProps> = ({
             }
           }}>
           {contentChildren.map((c, idx) => {
-            const subIndex = indexes[pageIdx].subIndexes[idx];
+            const subIndex = pdf.indexes[pageIdx].subIndexes[idx];
 
             const condition =
               currentPage > c.pageIdx && currentPage <= subIndex.next;

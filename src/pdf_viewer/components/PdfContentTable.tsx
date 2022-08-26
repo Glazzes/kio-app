@@ -1,8 +1,9 @@
 import {StyleSheet, ScrollView, Text} from 'react-native';
 import React from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import usePdfStore from '../../store/pdfStore';
+import {PdfContent, pdfState} from '../../store/pdfStore';
 import PdfIndexView from './PdfIndexView';
+import {useSnapshot} from 'valtio';
 
 const {statusBarHeight} = Navigation.constantsSync();
 
@@ -11,15 +12,15 @@ type PdfContentTableProps = {};
 const PdfContentTable: NavigationFunctionComponent<
   PdfContentTableProps
 > = ({}) => {
-  const contents = usePdfStore(s => s.content);
+  const pdf = useSnapshot(pdfState);
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <Text style={styles.text}>Clean coder's contents</Text>
-      {contents.map((content, index) => {
+      {pdf.content.map((content, index) => {
         return (
           <PdfIndexView
-            contents={content}
+            contents={content as PdfContent}
             index={index}
             key={`${content.title}-${index}`}
           />

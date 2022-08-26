@@ -1,4 +1,4 @@
-import create from 'zustand';
+import {proxy} from 'valtio';
 
 export type PdfContent = {
   children: PdfContent[];
@@ -8,6 +8,7 @@ export type PdfContent = {
 };
 
 export type SubIndex = {pageIdx: number; prev: number; next: number};
+
 export type TopLevelIndex = {
   prev: number;
   next: number;
@@ -17,19 +18,20 @@ export type Indexes = {
   [id: number]: TopLevelIndex;
 };
 
-type Store = {
+type State = {
   content: PdfContent[];
   indexes: Indexes;
-  setContents: (contents: PdfContent[]) => void;
-  setIndexes: (indexes: Indexes) => void;
 };
 
-const usePdfStore = create<Store>(set => ({
+export const pdfState = proxy<State>({
   content: [],
   indexes: {},
-  setContents: (contents: PdfContent[]) =>
-    set(state => ({...state, content: contents})),
-  setIndexes: (indexes: Indexes) => set(state => ({...state, indexes})),
-}));
+});
 
-export default usePdfStore;
+export function setPdfContents(contents: PdfContent[]) {
+  pdfState.content = contents;
+}
+
+export function setPdfIndexes(indexes: Indexes) {
+  pdfState.indexes = indexes;
+}
