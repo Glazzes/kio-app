@@ -111,11 +111,11 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
     <View style={styles.root}>
       <View style={styles.appbar}>
         <Pressable onPress={goBack}>
-          <Icon name={'chevron-left'} color={'#1c1514'} size={ICON_SIZE} />
+          <Icon name={'chevron-left'} color={'#000'} size={ICON_SIZE} />
         </Pressable>
 
         {/*<Text style={styles.title}>Now playing</Text> */}
-        <Icon name={'dots-vertical'} size={ICON_SIZE} />
+        <Icon name={'dots-vertical'} size={ICON_SIZE} color={'#000'} />
       </View>
 
       <View style={styles.titleContainer}>

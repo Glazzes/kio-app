@@ -18,7 +18,7 @@ import {Overlays} from './src/shared/enum/Overlays';
 import {PictureInPictureVideo} from './src/overlays';
 import {Drawers} from './src/navigation/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
-import {GetStarted} from './src/onboarding';
+import {GetStarted, Login} from './src/onboarding';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -96,6 +96,8 @@ Navigation.registerComponent(
   Overlays.PICTURE_IN_PICTURE_VIDEO,
   () => PictureInPictureVideo,
 );
+
+Navigation.registerComponent('Login', () => Login);
 
 Navigation.registerComponent('Pdf', () => PdfViewer);
 Navigation.registerComponent(Drawers.PDF_CONTENT_DRAWER, () => PdfContentTable);

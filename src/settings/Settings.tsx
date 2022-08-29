@@ -5,6 +5,7 @@ import Appbar from './profile/Appbar';
 import UserInfo from './profile/UserInfo';
 import UnitInfo from './profile/UnitInfo';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 
 const {width} = Dimensions.get('window');
 
@@ -36,6 +37,17 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
       <UnitInfo />
 
       <View style={styles.options}>
+        <Canvas style={styles.canvas}>
+          <RoundedRect
+            x={0}
+            y={10}
+            width={width}
+            height={300}
+            color={'#fff'}
+            r={20}>
+            <Shadow blur={10} color={'#a1a1a1'} dx={0} dy={10} />
+          </RoundedRect>
+        </Canvas>
         {actions.map((action, index) => {
           return (
             <View
@@ -59,7 +71,6 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
 Settings.options = {
   statusBar: {
     visible: false,
-    drawBehind: false,
   },
   topBar: {
     visible: false,
@@ -77,14 +88,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFB',
     alignItems: 'center',
   },
+  canvas: {
+    width,
+    height: 300,
+    position: 'absolute',
+  },
   options: {
-    marginTop: 20,
     flex: 1,
     width,
+    justifyContent: 'space-around',
     paddingVertical: width * 0.05,
     paddingHorizontal: width * 0.05,
-    borderRadius: 20,
-    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginTop: 10,
   },
   optionContaier: {
     width: width * 0.9,

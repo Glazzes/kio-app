@@ -1,6 +1,10 @@
 import {Dimensions, StyleSheet, ViewStyle} from 'react-native';
 import React, {useEffect} from 'react';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {
+  Navigation,
+  NavigationFunctionComponent,
+  OptionsModalPresentationStyle,
+} from 'react-native-navigation';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   interpolateColor,
@@ -16,6 +20,7 @@ import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
 import {Dimension} from '../../../shared/types';
 import {getMaxImageScale} from '../../../crop_editor/utils/functions/getMaxImageScale';
 import emitter from '../../../utils/emitter';
+import FileDetailsAppbar from '../../../misc/FileDetailsAppbar';
 
 type ImageDetailsProps = {
   index: number;
@@ -131,6 +136,16 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       }
     });
 
+  const wrapper = () => {
+    emitter.emit('st');
+  };
+
+  const singleTap = Gesture.Tap()
+    .numberOfTaps(1)
+    .onStart(() => {
+      runOnJS(wrapper)();
+    });
+
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
     .onStart(e => {
@@ -165,7 +180,12 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       originAssign.value = true;
     });
 
-  const combinedGesture = Gesture.Exclusive(pan, pinchGesture, doubleTap);
+  const combinedGesture = Gesture.Exclusive(
+    pan,
+    pinchGesture,
+    doubleTap,
+    singleTap,
+  );
 
   const rStyle = useAnimatedStyle(() => {
     return {
@@ -213,21 +233,25 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
           />
         </Animated.View>
       </GestureDetector>
+      <FileDetailsAppbar parentComponentId={componentId} />
     </Animated.View>
   );
 };
 
 ImageDetails.options = ({uri, index}) => ({
   statusBar: {
-    visible: false,
+    visible: true,
+    drawBehind: true,
   },
-  topBar: {
-    visible: false,
+  sideMenu: {
+    right: {
+      enabled: true,
+    },
   },
+  modalPresentationStyle: OptionsModalPresentationStyle.overCurrentContext,
   layout: {
     backgroundColor: 'transparent',
   },
-  modalPresentationStyle: 'overCurrentContext',
   hardwareBackButton: {
     dismissModalOnPress: false,
   },

@@ -1,7 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Pressable} from 'react-native';
 import React, {useMemo} from 'react';
-import {BlurMask, Canvas, Path} from '@shopify/react-native-skia';
+import {
+  BlurMask,
+  Canvas,
+  LinearGradient,
+  Path,
+  vec,
+} from '@shopify/react-native-skia';
 import {convertAudioPointsToBarPoints} from '../../../../audio_player/utils/functions/convertAudioPointsToBarPoints';
 import {createWaveFormPath} from '../../../../audio_player/utils/functions/createWaveFormPath';
 import json from '../assets/waves.json';
@@ -51,6 +57,11 @@ const AudioThumbnail: React.FC<AudioThumbnailProps> = ({
           strokeWidth={STROKE_WIDTH}
           style={'stroke'}
           color={'#3366ff'}>
+          <LinearGradient
+            colors={['#3366ff', '#0b4199', '#3366ff']}
+            start={vec(0, 0)}
+            end={vec(SIZE, SIZE * 0.75)}
+          />
           <BlurMask blur={2} style={'solid'} />
         </Path>
         <Path
@@ -58,7 +69,7 @@ const AudioThumbnail: React.FC<AudioThumbnailProps> = ({
           strokeWidth={STROKE_WIDTH}
           style={'stroke'}
           color={'rgba(51, 102, 205, 0.6)'}>
-          <BlurMask blur={2} style={'solid'} />
+          <BlurMask blur={1} style={'solid'} />
         </Path>
       </Canvas>
     </Pressable>

@@ -13,19 +13,7 @@ const {statusBarHeight} = Navigation.constantsSync();
 
 const Appbar: React.FC<AppbarProps> = ({title, parentComponentId}) => {
   const goBack = async () => {
-    await Navigation.pop(parentComponentId, {
-      animations: {
-        pop: {
-          sharedElementTransitions: [
-            {
-              fromId: 'ppf-edit',
-              toId: 'ppf',
-              duration: 450,
-            },
-          ],
-        },
-      },
-    });
+    await Navigation.pop(parentComponentId);
   };
 
   return (

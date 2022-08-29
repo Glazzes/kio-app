@@ -189,7 +189,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
           },
         },
       ],
-      {base64: false, compress: 0.5, format: SaveFormat.PNG},
+      {base64: false, compress: 1, format: SaveFormat.JPEG},
     );
 
     await impactAsync(ImpactFeedbackStyle.Medium);
@@ -243,7 +243,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
           resizeMethod={'scale'}
           resizeMode={'cover'}
           source={{uri: imagePath}}
-          style={[imageStyle as any, effectStyles]}
+          style={[imageStyle, effectStyles]}
         />
       </Animated.View>
       <Animated.View

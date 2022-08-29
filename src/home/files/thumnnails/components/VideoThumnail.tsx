@@ -5,7 +5,6 @@ import {File} from '../../../../utils/types';
 import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
-import Video from 'react-native-video';
 import {SIZE} from '../utils/constants';
 
 type VideoThumnailProps = {
@@ -23,10 +22,10 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
   const getPoster = async () => {
     try {
       const {uri} = await getThumbnailAsync(
-        'content://com.android.providers.media.documents/document/video%3A649',
+        'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
         {
-          time: 3000,
-          quality: 0,
+          time: 1000,
+          quality: 1,
         },
       );
 
@@ -57,15 +56,10 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
       <Image
         nativeID={`video-${index}`}
         source={{uri: poster}}
-        resizeMode={'contain'}
+        resizeMode={'cover'}
         style={styles.video}
       />
-      <Video
-        source={{
-          uri: 'content://com.android.providers.media.documents/document/video%3A649',
-        }}
-      />
-      <Icon name="play" size={40} color={'#fff'} style={styles.icon} />
+      <Icon name="play-outline" size={50} color={'#fff'} style={styles.icon} />
     </Pressable>
   );
 };
@@ -82,7 +76,6 @@ const styles = StyleSheet.create({
   video: {
     width: SIZE,
     height: SIZE,
-    backgroundColor: '#000',
   },
   icon: {
     position: 'absolute',

@@ -36,7 +36,6 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
 
   useEffect(() => {
     const sub = emitter.addListener('picture.selected', (asset: Asset) => {
-      console.log(asset);
       Navigation.push(componentId, {
         component: {
           name: Screens.EDITOR,
@@ -44,19 +43,6 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
             uri: asset.uri,
             width: asset.width,
             height: asset.height,
-          },
-          options: {
-            animations: {
-              push: {
-                content: {
-                  alpha: {
-                    from: 0,
-                    to: 1,
-                    duration: 600,
-                  },
-                },
-              },
-            },
           },
         },
       });

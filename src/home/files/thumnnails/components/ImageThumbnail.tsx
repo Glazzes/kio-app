@@ -44,8 +44,6 @@ const center = {
   y: SIZE / 2,
 };
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   index,
   pic,
@@ -152,23 +150,20 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   }));
 
   useEffect(() => {
-    const ss = emitter.addListener('sss', () => {
-      os.value = 1;
-    });
-
+    const willAppear = emitter.addListener('sss', () => (os.value = 1));
     Image.getSize(pic, (w: number, h: number) => {
       setImageDimensions({width: w, height: h});
     });
 
     return () => {
-      ss.remove();
+      willAppear.remove();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <AnimatedPressable ref={aref} style={styles.root} onPress={pushToDetails}>
+    <Pressable ref={aref} style={styles.root} onPress={pushToDetails}>
       <GestureDetector gesture={pinchG}>
         {/*
            Wrapping the view that's gonna be pinched within an animated view
@@ -184,7 +179,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
           />
         </Animated.View>
       </GestureDetector>
-    </AnimatedPressable>
+    </Pressable>
   );
 };
 

@@ -4,11 +4,13 @@ import React, {useMemo} from 'react';
 import {
   BlurMask,
   Canvas,
+  LinearGradient,
   Mask,
   Path,
   Rect,
   useSharedValueEffect,
   useValue,
+  vec,
 } from '@shopify/react-native-skia';
 import Animated, {
   cancelAnimation,
@@ -186,13 +188,13 @@ const Waves: React.FC<WavesProps> = ({
                     <BlurMask blur={1} style={'solid'} />
                   </Path>
                 }>
-                <Rect
-                  x={0}
-                  y={0}
-                  width={skWidth}
-                  height={UPPER_BAR_HEIGHT}
-                  color={'#3366ff'}
-                />
+                <Rect x={0} y={0} width={skWidth} height={UPPER_BAR_HEIGHT}>
+                  <LinearGradient
+                    colors={['#3366ff', '#0b4199', '#3366ff']}
+                    start={vec(0, 0)}
+                    end={vec(width, UPPER_BAR_HEIGHT)}
+                  />
+                </Rect>
               </Mask>
 
               <Path

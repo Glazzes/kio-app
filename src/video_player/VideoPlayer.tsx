@@ -17,7 +17,7 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
       <Video
         nativeID={`video-${index}-dest`}
         source={{
-          uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          uri: 'content://com.android.providers.media.documents/document/video%3A649',
         }}
         paused={true}
         controls={true}
@@ -25,6 +25,7 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
         resizeMode={'contain'}
         poster={thumbnail}
         posterResizeMode={'contain'}
+        useTextureView={false}
       />
     </View>
   );

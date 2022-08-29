@@ -11,13 +11,7 @@ import Animated, {cancelAnimation} from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Action from './Action';
-import {
-  BlurMask,
-  Canvas,
-  Circle,
-  LinearGradient,
-  vec,
-} from '@shopify/react-native-skia';
+import {Canvas, Circle, LinearGradient, vec} from '@shopify/react-native-skia';
 
 type Loop = 0 | 1 | -1;
 
@@ -87,7 +81,11 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
             cx={BUTTON_SIZE / 2 + PADDING / 2}
             cy={BUTTON_SIZE / 2 + PADDING / 2}
             color={'#3366ff'}>
-            <BlurMask blur={3} style={'solid'} />
+            <LinearGradient
+              colors={['#0b4199', '#3366ff']}
+              start={vec(0, 0)}
+              end={vec(BUTTON_SIZE + PADDING, BUTTON_SIZE)}
+            />
           </Circle>
         </Canvas>
         <Pressable onPress={play} style={[styles.playButton]}>

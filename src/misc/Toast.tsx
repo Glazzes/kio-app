@@ -4,8 +4,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Notification} from '../enums/notification';
 import Animated, {
-  cancelAnimation,
-  Keyframe,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -26,6 +24,7 @@ type Color = {
 };
 
 type ToastProps = {
+  title: string;
   message: string;
   type: Notification;
 };
@@ -34,7 +33,7 @@ const {width} = Dimensions.get('window');
 
 const information: Color = {
   [Notification.SUCCESS]: {
-    backgroundColor: '#41D888',
+    backgroundColor: '#07c468',
     progressColor: '#A2ECC4',
     icon: 'check-circle',
     status: 'Success!',
@@ -61,65 +60,43 @@ const information: Color = {
 
 const SPACING = 15;
 const TOAST_WIDTH = width * 0.9;
-const DURATION = 30000;
-
-const entering = new Keyframe({
-  from: {
-    transform: [{translateY: 100}],
-  },
-  to: {
-    transform: [{translateY: 0}],
-  },
-});
-
-const exiting = new Keyframe({
-  from: {
-    transform: [{translateY: 0}],
-  },
-  to: {
-    transform: [{translateY: 100}],
-  },
-});
+const DURATION = 10000;
 
 const Toast: NavigationFunctionComponent<ToastProps> = ({
   componentId,
   type,
   message,
+  title,
 }) => {
-  const [show, setShow] = useState<boolean>(true);
-
   const toastInfo = information[type];
-  const translateX = useSharedValue<number>(1);
+
+  const [show, setShow] = useState<boolean>(true);
+  const translateX = useSharedValue<number>(0);
+  const translateY = useSharedValue<number>(100);
   const [height, setHeight] = useState<number>(0);
 
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: toastInfo.progressColor,
-      transform: [{translateX: translateX.value}],
-    };
-  });
+  const containerStyles = useAnimatedStyle(() => ({
+    transform: [{translateY: translateY.value}],
+  }));
 
-  const hide = () => {
-    emitter.emit(Event.FAB_MOVE_DOWN);
+  const rStyle = useAnimatedStyle(() => ({
+    backgroundColor: toastInfo.progressColor,
+    transform: [{translateX: translateX.value}],
+  }));
+
+  const dismiss = () => {
     setShow(false);
-    cancelAnimation(translateX);
+    Navigation.dismissOverlay(componentId);
+    emitter.emit(Event.FAB_MOVE_DOWN);
   };
 
-  useEffect(() => {
-    translateX.value = withTiming(-TOAST_WIDTH, {duration: DURATION}, f => {
-      if (f) {
-        runOnJS(hide)();
+  const hide = () => {
+    translateY.value = withTiming(100, undefined, finished => {
+      if (finished) {
+        runOnJS(dismiss)();
       }
     });
-
-    const timeout = setTimeout(() => {
-      Navigation.dismissOverlay(componentId);
-    }, DURATION + 300);
-    return () => {
-      clearTimeout(timeout);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   useEffect(() => {
     if (height !== 0) {
@@ -127,13 +104,25 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
     }
   }, [height]);
 
+  useEffect(() => {
+    translateY.value = withTiming(0);
+    translateX.value = withTiming(-TOAST_WIDTH, {duration: DURATION}, f => {
+      if (f) {
+        runOnJS(hide)();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (show) {
     return (
       <Animated.View
-        entering={entering.duration(300)}
-        exiting={exiting.duration(300)}
         onLayout={e => setHeight(e.nativeEvent.layout.height)}
-        style={[styles.toast, {backgroundColor: toastInfo.backgroundColor}]}>
+        style={[
+          containerStyles,
+          styles.toast,
+          {backgroundColor: toastInfo.backgroundColor},
+        ]}>
         <View style={styles.content}>
           <Icon
             name={toastInfo.icon}
@@ -149,7 +138,7 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
             ]}
           />
           <View style={styles.textContainer}>
-            <Text style={styles.title}>{toastInfo.status}</Text>
+            <Text style={styles.title}>{title}</Text>
             <Text style={styles.textContent}>{message}</Text>
           </View>
           <Pressable style={styles.closeIcon} onPress={hide}>
@@ -176,7 +165,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     overflow: 'hidden',
     bottom: SPACING,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: 'center',
     alignSelf: 'center',
   },

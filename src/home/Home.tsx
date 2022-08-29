@@ -71,7 +71,10 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
       return (
         <FileWrapper index={info.index}>
           {info.index % 2 === 0 ? (
-            <GenericThumbnail />
+            <AudioThumbnail
+              parentComponentId={componentId}
+              index={info.index}
+            />
           ) : (
             <ImageThumbnail
               image={{} as File}

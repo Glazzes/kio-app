@@ -16,6 +16,7 @@ import Animated, {
   Easing,
   FadeIn,
   FadeOut,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -24,6 +25,9 @@ import Animated, {
   ZoomOut,
 } from 'react-native-reanimated';
 import {withKeyboard} from '../../utils/hoc';
+import {Screens} from '../../enums/screens';
+import {Notification} from '../../enums/notification';
+import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 
 type CreateFolderModalProps = {
   parentComponentId?: string;
@@ -59,10 +63,25 @@ const CreateFolderModal: NavigationFunctionComponent<
     setFolderName(text);
   };
 
+  const focus = () => {
+    ref.current?.focus();
+  };
+
   const create = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      Navigation.dismissModal(componentId);
+      Navigation.showOverlay({
+        component: {
+          name: Screens.TOAST,
+          passProps: {
+            title: 'Folder created!',
+            message: `Folder "${folderName}" was created successfully`,
+            type: Notification.ERROR,
+          },
+        },
+      });
     }, 3000);
   };
 
@@ -81,96 +100,116 @@ const CreateFolderModal: NavigationFunctionComponent<
   useEffect(() => {
     scale.value = withDelay(
       100,
-      withTiming(1, {
-        duration: 300,
-        easing: Easing.bezierFn(0.34, 1.56, 0.64, 1), // https://easings.net/#easeOutBack
-      }),
+      withTiming(
+        1,
+        {
+          duration: 300,
+          easing: Easing.bezierFn(0.34, 1.56, 0.64, 1), // https://easings.net/#easeOutBack
+        },
+        hasFinished => {
+          if (hasFinished) {
+            runOnJS(focus)();
+          }
+        },
+      ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <Pressable style={styles.root} onPress={hideModal}>
-      <AnimatedPressable style={rStyle}>
-        <View style={styles.modal}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>New Folder</Text>
-            <Image
-              source={require('./assets/folder.png')}
-              resizeMode={'contain'}
-              style={styles.image}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <TextInput
-              ref={ref}
-              editable={!loading}
-              style={styles.input}
-              placeholder={'Folder name'}
-              keyboardType={'default'}
-              autoFocus={true}
-              onFocus={toggle}
-              onChangeText={onChangeText}
-            />
-            {folderName.length > 0 && (
-              <AnimatedPressable
-                onPress={clear}
-                entering={ZoomIn.duration(200)}
-                exiting={ZoomOut.duration(200)}
-                style={styles.icon}>
-                <Icon
-                  name={'plus'}
-                  size={18}
-                  color={'#fff'}
-                  style={{transform: [{rotate: '45deg'}]}}
-                />
-              </AnimatedPressable>
-            )}
-          </View>
-          {folderExists && (
-            <Animated.Text
-              entering={FadeIn.duration(200)}
-              exiting={FadeOut.duration(200)}
-              style={styles.error}>
-              * A folder with this name already exists
-            </Animated.Text>
-          )}
-          <View style={styles.buttonContainer}>
-            <Pressable
-              style={
-                loading
-                  ? [styles.button, styles.cancelDisabled]
-                  : [styles.button, styles.cancel]
-              }
-              onPress={hideModal}>
-              <Text
-                style={loading ? styles.textDisabled : {fontFamily: 'Uber'}}>
-                CANCEL
-              </Text>
-            </Pressable>
-            <Pressable
-              style={
-                loading
-                  ? [styles.button, styles.createDisabled]
-                  : [styles.button, styles.create]
-              }>
-              <Text
-                style={loading ? styles.textDisabled : styles.buttonText}
-                onPress={create}>
-                CREATE
-              </Text>
-              {loading && (
-                <ActivityIndicator
-                  size={'small'}
-                  color={'#C5C8D7'}
-                  style={styles.activity}
-                />
+    <View style={styles.root}>
+      <Animated.View style={rStyle}>
+        <View style={styles.modalContainer}>
+          <Canvas style={styles.canvas}>
+            <RoundedRect
+              x={(width * 0.25) / 2}
+              y={15}
+              width={MODAL_WIDTH}
+              height={160}
+              color={'#fff'}
+              r={10}>
+              <Shadow dx={13} dy={13} blur={13} color={'rgba(0, 0, 0, 0.2)'} />
+            </RoundedRect>
+          </Canvas>
+
+          <View style={styles.modal}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>New Folder</Text>
+              <Image
+                source={require('./assets/folder.png')}
+                resizeMode={'contain'}
+                style={styles.image}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <TextInput
+                ref={ref}
+                editable={!loading}
+                style={styles.input}
+                placeholder={'Folder name'}
+                keyboardType={'default'}
+                onFocus={toggle}
+                onChangeText={onChangeText}
+              />
+              {folderName.length > 0 && (
+                <AnimatedPressable
+                  onPress={clear}
+                  entering={ZoomIn.duration(200)}
+                  exiting={ZoomOut.duration(200)}
+                  style={styles.icon}>
+                  <Icon
+                    name={'plus'}
+                    size={18}
+                    color={'#fff'}
+                    style={{transform: [{rotate: '45deg'}]}}
+                  />
+                </AnimatedPressable>
               )}
-            </Pressable>
+            </View>
+            {folderExists && (
+              <Animated.Text
+                entering={FadeIn.duration(200)}
+                exiting={FadeOut.duration(200)}
+                style={styles.error}>
+                * A folder with this name already exists
+              </Animated.Text>
+            )}
+            <View style={styles.buttonContainer}>
+              <Pressable
+                style={
+                  loading
+                    ? [styles.button, styles.cancelDisabled]
+                    : [styles.button, styles.cancel]
+                }
+                onPress={hideModal}>
+                <Text style={loading ? styles.textDisabled : styles.cancelText}>
+                  CANCEL
+                </Text>
+              </Pressable>
+              <Pressable
+                style={
+                  loading
+                    ? [styles.button, styles.createDisabled]
+                    : [styles.button, styles.create]
+                }>
+                <Text
+                  style={loading ? styles.textDisabled : styles.buttonText}
+                  onPress={create}>
+                  CREATE
+                </Text>
+                {loading && (
+                  <ActivityIndicator
+                    size={'small'}
+                    color={'#C5C8D7'}
+                    style={styles.activity}
+                  />
+                )}
+              </Pressable>
+            </View>
           </View>
         </View>
-      </AnimatedPressable>
-    </Pressable>
+      </Animated.View>
+    </View>
   );
 };
 
@@ -179,14 +218,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  modalContainer: {
+    width,
+    height: 220,
+
+    alignItems: 'center',
+  },
+  canvas: {
+    position: 'absolute',
+    width,
+    height: 220,
   },
   modal: {
     width: MODAL_WIDTH,
+    marginTop: 15,
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     backgroundColor: '#fff',
-    elevation: 1,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -211,8 +260,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    padding: 3,
-    fontFamily: 'Uber',
+    padding: 5,
+    fontFamily: 'UberBold',
     color: '#C5C8D7',
     borderRadius: 3,
   },
@@ -237,10 +286,10 @@ const styles = StyleSheet.create({
   },
   button: {
     width: MODAL_WIDTH / 2 - 20,
-    padding: 5,
+    padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 3,
+    borderRadius: 5,
   },
   create: {
     backgroundColor: '#3366ff',
@@ -248,19 +297,24 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#3366ff',
   },
+  cancel: {
+    borderWidth: 1,
+    borderColor: '#ee3060',
+  },
   createDisabled: {
     backgroundColor: '#F3F3F4',
     flexDirection: 'row',
     borderWidth: 0.5,
     borderColor: '#F3F3F4',
   },
-  cancel: {
-    borderWidth: 0.5,
-  },
   cancelDisabled: {
     borderWidth: 0.5,
     backgroundColor: '#F3F3F4',
     borderColor: '#F3F3F4',
+  },
+  cancelText: {
+    color: '#ee3060',
+    fontFamily: 'Uber',
   },
   buttonText: {
     color: '#fff',

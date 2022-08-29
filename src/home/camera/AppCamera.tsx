@@ -57,7 +57,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
   const [selectedPhotos, setselectedPhotos] = useState<Photos>({});
   const [photoCount, setPhotoCount] = useState<number>(0);
 
-  const [isBackCamera, setIsBackCamera] = useState<boolean>(true);
+  const [isBackCamera, setIsBackCamera] = useState<boolean>(!singlePicture);
   const [authorized, setAuthorized] = useState<boolean>(false);
 
   const flash = useRef<boolean>(false);
@@ -294,7 +294,7 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
             <View style={styles.cameraContainer}>
               <Camera
                 ref={cameraRef}
-                isActive={true}
+                isActive={isActive}
                 device={isBackCamera ? devices.back : devices.front}
                 photo={true}
                 style={styles.camera}

@@ -1,7 +1,13 @@
 import {View, Text, Dimensions, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import React from 'react';
-import {BlurMask, Canvas, RoundedRect} from '@shopify/react-native-skia';
+import {
+  BlurMask,
+  Canvas,
+  LinearGradient,
+  RoundedRect,
+  vec,
+} from '@shopify/react-native-skia';
 import AvatarGroup from '../../misc/AvatarGroup';
 
 type FolderProps = {};
@@ -28,8 +34,13 @@ const Folder: React.FC<FolderProps> = ({}) => {
           width={WIDTH}
           height={HEIGHT}
           r={5}
-          color={'#3366ff'}
-        />
+          color={'#3366ff'}>
+          <LinearGradient
+            colors={['#0b4199', '#3366ff']}
+            start={vec(0, 0)}
+            end={vec(WIDTH, HEIGHT)}
+          />
+        </RoundedRect>
       </Canvas>
       <View style={styles.container}>
         <View style={styles.decorationContainer}>

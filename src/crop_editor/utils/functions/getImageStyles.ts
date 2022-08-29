@@ -1,24 +1,13 @@
-import {Dimension, ImageStyle} from '../../../shared/types';
+import {ImageStyle} from 'react-native';
+import {Dimension} from '../../../shared/types';
 
 const getImageStyles = (dimensions: Dimension, radius: number): ImageStyle => {
   const aspectRatio = dimensions.width / dimensions.height;
-  const styles: ImageStyle = {
-    width: undefined,
-    height: undefined,
-    maxWidth: undefined,
-    maxHeight: undefined,
-    aspectRatio,
+
+  return {
+    height: aspectRatio >= 1 ? radius * 2 : (2 * radius) / aspectRatio,
+    width: aspectRatio >= 1 ? 2 * radius * aspectRatio : 2 * radius,
   };
-
-  if (aspectRatio >= 1) {
-    styles.height = radius * 2;
-    styles.maxHeight = radius * 2;
-  } else {
-    styles.width = radius * 2;
-    styles.maxWidth = radius * 2;
-  }
-
-  return styles;
 };
 
 export default getImageStyles;
