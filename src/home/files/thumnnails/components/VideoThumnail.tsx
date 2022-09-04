@@ -42,6 +42,7 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
         passProps: {
           thumbnail: poster,
           index,
+          isVideo: true,
         },
       },
     });

@@ -1,6 +1,6 @@
 import {Dimensions, Pressable, StyleSheet} from 'react-native';
 import React from 'react';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 
 type UploadPhotoFABProps = {
@@ -28,7 +28,7 @@ const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({
       onPress={upload}
       entering={ZoomIn.duration(300)}
       exiting={ZoomOut.duration(300)}>
-      <Icon name="upload" color={'#fff'} size={25} />
+      <Icon name="ios-cloud-upload" color={'#fff'} size={25} />
     </AnimatedPressable>
   );
 };

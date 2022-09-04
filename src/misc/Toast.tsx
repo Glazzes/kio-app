@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Notification} from '../enums/notification';
 import Animated, {
+  Easing,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -106,11 +107,15 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
 
   useEffect(() => {
     translateY.value = withTiming(0);
-    translateX.value = withTiming(-TOAST_WIDTH, {duration: DURATION}, f => {
-      if (f) {
-        runOnJS(hide)();
-      }
-    });
+    translateX.value = withTiming(
+      -TOAST_WIDTH,
+      {duration: DURATION, easing: Easing.linear},
+      f => {
+        if (f) {
+          runOnJS(hide)();
+        }
+      },
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

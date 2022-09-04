@@ -68,6 +68,19 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
         );
       }
 
+      if (info.index === 2) {
+        return (
+          <FileWrapper index={info.index}>
+            <PdfThumnail
+              parentComponentId={componentId}
+              thumbnail={
+                'https://images-na.ssl-images-amazon.com/images/I/71X432GjWpL.jpg'
+              }
+            />
+          </FileWrapper>
+        );
+      }
+
       return (
         <FileWrapper index={info.index}>
           {info.index % 2 === 0 ? (
@@ -102,7 +115,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
   });
 
   useEffect(() => {
-    push({id: '', name: '', componentId});
+    push({name: '', componentId});
+
     return () => {
       removeByComponentId(componentId);
     };

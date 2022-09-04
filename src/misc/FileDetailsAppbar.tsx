@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, Dimensions} from 'react-native';
+import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
 import React, {useEffect, useRef} from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -8,9 +8,12 @@ import Animated, {
 import {Navigation} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../utils/emitter';
+import {Overlays} from '../shared/enum/Overlays';
 
 type FileDetailsAppbarProps = {
   parentComponentId: string;
+  isVideo: boolean;
+  isModal: boolean;
 };
 
 const {width} = Dimensions.get('window');
@@ -18,6 +21,8 @@ const {statusBarHeight} = Navigation.constantsSync();
 
 const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
   parentComponentId,
+  isVideo,
+  isModal,
 }) => {
   const isHidden = useRef(false);
   const translateY = useSharedValue<number>(0);
@@ -26,6 +31,31 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
       transform: [{translateY: translateY.value}],
     };
   });
+
+  const pop = () => {
+    if (isModal) {
+      emitter.emit('dis');
+    }
+
+    Navigation.pop(parentComponentId);
+  };
+
+  const openPIP = () => {
+    if (isVideo) {
+      const tout = setTimeout(() => {
+        Navigation.pop(parentComponentId);
+        clearTimeout(tout);
+      }, 1000);
+    } else {
+      Navigation.pop(parentComponentId);
+    }
+
+    Navigation.showOverlay({
+      component: {
+        name: Overlays.PICTURE_IN_PICTURE_VIDEO,
+      },
+    });
+  };
 
   useEffect(() => {
     const listener = emitter.addListener('st', () => {
@@ -51,12 +81,14 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
   return (
     <Animated.View style={[styles.root, rStyle]}>
       <View style={styles.infoContainer}>
-        <Icon
-          name={'chevron-left'}
-          size={25}
-          color={'#fff'}
-          style={styles.icon}
-        />
+        <Pressable hitSlop={40} onPress={pop}>
+          <Icon
+            name={'chevron-left'}
+            size={25}
+            color={'#fff'}
+            style={styles.icon}
+          />
+        </Pressable>
         <View style={styles.titleContainer}>
           <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
             Super_ULtra-EPIC_PPUPYHuksy.png
@@ -64,12 +96,16 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
         </View>
       </View>
       <View style={styles.leftContainer}>
-        <Icon
-          name={'picture-in-picture-top-right'}
-          size={25}
-          color={'#fff'}
-          style={styles.pictureInPicture}
-        />
+        {isVideo && (
+          <Pressable hitSlop={30} onPress={openPIP}>
+            <Icon
+              name={'picture-in-picture-top-right'}
+              size={25}
+              color={'#fff'}
+              style={styles.pictureInPicture}
+            />
+          </Pressable>
+        )}
         <Icon name={'dots-vertical'} size={25} color={'#fff'} />
       </View>
     </Animated.View>

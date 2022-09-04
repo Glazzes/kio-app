@@ -212,7 +212,14 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
         }
       });
 
-    return () => backListener.remove();
+    const dissmiss = emitter.addListener('dis', () => {
+      dismissModal();
+    });
+
+    return () => {
+      backListener.remove();
+      dissmiss.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -233,7 +240,11 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
           />
         </Animated.View>
       </GestureDetector>
-      <FileDetailsAppbar parentComponentId={componentId} />
+      <FileDetailsAppbar
+        parentComponentId={componentId}
+        isVideo={false}
+        isModal={true}
+      />
     </Animated.View>
   );
 };

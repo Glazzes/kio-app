@@ -5,8 +5,11 @@ import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import emitter from '../../utils/emitter';
 import Sound from 'react-native-sound';
 import {pickMultiple} from 'react-native-document-picker';
-import {Navigation} from 'react-native-navigation';
-import {Screens} from '../../enums/screens';
+import {
+  Navigation,
+  OptionsModalPresentationStyle,
+} from 'react-native-navigation';
+import {Modals} from '../../navigation/Modals';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -52,12 +55,13 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
   const createFolder = () => {
     Navigation.showModal({
       component: {
-        name: Screens.CREATE_FOLDER_MODAL,
+        name: Modals.CREATE_FOLDER_MODAL,
         options: {
           layout: {
             backgroundColor: 'transparent',
           },
-          modalPresentationStyle: 'overCurrentContext',
+          modalPresentationStyle:
+            OptionsModalPresentationStyle.overCurrentContext,
         },
       },
     });

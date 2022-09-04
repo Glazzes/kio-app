@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
 import {clamp, pinch, set} from '../../utils/animations';
@@ -33,7 +34,7 @@ type CropEditorProps = {
 };
 
 const {width, height} = Dimensions.get('window');
-const R = (width / 2) * 0.8;
+const R = (width * 0.8) / 2;
 const center = {x: width / 2, y: height * 0.4};
 
 const path = Skia.Path.MakeFromSVGString(
@@ -43,6 +44,7 @@ const path = Skia.Path.MakeFromSVGString(
 );
 
 const CROP_SIZE = 180;
+const TIMING_CONFIG = {duration: 150};
 
 const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   uri: imagePath,
@@ -62,6 +64,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
 
   const translate = useVector(0, 0);
   const offset = useVector(0, 0);
+  const delta = useVector(0, 0);
 
   const scale = useSharedValue<number>(1);
   const scaleOffset = useSharedValue<number>(1);
@@ -69,15 +72,27 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   const origin = useVector(0, 0);
   const originAssign = useSharedValue<boolean>(true);
 
-  const translation = useDerivedValue<{x: number; y: number}>(() => {
-    let offsetX = (layout.x.value * scale.value - R * 2) / 2;
-    let offsetY = (layout.y.value * scale.value - R * 2) / 2;
+  const bounds = useDerivedValue(() => {
+    return {
+      x: (layout.x.value * scale.value - R * 2) / 2,
+      y: (layout.y.value * scale.value - R * 2) / 2,
+    };
+  }, [layout, scale]);
 
-    const x = clamp(translate.x.value, -offsetX, offsetX);
-    const y = clamp(translate.y.value, -offsetY, offsetY);
+  const translation = useDerivedValue<{x: number; y: number}>(() => {
+    const x = clamp(
+      translate.x.value,
+      -(bounds.value.x + R * 2),
+      bounds.value.x + R * 2,
+    );
+    const y = clamp(
+      translate.y.value,
+      -(bounds.value.y + R * 2),
+      bounds.value.y + R * 2,
+    );
 
     return {x, y};
-  }, [translate, scale]);
+  }, [translate, scale, bounds]);
 
   const pan = Gesture.Pan()
     .maxPointers(1)
@@ -86,8 +101,50 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
       offset.y.value = translation.value.y;
     })
     .onChange(e => {
-      translate.x.value = offset.x.value + e.translationX;
-      translate.y.value = offset.y.value + e.translationY;
+      const x = offset.x.value + e.translationX;
+      const y = offset.y.value + e.translationY;
+
+      const withinBoundsX = x >= -bounds.value.x && x <= bounds.value.x;
+      const withinBoundsY = y >= -bounds.value.y && y <= bounds.value.y;
+
+      delta.x.value = e.translationX - delta.x.value;
+      delta.y.value = e.translationY - delta.y.value;
+
+      const diffX = Math.abs(Math.abs(translate.x.value) - bounds.value.x);
+      const diffY = Math.abs(Math.abs(translate.y.value) - bounds.value.y);
+
+      translate.x.value +=
+        delta.x.value * (withinBoundsX ? 1 : 0.75 * (1 - diffX / (R * 2)) ** 2);
+
+      translate.y.value +=
+        delta.y.value * (withinBoundsY ? 1 : 0.75 * (1 - diffY / (R * 2)) ** 2);
+
+      delta.x.value = e.translationX;
+      delta.y.value = e.translationY;
+    })
+    .onEnd(() => {
+      delta.x.value = 0;
+      delta.y.value = 0;
+
+      if (
+        translate.x.value < -bounds.value.x ||
+        translate.x.value > bounds.value.x
+      ) {
+        translate.x.value = withTiming(
+          Math.sign(translate.x.value) * bounds.value.x,
+          TIMING_CONFIG,
+        );
+      }
+
+      if (
+        translate.y.value < -bounds.value.y ||
+        translate.y.value > bounds.value.y
+      ) {
+        translate.y.value = withTiming(
+          Math.sign(translate.y.value) * bounds.value.y,
+          TIMING_CONFIG,
+        );
+      }
     });
 
   const pinchGesture = Gesture.Pinch()
@@ -111,8 +168,11 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
         originAssign,
       );
 
-      translate.x.value = offset.x.value + translateX;
-      translate.y.value = offset.y.value + translateY;
+      const x = offset.x.value + translateX;
+      const y = offset.y.value + translateY;
+
+      translate.x.value = clamp(x, -bounds.value.x, bounds.value.x);
+      translate.y.value = clamp(y, -bounds.value.y, bounds.value.y);
       scale.value = clamp(e.scale * scaleOffset.value, 1, maxinumScale * 1.5);
     })
     .onEnd(_ => {
@@ -226,7 +286,6 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
       });
 
     return () => backButtonListener.remove();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

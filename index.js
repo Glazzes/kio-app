@@ -19,6 +19,8 @@ import {PictureInPictureVideo} from './src/overlays';
 import {Drawers} from './src/navigation/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
 import {GetStarted, Login} from './src/onboarding';
+import FileMenu from './src/overlays/FileMenu';
+import {Modals} from './src/navigation/Modals';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -143,8 +145,10 @@ Navigation.registerComponent(Screens.EDITOR, () =>
 Navigation.registerComponent(Screens.TOAST, () => Toast);
 
 Navigation.registerComponent(
-  Screens.CREATE_FOLDER_MODAL,
+  Modals.CREATE_FOLDER_MODAL,
   () => CreateFolderModal,
 );
+
+Navigation.registerComponent(Modals.FILE_MENU, () => FileMenu);
 
 Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);

@@ -1,80 +1,88 @@
-import {View, StyleSheet, Dimensions} from 'react-native';
-import React from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {View, Text, StyleSheet, Dimensions, Button} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {
+  BackdropBlur,
   BlendColor,
-  BlurMask,
   Canvas,
   Circle,
+  ColorMatrix,
+  Easing,
   Fill,
-  Group,
   Image,
   Lerp,
   LinearGradient,
+  Offset,
   Paint,
+  Path,
   Rect,
-  RoundedRect,
-  Shadow,
-  useCanvasRef,
-  useFont,
+  runTiming,
+  Skia,
+  SkPath,
   useImage,
-  useLoop,
+  useTouchHandler,
+  useValue,
   vec,
 } from '@shopify/react-native-skia';
 
 type LoginProps = {};
 
 const {width, height} = Dimensions.get('window');
-const MODAL_WIDTH = width * 0.75;
 
-const Login: NavigationFunctionComponent<LoginProps> = ({}) => {
-  const ref = useCanvasRef();
-  const t = useLoop({duration: 2000});
+const path = Skia.Path.Make();
 
-  const image = useImage(
-    'https://raw.githubusercontent.com/vijayinyoutube/colorfilterapp/master/assets/Images/product.png',
-  );
+const Login: React.FC<LoginProps> = ({}) => {
+  const [paths, setPaths] = useState<SkPath[]>([]);
 
-  if (!image) {
-    return null;
-  }
+  const touch = useTouchHandler({
+    onStart: e => {
+      path.moveTo(e.x, e.y);
+    },
+    onActive: e => {
+      path.lineTo(e.x, e.y);
+    },
+    onEnd: e => {
+      paths.push(path);
+    },
+  });
 
   return (
-    <View style={{flex: 1}}>
-      <Canvas ref={ref} style={{flex: 1}}>
-        <Fill color={'#fff'} />
-        <RoundedRect
-          x={(width * 0.25) / 2}
-          y={200}
-          width={MODAL_WIDTH}
-          height={150}
-          color={'#fff'}
-          r={20}>
-          <Shadow dx={13} dy={13} blur={13} color={'#e3e3e3'} />
-        </RoundedRect>
+    <View style={styles.root}>
+      <Canvas style={{width, height}} onTouch={touch}>
+        <Fill color={'#000'} />
+        {paths.map((p, index) => {
+          return (
+            <Offset x={10} y={10}>
+              <Path
+                key={`path-${index}`}
+                path={p}
+                style={'stroke'}
+                strokeCap={'round'}
+                strokeWidth={3}
+                color={'orange'}
+                antiAlias={true}
+              />
+            </Offset>
+          );
+        })}
+
+        <Path
+          path={path}
+          style={'stroke'}
+          strokeCap={'round'}
+          strokeWidth={3}
+          color={'orange'}
+        />
       </Canvas>
     </View>
   );
-};
-
-Login.options = {
-  statusBar: {
-    visible: false,
-  },
-  topBar: {
-    visible: false,
-  },
 };
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  canvas: {
-    width,
-    height,
-    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

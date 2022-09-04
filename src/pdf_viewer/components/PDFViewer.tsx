@@ -32,6 +32,7 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
       sideMenu: {
         left: {
           enabled: true,
+          visible: true,
         },
       },
     });
@@ -64,10 +65,12 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
         ref={ref}
         style={styles.pdf}
         source={{
-          uri: '',
+          uri: 'https://raw.githubusercontent.com/divyesh008/eBooks/main/Clean%20Coder.pdf',
         }}
         trustAllCerts={false}
-        onLoadProgress={percent => (progress.value = withTiming(percent))}
+        onLoadProgress={percent => {
+          progress.value = withTiming(percent);
+        }}
         renderActivityIndicator={() => (
           <PdfProgressIndicator progress={progress} />
         )}
@@ -92,12 +95,9 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
 PDFViewer.options = {
   statusBar: {
     visible: true,
-    backgroundColor: '#3366ff',
+    drawBehind: true,
   },
   sideMenu: {
-    left: {
-      enabled: true,
-    },
     right: {
       enabled: true,
     },

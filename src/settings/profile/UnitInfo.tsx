@@ -40,16 +40,29 @@ path.addArc(
 const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
   const end = useValue(0);
   const uberBold = useFont(require('../../assets/UberBold.otf'), 20);
-  const pos = uberBold?.getTextWidth('00%') ?? 0;
+  const x = useComputedValue(() => {
+    return (
+      center.x -
+      (uberBold?.getTextWidth(`${Math.floor(end.current * 100)}%`) ?? 0) / 2
+    );
+  }, [end, uberBold]);
 
   const text = useComputedValue(() => {
     return `${Math.floor(end.current * 100)}%`;
   }, [end]);
 
+  const animateWheel = () => {
+    runTiming(end, {from: 0, to: 0.58}, {duration: 2000});
+  };
+
   useEffect(() => {
-    runTiming(end, {from: 0, to: 0.75}, {duration: 2000});
+    if (uberBold) {
+      fetch('https://jsonplaceholder.typicode.com/comments')
+        .then(animateWheel)
+        .catch(() => console.log('eror'));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [uberBold]);
 
   return (
     <View style={styles.unit}>
@@ -94,8 +107,8 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
         </Path>
         {uberBold !== null && (
           <SkText
-            x={center.x + STROKE_WIDTH / 4 - pos / 2}
-            y={center.y + 7}
+            x={x}
+            y={center.y + 7.5}
             color={'#fff'}
             text={text}
             font={uberBold}

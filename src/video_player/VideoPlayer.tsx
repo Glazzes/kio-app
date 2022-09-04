@@ -1,7 +1,8 @@
 import {View, StyleSheet} from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import Video from 'react-native-video';
+import FileDetailsAppbar from '../misc/FileDetailsAppbar';
 
 type VideoPlayerProps = {
   thumbnail: string;
@@ -9,23 +10,30 @@ type VideoPlayerProps = {
 };
 
 const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
+  componentId,
   thumbnail,
   index,
 }) => {
+  const [ready, setReady] = useState<boolean>(false);
+
   return (
     <View style={styles.root}>
       <Video
         nativeID={`video-${index}-dest`}
-        source={{
-          uri: 'content://com.android.providers.media.documents/document/video%3A649',
-        }}
-        paused={true}
+        source={require('./assets/gru.mp4')}
+        paused={false}
         controls={true}
         style={[StyleSheet.absoluteFillObject, {backgroundColor: '#000'}]}
         resizeMode={'contain'}
         poster={thumbnail}
         posterResizeMode={'contain'}
         useTextureView={false}
+        onReadyForDisplay={() => setReady(true)}
+      />
+      <FileDetailsAppbar
+        parentComponentId={componentId}
+        isVideo={ready}
+        isModal={false}
       />
     </View>
   );

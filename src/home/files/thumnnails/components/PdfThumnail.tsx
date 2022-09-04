@@ -6,6 +6,8 @@ import {
   Pressable,
 } from 'react-native';
 import React, {useEffect, useMemo, useState} from 'react';
+import {Navigation} from 'react-native-navigation';
+import {Screens} from '../../../../enums/screens';
 
 type PdfThumnailProps = {
   thumbnail: string;
@@ -16,7 +18,10 @@ const {width} = Dimensions.get('window');
 const SIZE = (width * 0.9 - 10) / 2;
 const THUMBNAIL_WIDTH = SIZE * 0.85;
 
-const PdfThumnail: React.FC<PdfThumnailProps> = ({thumbnail}) => {
+const PdfThumnail: React.FC<PdfThumnailProps> = ({
+  thumbnail,
+  parentComponentId,
+}) => {
   const [dimensions, setDimensions] = useState({width: 1, height: 1});
 
   const imageStyles: ImageStyle = useMemo(
@@ -28,6 +33,14 @@ const PdfThumnail: React.FC<PdfThumnailProps> = ({thumbnail}) => {
     [dimensions],
   );
 
+  const goToReader = () => {
+    Navigation.push(parentComponentId, {
+      component: {
+        name: 'Pdf',
+      },
+    });
+  };
+
   useEffect(() => {
     Image.getSize(thumbnail, (w, h) => {
       setDimensions({width: w, height: h});
@@ -35,7 +48,7 @@ const PdfThumnail: React.FC<PdfThumnailProps> = ({thumbnail}) => {
   }, [thumbnail]);
 
   return (
-    <Pressable style={styles.root}>
+    <Pressable style={styles.root} onPress={goToReader}>
       <Image source={{uri: thumbnail}} style={imageStyles} />
     </Pressable>
   );

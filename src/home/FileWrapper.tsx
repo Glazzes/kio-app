@@ -1,6 +1,22 @@
-import {View, Text, StyleSheet, Dimensions, ViewStyle} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ViewStyle,
+  Pressable,
+} from 'react-native';
 import React, {useMemo} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {
+  measure,
+  runOnJS,
+  runOnUI,
+  useAnimatedRef,
+} from 'react-native-reanimated';
+import {Navigation} from 'react-native-navigation';
+import {getPositionForMenu} from '../shared/functions/getPositionForMenu';
+import {Modals} from '../navigation/Modals';
 
 type FileWrapperProps = {
   index: number;
@@ -11,6 +27,39 @@ const {width} = Dimensions.get('window');
 const SIZE = (width * 0.9 - 10) / 2;
 
 const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
+  const aref = useAnimatedRef();
+
+  const showMenu = () => {
+    runOnUI(() => {
+      'worklet';
+      const {
+        width: iconWidth,
+        height: iconHeight,
+        pageX,
+        pageY,
+      } = measure(aref);
+      const {x, y} = getPositionForMenu(
+        iconWidth,
+        iconHeight,
+        pageX,
+        pageY,
+        185,
+        390,
+      );
+
+      runOnJS(openMenu)(x, y);
+    })();
+  };
+
+  const openMenu = (x: number, y: number) => {
+    Navigation.showModal({
+      component: {
+        name: Modals.FILE_MENU,
+        passProps: {x, y},
+      },
+    });
+  };
+
   const wrapperMargin: ViewStyle = useMemo(() => {
     return {marginLeft: index % 2 === 0 ? width * 0.05 : 5};
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -26,12 +75,14 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
           </Text>
           <Text style={styles.subtitle}>1MB</Text>
         </View>
-        <Icon
-          name={'dots-vertical'}
-          size={20}
-          color={'#282828'}
-          style={styles.icon}
-        />
+        <Pressable ref={aref} onPress={showMenu} hitSlop={50}>
+          <Icon
+            name={'dots-vertical'}
+            size={20}
+            color={'#282828'}
+            style={styles.icon}
+          />
+        </Pressable>
       </View>
     </View>
   );

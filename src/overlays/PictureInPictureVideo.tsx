@@ -12,6 +12,8 @@ import {
   Pressable,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {peekLast} from '../store/navigationStore';
+import {Screens} from '../enums/screens';
 
 type PictureInPictureVideoProps = {
   uri: string;
@@ -27,16 +29,28 @@ to not longer work, so in order to drag the video around it's necesary to use an
 */
 const PictureInPictureVideo: NavigationFunctionComponent<
   PictureInPictureVideoProps
-> = ({uri, componentId}) => {
+> = ({componentId}) => {
   const videoRef = useRef<Video>(null);
   const translate = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
   const scale = useRef(new Animated.Value(1)).current;
   const hasFinished = useRef(false);
 
+  const goFullScreen = () => {
+    console.log('Full');
+    const lastFolderScreen = peekLast();
+    Navigation.dismissOverlay(componentId);
+
+    Navigation.push(lastFolderScreen.componentId, {
+      component: {
+        name: Screens.VIDEO_PLAYER,
+      },
+    });
+  };
+
   const pop = () => {
     Animated.timing(scale, {
       toValue: 0,
-      duration: 500,
+      duration: 300,
       useNativeDriver: true,
     }).start(finished => {
       if (finished) {
@@ -131,14 +145,18 @@ const PictureInPictureVideo: NavigationFunctionComponent<
         controls={false}
         paused={false}
         resizeMode={'contain'}
+        repeat={true}
         useTextureView={false}
         maxBitRate={1000000}
       />
       <View style={styles.options}>
-        <Pressable hitSlop={20} style={styles.closeButton}>
+        <Pressable
+          hitSlop={20}
+          style={styles.closeButton}
+          onPress={goFullScreen}>
           <Icon name={'arrow-expand'} color={'#fff'} size={ICON_SIZE - 5} />
         </Pressable>
-        <Pressable hitSlop={20} onPress={pop} style={styles.closeButton}>
+        <Pressable style={styles.closeButton} onPress={pop}>
           <Icon
             name={'plus'}
             color={'#fff'}
