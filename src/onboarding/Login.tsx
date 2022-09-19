@@ -10,8 +10,6 @@ import {
   useValue,
   useComputedValue,
   runTiming,
-  Image,
-  Group,
 } from '@shopify/react-native-skia';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {GestureDetector} from 'react-native-gesture-handler';
@@ -20,75 +18,35 @@ import Animated from 'react-native-reanimated';
 const {width, height} = Dimensions.get('window');
 
 const pascal = [1, 6, 15, 20, 15, 6, 1];
-let ratio = 0;
-for (let i = 0; i < pascal.length; i++) {
-  for (let j = 0; j < pascal.length; j++) {
-    ratio += pascal[i] * pascal[j];
-  }
-}
+let ratio = pascal.reduce((p, n) => p + n);
 
 const shader = `
   uniform shader image;
   uniform float[7] pascal;
   uniform float ratio;
+  uniform float x;
 
   vec4 blur7Samples(vec2 xy) {
     vec3 color = vec3(0.0);
 
-    for(int x = -3; x <= 3; x++) {
-      for(int y = -3; y <= 3; y++) {
-        float weight = pascal[x + 3] * pascal[y + 3];
-        color += image.eval(vec2(xy.x + float(x), xy.y + float(y))).rgb * weight;
-      }
+    for(int i = -3; i <= 3; i++) {
+      color += image.eval(vec2(xy.x + float(i), xy.y)).rgb * pascal[i + 3];
+      color += image.eval(vec2(xy.x, xy.y + float(i))).rgb * pascal[i + 3];
     }
 
-    color /= ratio;
-    return vec4(color, 1.0);
-  }
-
-  vec4 blur5Samples(vec2 xy) {
-    vec3 color = vec3(0.0);
-
-    for(int x = -2; x <= 2; x++) {
-      for(int y = -2; y <= 2; y++) {
-        color += image.eval(vec2(xy.x + float(x), xy.y + float(y))).rgb;
-      }
-    }
-
-    color /= 25;
-    return vec4(color, 1.0);
-  }
-
-  vec4 blur3Samples(vec2 xy) {
-    vec3 color = vec3(0.0);
-
-    for(int x = -1; x <= 1; x++) {
-      for(int y = -1; y <= 1; y++) {
-        color += image.eval(vec2(xy.x + float(x), xy.y + float(y))).rgb;
-      }
-    }
-
-    color /= 9;
+    color /= ratio * 2;
     return vec4(color, 1.0);
   }
 
   vec4 main(vec2 xy) {
     float aspectRatio =  ${height} / ${width};
     vec2 pos = xy / vec2(${width}, ${height});
-    float dst = distance(vec2(pos.x, pos.y * aspectRatio), vec2(0.5, 0.5 * aspectRatio));
+    float dst = distance(vec2(pos.x, pos.y * aspectRatio), vec2(0.5, x * aspectRatio));
 
     if(dst < 0.25) {
       vec4 pixel = image.eval(xy).rgba;
       // pixel.b = 1.0;
       return pixel;
-    }
-
-    if(dst < 0.3 && dst > 0.27) {
-      return blur5Samples(xy);
-    }
-
-    if(dst < 0.27 && dst > 0.25) {
-      return blur3Samples(xy);
     }
 
     // return image.eval(xy).rgba;
@@ -111,11 +69,11 @@ const Example: NavigationFunctionComponent = () => {
   );
 
   const uniform = useComputedValue(() => {
-    return [{translateX: 100 * progress.current}];
+    return {x: progress.current, pascal, ratio};
   }, [progress]);
 
   const image = useImage(
-    'https://cdn.shopify.com/s/files/1/0516/0609/3998/products/smart-phone-wallpaper-digital-download-sunset-bright-733022.jpg?v=1652904193',
+    'https://i.pinimg.com/originals/43/82/66/438266e9aa4487c7d06e5aeb6318e32f.jpg',
   );
 
   const cat = useImage(require('./melo_cat.png'));
@@ -131,7 +89,7 @@ const Example: NavigationFunctionComponent = () => {
         <Fill color={'#000'} />
 
         <Fill>
-          <Shader source={source} uniforms={{pascal, ratio}}>
+          <Shader source={source} uniforms={uniform}>
             <ImageShader
               image={image}
               x={0}
@@ -142,19 +100,6 @@ const Example: NavigationFunctionComponent = () => {
             />
           </Shader>
         </Fill>
-
-        <Group
-          transform={[{rotate: Math.PI / 4}, {scale: 2}]}
-          origin={{x: width / 2, y: height / 2}}>
-          <Image
-            image={melon}
-            x={width / 2 - 50}
-            y={height / 2 - 50}
-            width={100}
-            height={100}
-            fit={'cover'}
-          />
-        </Group>
       </Canvas>
       <GestureDetector>
         <Animated.View style={styles.sticker}>

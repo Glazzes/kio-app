@@ -21,6 +21,7 @@ import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
 import {GetStarted, Login} from './src/onboarding';
 import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/Modals';
+import GenericModal from './src/home/modals/GenericModal';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -103,6 +104,8 @@ Navigation.registerComponent(
 Navigation.registerComponent(Modals.FILE_MENU, () => FileMenu);
 
 Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);
+
+Navigation.registerComponent('Generic', () => GenericModal);
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({

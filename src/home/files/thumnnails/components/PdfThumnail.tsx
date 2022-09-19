@@ -4,6 +4,7 @@ import {
   Image,
   ImageStyle,
   Pressable,
+  View,
 } from 'react-native';
 import React, {useEffect, useMemo, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
@@ -48,9 +49,9 @@ const PdfThumnail: React.FC<PdfThumnailProps> = ({
   }, [thumbnail]);
 
   return (
-    <Pressable style={styles.root} onPress={goToReader}>
+    <View style={styles.root}>
       <Image source={{uri: thumbnail}} style={imageStyles} />
-    </Pressable>
+    </View>
   );
 };
 

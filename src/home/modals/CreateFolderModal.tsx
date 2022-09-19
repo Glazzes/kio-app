@@ -179,23 +179,23 @@ const CreateFolderModal: NavigationFunctionComponent<
                 style={
                   loading
                     ? [styles.button, styles.cancelDisabled]
-                    : [styles.button, styles.cancel]
+                    : [styles.button, styles.cancelButton]
                 }
                 onPress={hideModal}>
-                <Text style={loading ? styles.textDisabled : styles.cancelText}>
-                  CANCEL
-                </Text>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </Pressable>
               <Pressable
                 style={
                   loading
                     ? [styles.button, styles.createDisabled]
-                    : [styles.button, styles.create]
+                    : [styles.button, styles.confirmButton]
                 }>
                 <Text
-                  style={loading ? styles.textDisabled : styles.buttonText}
+                  style={
+                    loading ? styles.textDisabled : styles.confirmButtonText
+                  }
                   onPress={create}>
-                  CREATE
+                  Confirm
                 </Text>
                 {loading && (
                   <ActivityIndicator
@@ -211,6 +211,15 @@ const CreateFolderModal: NavigationFunctionComponent<
       </Animated.View>
     </View>
   );
+};
+
+CreateFolderModal.options = {
+  statusBar: {
+    visible: false,
+  },
+  topBar: {
+    visible: false,
+  },
 };
 
 const styles = StyleSheet.create({
@@ -245,6 +254,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'UberBold',
+    fontSize: 15,
   },
   image: {
     width: 45,
@@ -285,21 +295,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   button: {
-    width: MODAL_WIDTH / 2 - 20,
-    padding: 8,
+    width: MODAL_WIDTH / 2 - 15,
+    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
+    borderRadius: 10,
+    height: 40,
   },
-  create: {
+  confirmButton: {
     backgroundColor: '#3366ff',
-    flexDirection: 'row',
-    borderWidth: 0.5,
-    borderColor: '#3366ff',
   },
-  cancel: {
-    borderWidth: 1,
-    borderColor: '#ee3060',
+  confirmButtonText: {
+    fontFamily: 'UberBold',
+    color: '#fff',
+  },
+  cancelButton: {
+    backgroundColor: '#EDF1F7',
+  },
+  cancelButtonText: {
+    fontFamily: 'UberBold',
+    color: '#c3c3c3',
   },
   createDisabled: {
     backgroundColor: '#F3F3F4',
@@ -311,14 +326,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     backgroundColor: '#F3F3F4',
     borderColor: '#F3F3F4',
-  },
-  cancelText: {
-    color: '#ee3060',
-    fontFamily: 'Uber',
-  },
-  buttonText: {
-    color: '#fff',
-    fontFamily: 'Uber',
   },
   textDisabled: {
     color: '#C5C8D7',

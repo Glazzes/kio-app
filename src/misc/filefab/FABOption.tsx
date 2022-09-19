@@ -49,7 +49,11 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       copyTo: 'cachesDirectory',
     });
 
-    console.log(JSON.stringify(result, null, 2));
+    Navigation.showModal({
+      component: {
+        name: 'Generic',
+      },
+    });
   };
 
   const createFolder = () => {
