@@ -9,6 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../utils/emitter';
 import {Overlays} from '../shared/enum/Overlays';
+import {Modals} from '../navigation/Modals';
 
 type FileDetailsAppbarProps = {
   parentComponentId: string;
@@ -17,6 +18,8 @@ type FileDetailsAppbarProps = {
 };
 
 const {width} = Dimensions.get('window');
+const WIDTH = 180;
+
 const {statusBarHeight} = Navigation.constantsSync();
 
 const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
@@ -24,7 +27,9 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
   isVideo,
   isModal,
 }) => {
-  const isHidden = useRef(false);
+  const isHidden = useRef<boolean>(false);
+  const ref = useRef<View>();
+
   const translateY = useSharedValue<number>(0);
   const rStyle = useAnimatedStyle(() => {
     return {
@@ -57,10 +62,25 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
     });
   };
 
+  const openMenu = () => {
+    ref.current?.measure((x, y, w, h, pageX, pageY) => {
+      Navigation.showModal({
+        component: {
+          name: Modals.FILE_MENU,
+          passProps: {
+            x: pageX - WIDTH,
+            y: pageY,
+            dark: true,
+          },
+        },
+      });
+    });
+  };
+
   useEffect(() => {
     const listener = emitter.addListener('st', () => {
       translateY.value = withTiming(
-        isHidden.current ? 0 : -statusBarHeight * 3,
+        translateY.value === 0 ? -statusBarHeight * 3 : 0,
       );
 
       Navigation.mergeOptions(parentComponentId, {
@@ -106,7 +126,12 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
             />
           </Pressable>
         )}
-        <Icon name={'dots-vertical'} size={25} color={'#fff'} />
+        <Pressable
+          ref={ref}
+          onPress={openMenu}
+          style={({pressed}) => ({opacity: pressed ? 0.3 : 1})}>
+          <Icon name={'dots-vertical'} size={25} color={'#fff'} />
+        </Pressable>
       </View>
     </Animated.View>
   );

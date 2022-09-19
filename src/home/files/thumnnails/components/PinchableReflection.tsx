@@ -22,11 +22,6 @@ const {width: windowWidth} = Dimensions.get('window');
 
 const SIZE = (windowWidth * 0.9 - 10) / 2;
 
-/*
-You are in presence of the most strange bug I have ever faced, using booleans
-within this component will provoke the animated style to not animate width and height
-properties correctly, therefore the boolean toggle must happen outside this component
-*/
 const PinchableReflection: React.FC<PinchableReflectionProps> = ({
   translateX,
   translateY,
@@ -35,7 +30,7 @@ const PinchableReflection: React.FC<PinchableReflectionProps> = ({
   scale,
   dimensions,
 }) => {
-  const [uri, setUri] = useState<string>();
+  const [uri, setUri] = useState<string>('');
 
   const imageDimensions = useDerivedValue(() => {
     const isWider = dimensions.value.width > dimensions.value.height;

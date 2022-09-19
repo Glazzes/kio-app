@@ -24,74 +24,25 @@ import {Modals} from './src/navigation/Modals';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
-Navigation.events().registerAppLaunchedListener(() => {
-  Navigation.setRoot({
-    root: {
-      sideMenu: {
-        center: {
-          stack: {
-            id: 'Stack',
-            options: {
-              statusBar: {
-                visible: false,
-              },
-              topBar: {
-                visible: false,
-              },
-              sideMenu: {
-                right: {
-                  enabled: false,
-                },
-                left: {
-                  enabled: false,
-                },
-              },
-              layout: {
-                backgroundColor: 'transparent',
-              },
-              modalPresentationStyle: 'overCurrentContext',
-            },
-            children: [
-              {
-                component: {
-                  id: Screens.MY_UNIT,
-                  name: Screens.MY_UNIT,
-                },
-              },
-            ],
-          },
-        },
-        right: {
-          component: {
-            id: Screens.LEFT_DRAWER,
-            name: Screens.LEFT_DRAWER,
-            options: {
-              statusBar: {
-                visible: false,
-              },
-              topBar: {
-                visible: false,
-              },
-            },
-          },
-        },
-        left: {
-          component: {
-            id: Drawers.PDF_CONTENT_DRAWER,
-            name: Drawers.PDF_CONTENT_DRAWER,
-            options: {
-              statusBar: {
-                visible: false,
-              },
-              topBar: {
-                visible: false,
-              },
-            },
-          },
-        },
-      },
+Navigation.setDefaultOptions({
+  statusBar: {
+    visible: false,
+  },
+  topBar: {
+    visible: false,
+  },
+  sideMenu: {
+    right: {
+      enabled: true,
     },
-  });
+    left: {
+      enabled: false,
+    },
+  },
+  layout: {
+    backgroundColor: 'transparent',
+  },
+  modalPresentationStyle: 'overCurrentContext',
 });
 
 Navigation.registerComponent(
@@ -152,3 +103,53 @@ Navigation.registerComponent(
 Navigation.registerComponent(Modals.FILE_MENU, () => FileMenu);
 
 Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);
+
+Navigation.events().registerAppLaunchedListener(() => {
+  Navigation.setRoot({
+    root: {
+      sideMenu: {
+        center: {
+          stack: {
+            id: 'Stack',
+            children: [
+              {
+                component: {
+                  id: Screens.MY_UNIT,
+                  name: Screens.MY_UNIT,
+                },
+              },
+            ],
+          },
+        },
+        right: {
+          component: {
+            id: Screens.LEFT_DRAWER,
+            name: Screens.LEFT_DRAWER,
+            options: {
+              statusBar: {
+                visible: false,
+              },
+              topBar: {
+                visible: false,
+              },
+            },
+          },
+        },
+        left: {
+          component: {
+            id: Drawers.PDF_CONTENT_DRAWER,
+            name: Drawers.PDF_CONTENT_DRAWER,
+            options: {
+              statusBar: {
+                visible: false,
+              },
+              topBar: {
+                visible: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+});

@@ -29,11 +29,7 @@ const PickerPicture: React.FC<PickerPictureProps> = ({asset, index}) => {
   };
 
   return (
-    <Pressable
-      onPress={onSelectedPicture}
-      style={({pressed}) => {
-        return [styles.tile, {opacity: pressed ? 0.75 : 1}];
-      }}>
+    <Pressable onPress={onSelectedPicture} style={styles.tile}>
       {index === 0 ? (
         <View style={styles.image}>
           {devices.front == null ? null : (

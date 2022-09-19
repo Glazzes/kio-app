@@ -1,11 +1,7 @@
 import {View, Dimensions, StyleSheet, Pressable} from 'react-native';
 import React, {useEffect, useMemo} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   FadeIn,
   useAnimatedReaction,
@@ -47,6 +43,7 @@ const CROP_SIZE = 180;
 const TIMING_CONFIG = {duration: 150};
 
 const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
+  componentId,
   uri: imagePath,
   width: imageWidth,
   height: imageHeight,
@@ -113,11 +110,18 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
       const diffX = Math.abs(Math.abs(translate.x.value) - bounds.value.x);
       const diffY = Math.abs(Math.abs(translate.y.value) - bounds.value.y);
 
-      translate.x.value +=
-        delta.x.value * (withinBoundsX ? 1 : 0.75 * (1 - diffX / (R * 2)) ** 2);
+      if (withinBoundsX && withinBoundsY) {
+        translate.x.value = offset.x.value + e.translationX;
+        translate.y.value = offset.y.value + e.translationY;
+      } else {
+        translate.x.value +=
+          delta.x.value *
+          (withinBoundsX ? 1 : 0.75 * (1 - diffX / (R * 2)) ** 2);
 
-      translate.y.value +=
-        delta.y.value * (withinBoundsY ? 1 : 0.75 * (1 - diffY / (R * 2)) ** 2);
+        translate.y.value +=
+          delta.y.value *
+          (withinBoundsY ? 1 : 0.75 * (1 - diffY / (R * 2)) ** 2);
+      }
 
       delta.x.value = e.translationX;
       delta.y.value = e.translationY;
@@ -258,17 +262,19 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   };
 
   function popToEditProfile() {
-    const componentId = findLastByName('Edit.Profile');
-    if (componentId) {
-      Navigation.popTo(componentId);
+    const editProfile = findLastByName('Edit.Profile');
+    if (editProfile) {
+      Navigation.popTo(editProfile);
     }
   }
 
   useAnimatedReaction(
     () => rotateImage.value,
     value => {
-      scale.value = 1;
-      set(translate, 0);
+      scale.value = withTiming(1);
+      translate.x.value = withTiming(0);
+      translate.y.value = withTiming(0);
+
       set(offset, 0);
       layout.x.value =
         value % Math.PI === 0 ? original.x.value : original.y.value;
@@ -281,15 +287,16 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
     const backButtonListener =
       Navigation.events().registerNavigationButtonPressedListener(e => {
         if (e.buttonId === 'RNN.hardwareBackButton') {
-          popToEditProfile();
+          Navigation.pop(componentId);
         }
       });
 
     return () => backButtonListener.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <View style={styles.root}>
       <Animated.View style={[styles.container, rStyle]}>
         <Animated.Image
           nativeID={`asset-${imagePath}-dest`}
@@ -342,7 +349,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
           <MaterialCommunityIcons name="check" size={30} color={'#fff'} />
         </Pressable>
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 };
 
@@ -368,7 +375,7 @@ CropEditor.options = ({uri}) => ({
         {
           fromId: `asset-${uri}`,
           toId: `asset-${uri}-dest`,
-          duration: 450,
+          duration: 150,
         },
       ],
       elementTransitions: [
@@ -377,8 +384,17 @@ CropEditor.options = ({uri}) => ({
           alpha: {
             from: 0,
             to: 1,
-            duration: 300,
+            duration: 200,
           },
+        },
+      ],
+    },
+    pop: {
+      sharedElementTransitions: [
+        {
+          fromId: `asset-${uri}-dest`,
+          toId: `asset-${uri}`,
+          duration: 150,
         },
       ],
     },
@@ -415,11 +431,12 @@ const styles = StyleSheet.create({
   },
   check: {
     backgroundColor: '#3366ff',
-    height: 50,
-    width: 50,
-    borderRadius: 25,
+    height: 60,
+    width: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 10,
   },
 });
 

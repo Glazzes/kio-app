@@ -24,6 +24,7 @@ import {snapPoint} from 'react-native-redash';
 import {Navigation} from 'react-native-navigation';
 import PickerPhoto from './PickerPhoto';
 import {clamp} from '../../../utils/animations';
+import {Canvas, Fill, RoundedRect, Shadow} from '@shopify/react-native-skia';
 
 type Photos = {[id: string]: string};
 
@@ -127,11 +128,22 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={[styles.root, rStyle]}>
+        <Canvas style={styles.canvas}>
+          <RoundedRect
+            x={0}
+            y={statusBarHeight * 2}
+            width={width}
+            height={height}
+            r={RADIUS}
+            color={'#fff'}>
+            <Shadow dx={0} dy={-5} blur={10} color={'rgba(0, 0, 0, 0.1)'} />
+          </RoundedRect>
+        </Canvas>
         <View style={styles.marker} />
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
             {photoCount > 0
-              ? `${photoCount} selected pictures`
+              ? `${photoCount} selected picture${photoCount > 1 ? 's' : ''}`
               : 'Upload photos'}
           </Text>
         </View>
@@ -157,11 +169,16 @@ const styles = StyleSheet.create({
     height,
     position: 'absolute',
     top: height,
-    backgroundColor: '#F3F3F4',
+    backgroundColor: '#fff',
     elevation: -1,
     borderTopLeftRadius: RADIUS,
     borderTopRightRadius: RADIUS,
-    overflow: 'hidden',
+  },
+  canvas: {
+    position: 'absolute',
+    width,
+    height: height + statusBarHeight * 2,
+    transform: [{translateY: -statusBarHeight * 2}],
   },
   header: {
     width,

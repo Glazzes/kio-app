@@ -79,11 +79,12 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
         passProps: {
           index,
           uri: pic,
+          opacity: opacity,
           dimensions: imageDimensions,
         },
       },
     }).then(() => {
-      os.value = 0;
+      opacity.value = 0;
     });
   };
 
@@ -91,7 +92,6 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   const origin = useVector(0, 0);
   const canPinch = useSharedValue<boolean>(true);
   const opacity = useSharedValue<number>(1);
-  const os = useSharedValue<number>(1);
 
   const pinchG = Gesture.Pinch()
     .hitSlop({vertical: 20, horizontal: 20})
@@ -105,7 +105,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
 
       opacity.value = withTiming(0, {duration: 100}, hasFinished => {
         if (hasFinished) {
-          os.value = 0;
+          opacity.value = 0;
         }
       });
     })
@@ -138,7 +138,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
           runOnJS(setEmpty)();
           x.value = -height;
           y.value = -height;
-          os.value = 1;
+          opacity.value = 1;
         }
       });
 
@@ -146,19 +146,13 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
     });
 
   const cc = useAnimatedStyle(() => ({
-    opacity: os.value,
+    opacity: opacity.value,
   }));
 
   useEffect(() => {
-    const willAppear = emitter.addListener('sss', () => (os.value = 1));
     Image.getSize(pic, (w: number, h: number) => {
       setImageDimensions({width: w, height: h});
     });
-
-    return () => {
-      willAppear.remove();
-    };
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

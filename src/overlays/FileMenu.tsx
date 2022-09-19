@@ -20,6 +20,7 @@ import {peekLast} from '../store/navigationStore';
 type FileMenuProps = {
   x: number;
   y: number;
+  dark: boolean;
 };
 
 const actions: {icon: string; text: string}[] = [
@@ -45,12 +46,14 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   componentId,
   x,
   y,
+  dark,
 }) => {
   const scale = useSharedValue<number>(0);
 
   const rStyle = useAnimatedStyle(() => {
     return {
       position: 'absolute',
+      backgroundColor: dark ? '#1B2430' : '#fff',
       top: y ?? 0,
       left: x ?? 0,
       transform: [{scale: scale.value}],
@@ -111,12 +114,12 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
             width={WIDTH}
             height={MENU_HEIGHT}
             r={BORDER_RADIUS}
-            color={'#fff'}>
+            color={dark ? '#2C3333' : '#fff'}>
             <Shadow dx={13} dy={13} blur={13} color={'rgba(0, 0, 0, 0.1)'} />
           </RoundedRect>
         </Canvas>
         <Pressable style={styles.closeButton} onPress={close} hitSlop={50}>
-          <Icon color={'#000'} size={20} name={'close'} />
+          <Icon color={dark ? '#fff' : '#000'} size={20} name={'close'} />
         </Pressable>
         {actions.map((action, index) => {
           return (
@@ -126,7 +129,13 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
               style={styles.actionContainer}>
               <Icon
                 size={25}
-                color={action.icon === 'ios-trash-outline' ? '#ee3060' : '#000'}
+                color={
+                  action.icon === 'ios-trash-outline'
+                    ? '#ee3060'
+                    : dark
+                    ? '#fff'
+                    : '#000'
+                }
                 name={action.icon}
                 style={styles.icon}
               />
@@ -134,7 +143,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
                 style={
                   action.icon === 'ios-trash-outline'
                     ? styles.deleteText
-                    : styles.actionText
+                    : {fontFamily: 'Uber', color: dark ? '#fff' : '#000'}
                 }>
                 {action.text}
               </Text>
@@ -176,7 +185,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS,
     padding: PADDING,
     paddingTop: PADDING + 7.5,
-    backgroundColor: '#fff',
   },
   canvas: {
     position: 'absolute',
@@ -196,7 +204,6 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontFamily: 'Uber',
-    color: '#000',
   },
   deleteText: {
     fontFamily: 'Uber',

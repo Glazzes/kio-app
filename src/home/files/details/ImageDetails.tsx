@@ -25,6 +25,7 @@ import FileDetailsAppbar from '../../../misc/FileDetailsAppbar';
 type ImageDetailsProps = {
   index: number;
   uri: string;
+  opacity: Animated.SharedValue<number>;
   dimensions: Dimension;
 };
 
@@ -34,9 +35,12 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   componentId,
   index,
   uri,
+  opacity,
   dimensions,
 }) => {
   const imageS: ViewStyle = imageStyles(dimensions);
+
+  const hideOnDrag = useSharedValue<boolean>(true);
 
   const layout = useVector(1, 1);
   const translate = useVector(0, 0);
@@ -70,13 +74,22 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   }, [translate.y.value]);
 
   const dismissModal = () => {
-    emitter.emit('sss');
     Navigation.dismissModal(componentId);
+    setTimeout(() => (opacity.value = 1), 15);
+  };
+
+  const sendHideAppbarEvent = () => {
+    emitter.emit('st');
   };
 
   const pan = Gesture.Pan()
     .maxPointers(1)
     .onStart(_ => {
+      if (scale.value === 1 && hideOnDrag.value) {
+        runOnJS(sendHideAppbarEvent)();
+        hideOnDrag.value = false;
+      }
+
       offset.x.value = translation.value.x;
       offset.y.value = translation.value.y;
     })
@@ -136,14 +149,11 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       }
     });
 
-  const wrapper = () => {
-    emitter.emit('st');
-  };
-
   const singleTap = Gesture.Tap()
     .numberOfTaps(1)
     .onStart(() => {
-      runOnJS(wrapper)();
+      runOnJS(sendHideAppbarEvent)();
+      hideOnDrag.value = !hideOnDrag.value;
     });
 
   const doubleTap = Gesture.Tap()
@@ -208,7 +218,11 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
     const backListener =
       Navigation.events().registerNavigationButtonPressedListener(e => {
         if (e.buttonId === 'RNN.hardwareBackButton') {
-          dismissModal();
+          scale.value = withTiming(1, {duration: 150}, finished => {
+            if (finished) {
+              runOnJS(dismissModal)();
+            }
+          });
         }
       });
 

@@ -9,7 +9,6 @@ import Animated, {
   BounceIn,
   useSharedValue,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
 import {Screens} from '../../enums/screens';
 import {Asset} from 'expo-media-library';
@@ -48,11 +47,6 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       });
     });
 
-    const navigationListener =
-      Navigation.events().registerComponentDidDisappearListener(() => {
-        translateY.value = withTiming(0);
-      });
-
     const listener = emitter.addListener('np', (pic: string) => {
       setNewPic(pic);
     });
@@ -72,7 +66,6 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
 
     return () => {
       listener.remove();
-      navigationListener.remove();
       pushToCamera.remove();
       sub.remove();
       removeByComponentId(componentId);

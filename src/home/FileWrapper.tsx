@@ -75,7 +75,13 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
           </Text>
           <Text style={styles.subtitle}>1MB</Text>
         </View>
-        <Pressable ref={aref} onPress={showMenu} hitSlop={50}>
+        <Pressable
+          ref={aref}
+          onPress={showMenu}
+          hitSlop={50}
+          style={({pressed}) => ({
+            opacity: pressed ? 0.3 : 1,
+          })}>
           <Icon
             name={'dots-vertical'}
             size={20}
