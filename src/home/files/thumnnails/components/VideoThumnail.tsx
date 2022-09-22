@@ -1,4 +1,4 @@
-import {Image, Pressable, StyleSheet} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {File} from '../../../../utils/types';
@@ -6,6 +6,7 @@ import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
 import {SIZE} from '../utils/constants';
+import emitter from '../../../../utils/emitter';
 
 type VideoThumnailProps = {
   file?: File;
@@ -35,7 +36,7 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
     }
   };
 
-  const goToPlayer = () => {
+  const pushToPlayer = () => {
     Navigation.push(parentComponentId, {
       component: {
         name: Screens.VIDEO_PLAYER,
@@ -52,8 +53,19 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
     getPoster();
   }, []);
 
+  useEffect(() => {
+    const push = emitter.addListener(`push-${index}`, () => {
+      pushToPlayer();
+    });
+
+    return () => {
+      push.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index]);
+
   return (
-    <Pressable style={styles.root} onPress={goToPlayer}>
+    <View style={styles.root}>
       <Image
         nativeID={`video-${index}`}
         source={{uri: poster}}
@@ -61,7 +73,7 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
         style={styles.video}
       />
       <Icon name="play-outline" size={50} color={'#fff'} style={styles.icon} />
-    </Pressable>
+    </View>
   );
 };
 

@@ -159,6 +159,8 @@ AudioPlayer.options = {
   statusBar: {
     visible: true,
     drawBehind: false,
+    backgroundColor: '#fff',
+    style: 'dark',
   },
   topBar: {
     visible: false,

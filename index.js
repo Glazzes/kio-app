@@ -22,6 +22,7 @@ import {GetStarted, Login} from './src/onboarding';
 import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/Modals';
 import GenericModal from './src/home/modals/GenericModal';
+import UserMenu from './src/home/misc/UserMenu';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -107,6 +108,8 @@ Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);
 
 Navigation.registerComponent('Generic', () => GenericModal);
 
+Navigation.registerComponent('UserMenu', () => UserMenu);
+
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
@@ -114,6 +117,13 @@ Navigation.events().registerAppLaunchedListener(() => {
         center: {
           stack: {
             id: 'Stack',
+            options: {
+              sideMenu: {
+                left: {
+                  enabled: false,
+                },
+              },
+            },
             children: [
               {
                 component: {

@@ -1,4 +1,4 @@
-import {Dimensions, Image, Pressable, StyleSheet} from 'react-native';
+import {Dimensions, Image, StyleSheet, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {useVector} from 'react-native-redash';
 import Animated, {
@@ -83,12 +83,10 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
           dimensions: imageDimensions,
         },
       },
-    }).then(() => {
-      opacity.value = 0;
-    });
+    }).then(() => (opacity.value = 0));
   };
 
-  const aref = useAnimatedRef();
+  const aref = useAnimatedRef<View>();
   const origin = useVector(0, 0);
   const canPinch = useSharedValue<boolean>(true);
   const opacity = useSharedValue<number>(1);
@@ -156,8 +154,22 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const push = emitter.addListener(`push-${index}`, () => {
+      pushToDetails();
+    });
+
+    console.log('imagging');
+
+    return () => {
+      push.remove();
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pushToDetails]);
+
   return (
-    <Pressable ref={aref} style={styles.root} onPress={pushToDetails}>
+    <View style={styles.root} ref={aref}>
       <GestureDetector gesture={pinchG}>
         {/*
            Wrapping the view that's gonna be pinched within an animated view
@@ -173,7 +185,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
           />
         </Animated.View>
       </GestureDetector>
-    </Pressable>
+    </View>
   );
 };
 
@@ -184,13 +196,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f3f3',
     borderRadius: 5,
   },
+  thumb: {
+    width: SIZE,
+    height: SIZE,
+  },
   thumbContainer: {
     overflow: 'hidden',
-    borderRadius: 5,
-  },
-  thumb: {
-    height: SIZE,
-    width: SIZE,
     borderRadius: 5,
   },
   image: {

@@ -18,7 +18,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-type GenericModalProps = {};
+type GenericModalProps = {
+  title: string;
+  message: string;
+};
 
 const {width} = Dimensions.get('window');
 const MODAL_WIDTH = width * 0.75;
@@ -26,6 +29,8 @@ const SPACING = 10;
 
 const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
   componentId,
+  title,
+  message,
 }) => {
   const [dimensions, setDimensions] = useState({with: 1, height: 1});
 
@@ -70,22 +75,21 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
   return (
     <View style={styles.root}>
       <Animated.View style={[styles.modal, rStyle]} onLayout={onLayout}>
-        <Canvas style={canvaStyles}>
-          <RoundedRect
-            x={10}
-            y={10}
-            width={dimensions.with}
-            height={dimensions.height}
-            r={SPACING}
-            color={'#fff'}>
-            <Shadow blur={10} dx={10} dy={12} color={'rgba(0, 0, 0, 0.2)'} />
-          </RoundedRect>
-        </Canvas>
-        <Text style={styles.title}>Delete content</Text>
-        <Text>
-          Are you sure you want to delete these files? This action can not be
-          undone.
-        </Text>
+        {dimensions.with !== 1 && (
+          <Canvas style={canvaStyles}>
+            <RoundedRect
+              x={10}
+              y={10}
+              width={dimensions.with}
+              height={dimensions.height}
+              r={SPACING}
+              color={'#fff'}>
+              <Shadow blur={10} dx={10} dy={12} color={'rgba(0, 0, 0, 0.2)'} />
+            </RoundedRect>
+          </Canvas>
+        )}
+        <Text style={styles.title}>{title}</Text>
+        <Text>{message}</Text>
 
         <View style={styles.buttonContainer}>
           <Pressable

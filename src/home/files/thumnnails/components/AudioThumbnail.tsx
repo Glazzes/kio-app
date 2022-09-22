@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {StyleSheet, Pressable} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import React, {useMemo} from 'react';
 import {
   BlurMask,
@@ -13,8 +13,6 @@ import {createWaveFormPath} from '../../../../audio_player/utils/functions/creat
 import json from '../assets/waves.json';
 import forest from '../assets/forest.json';
 import {STROKE_WIDTH} from '../../../../audio_player/utils/constants';
-import {Navigation} from 'react-native-navigation';
-import {Screens} from '../../../../enums/screens';
 import {SIZE} from '../utils/constants';
 
 type AudioThumbnailProps = {
@@ -29,7 +27,7 @@ const AudioThumbnail: React.FC<AudioThumbnailProps> = ({
   const audioPoints = useMemo(() => {
     return convertAudioPointsToBarPoints(
       index % 2 === 0 ? forest.data : json.data,
-      35,
+      SIZE / 4,
     );
   }, []);
 
@@ -41,16 +39,8 @@ const AudioThumbnail: React.FC<AudioThumbnailProps> = ({
     return createWaveFormPath(audioPoints, 'lower', SIZE * 0.755);
   }, []);
 
-  const goToAudioPlayer = () => {
-    Navigation.push(parentComponentId, {
-      component: {
-        name: Screens.AUDIO_PLAYER,
-      },
-    });
-  };
-
   return (
-    <Pressable style={styles.root} onPress={goToAudioPlayer}>
+    <View style={styles.root}>
       <Canvas style={styles.canvas}>
         <Path
           path={upperWaveForm}
@@ -72,7 +62,7 @@ const AudioThumbnail: React.FC<AudioThumbnailProps> = ({
           <BlurMask blur={1} style={'solid'} />
         </Path>
       </Canvas>
-    </Pressable>
+    </View>
   );
 };
 

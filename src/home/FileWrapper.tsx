@@ -6,62 +6,44 @@ import {
   ViewStyle,
   Pressable,
 } from 'react-native';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
-  BounceIn,
   FadeIn,
   FadeOut,
   measure,
   runOnJS,
   runOnUI,
   useAnimatedRef,
-  ZoomOut,
 } from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
 import {getPositionForMenu} from '../shared/functions/getPositionForMenu';
 import {Modals} from '../navigation/Modals';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import emitter from '../utils/emitter';
+import {Screens} from '../enums/screens';
 
 type FileWrapperProps = {
   index: number;
+  parentComponentId: string;
 };
 
 const {width} = Dimensions.get('window');
 
 const SIZE = (width * 0.9 - 10) / 2;
 
-const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
+const FileWrapper: React.FC<FileWrapperProps> = ({
+  children,
+  index,
+  parentComponentId,
+}) => {
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const aref = useAnimatedRef();
 
-  const showMenu = () => {
-    runOnUI(() => {
-      'worklet';
-      const {
-        width: iconWidth,
-        height: iconHeight,
-        pageX,
-        pageY,
-      } = measure(aref);
-      const {x, y} = getPositionForMenu(
-        iconWidth,
-        iconHeight,
-        pageX,
-        pageY,
-        185,
-        390,
-      );
-
-      runOnJS(openMenu)(x, y);
-    })();
-  };
-
-  const openMenu = (x: number, y: number) => {
+  const openMenu = () => {
     Navigation.showModal({
       component: {
         name: Modals.FILE_MENU,
-        passProps: {x, y},
       },
     });
   };
@@ -74,13 +56,48 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
   const onPress = () => {
     if (isSelected) {
       setIsSelected(false);
+      emitter.emit('slr', `file-${index}`);
+      return;
     }
+
+    if (index % 2 === 1 || index === 0) {
+      emitter.emit(`push-${index}`);
+    }
+
+    if (index % 2 === 0 && index >= 4) {
+      goToAudioPlayer();
+    }
+  };
+
+  const goToAudioPlayer = () => {
+    Navigation.push(parentComponentId, {
+      component: {
+        name: Screens.AUDIO_PLAYER,
+      },
+    });
   };
 
   const onLongPressSelect = async () => {
     await impactAsync(ImpactFeedbackStyle.Medium);
-    setIsSelected(s => !s);
+    const swap = !isSelected;
+    setIsSelected(swap);
+
+    if (swap) {
+      emitter.emit('sl', `file-${index}`);
+    } else {
+      emitter.emit('slr', `file-${index}`);
+    }
   };
+
+  useEffect(() => {
+    const unselect = emitter.addListener('unselect-file', () => {
+      setIsSelected(false);
+    });
+
+    return () => {
+      unselect.remove();
+    };
+  }, []);
 
   return (
     <View style={[styles.root, wrapperMargin]}>
@@ -90,13 +107,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
           <Animated.View
             entering={FadeIn.duration(200)}
             exiting={FadeOut.duration(200)}
-            style={{
-              width: SIZE,
-              height: SIZE,
-              position: 'absolute',
-              backgroundColor: 'rgba(51, 102, 255, 0.2)',
-              borderRadius: 5,
-            }}
+            style={styles.selected}
           />
         )}
       </Pressable>
@@ -109,7 +120,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
         </View>
         <Pressable
           ref={aref}
-          onPress={showMenu}
+          onPress={openMenu}
           hitSlop={50}
           style={({pressed}) => ({
             opacity: pressed ? 0.3 : 1,
@@ -153,6 +164,13 @@ const styles = StyleSheet.create({
   icon: {
     margin: 0,
     padding: 0,
+  },
+  selected: {
+    width: SIZE,
+    height: SIZE,
+    position: 'absolute',
+    backgroundColor: 'rgba(51, 102, 255, 0.2)',
+    borderRadius: 5,
   },
   selectionContainer: {
     position: 'absolute',

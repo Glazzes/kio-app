@@ -2,6 +2,7 @@ import {Dimensions, Pressable, StyleSheet} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
+import {Navigation} from 'react-native-navigation';
 
 type UploadPhotoFABProps = {
   componentId: string;
@@ -19,7 +20,16 @@ const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({
   selectedPhotos,
 }) => {
   const upload = async () => {
-    console.log('Upload photos', selectedPhotos);
+    Navigation.showModal({
+      component: {
+        name: 'Generic',
+        passProps: {
+          title: 'Upload photos',
+          message:
+            'All photos that have been not selected will be lost, this action can not be undone',
+        },
+      },
+    });
   };
 
   return (

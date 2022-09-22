@@ -25,7 +25,6 @@ import {
 import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
 import {push, removeByComponentId} from '../store/navigationStore';
 import PdfThumnail from './files/thumnnails/components/PdfThumnail';
-import GenericThumbnail from './files/thumnnails/components/GenericThumbnail';
 
 type HomeProps = {
   folderId?: string;
@@ -59,7 +58,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
     return (info: ListRenderItemInfo<string>): React.ReactElement => {
       if (info.index === 0) {
         return (
-          <FileWrapper index={info.index}>
+          <FileWrapper index={info.index} parentComponentId={componentId}>
             <VideoThumbnail
               parentComponentId={componentId}
               index={info.index}
@@ -70,7 +69,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
 
       if (info.index === 2) {
         return (
-          <FileWrapper index={info.index}>
+          <FileWrapper index={info.index} parentComponentId={componentId}>
             <PdfThumnail
               parentComponentId={componentId}
               thumbnail={
@@ -82,7 +81,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
       }
 
       return (
-        <FileWrapper index={info.index}>
+        <FileWrapper index={info.index} parentComponentId={componentId}>
           {info.index % 2 === 0 ? (
             <AudioThumbnail
               parentComponentId={componentId}
@@ -168,7 +167,10 @@ const styles = StyleSheet.create({
 
 Home.options = {
   statusBar: {
-    visible: false,
+    visible: true,
+    drawBehind: true,
+    backgroundColor: '#fff',
+    style: 'dark',
   },
   topBar: {
     visible: false,

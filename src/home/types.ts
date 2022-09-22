@@ -6,3 +6,8 @@ export enum TypingEvent {
 export enum HomeEvents {
   HIDE_APPBAR = 'Hide.Appbar',
 }
+
+export type SelectionEvent = {
+  from: string;
+  item: string;
+};
