@@ -6,7 +6,7 @@ import {
   Pressable,
   Keyboard,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../../utils/emitter';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
@@ -24,12 +24,10 @@ const SearchBar: React.FC = ({}) => {
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [timer, setTimer] = useState<NodeJS.Timeout>();
-  const [lastTextLength, setLastTextLength] = useState<number>(0);
+  const lastTextLength = useRef<number>(0);
 
   const onChangeText = (text: string) => {
-    setSearchTerm(text);
-
-    if (Math.abs(lastTextLength - text.length) === 1) {
+    if (Math.abs(lastTextLength.current - text.length) === 1) {
       emitter.emit(TypingEvent.BEGIN_TYPING);
     }
 
@@ -38,12 +36,12 @@ const SearchBar: React.FC = ({}) => {
     }
 
     const showResults = setTimeout(() => {
-      Keyboard.dismiss();
       emitter.emit(TypingEvent.END_TYPING, text);
     }, 2000);
 
+    setSearchTerm(text);
     setTimer(showResults);
-    setLastTextLength(text.length);
+    lastTextLength.current = text.length;
   };
 
   const restoreTextInput = () => {
@@ -51,6 +49,15 @@ const SearchBar: React.FC = ({}) => {
     Keyboard.dismiss();
     setSearchTerm('');
   };
+
+  useEffect(() => {
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <View style={styles.root}>

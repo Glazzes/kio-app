@@ -17,6 +17,7 @@ import Animated, {
   Easing,
   Extrapolate,
   interpolate,
+  interpolateColor,
   runOnJS,
   useAnimatedStyle,
   useDerivedValue,
@@ -156,6 +157,17 @@ const Waves: React.FC<WavesProps> = ({
     };
   });
 
+  const lineRStyles = useAnimatedStyle(() => {
+    return {
+      backgroundColor: interpolateColor(
+        translateX.value,
+        [-width / 2, 0, width / 2],
+        ['#3366ff', '#0b4199', '#3366ff'],
+        'RGB',
+      ),
+    };
+  });
+
   useSharedValueEffect(() => {
     skWidth.current = interpolate(
       translateX.value,
@@ -228,7 +240,7 @@ const Waves: React.FC<WavesProps> = ({
         <View style={styles.control}>
           <View style={styles.lineContainer}>
             <ReText text={elapsedTime} style={styles.time} />
-            <View style={styles.line} />
+            <Animated.View style={[lineRStyles, styles.line]} />
             <ReText text={durationText} style={styles.duration} />
           </View>
         </View>
@@ -276,7 +288,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   line: {
-    backgroundColor: '#3366ff',
     width: 3,
     height: UPPER_BAR_HEIGHT + 20,
     marginHorizontal: 5,

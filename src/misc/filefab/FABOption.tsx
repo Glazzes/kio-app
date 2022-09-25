@@ -52,6 +52,11 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     Navigation.showModal({
       component: {
         name: 'Generic',
+        passProps: {
+          title: 'Upload files',
+          message:
+            'This process may take a while depending on your internet connection, be patient',
+        },
       },
     });
   };

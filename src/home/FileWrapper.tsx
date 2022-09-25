@@ -11,17 +11,15 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
   FadeIn,
   FadeOut,
-  measure,
-  runOnJS,
-  runOnUI,
   useAnimatedRef,
 } from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
-import {getPositionForMenu} from '../shared/functions/getPositionForMenu';
 import {Modals} from '../navigation/Modals';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import emitter from '../utils/emitter';
 import {Screens} from '../enums/screens';
+import FileSkeleton from './misc/FileSkeleton';
+import {TypingEvent} from './types';
 
 type FileWrapperProps = {
   index: number;
@@ -37,6 +35,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
   index,
   parentComponentId,
 }) => {
+  const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const aref = useAnimatedRef();
 
@@ -90,14 +89,31 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
   };
 
   useEffect(() => {
+    const onTyping = emitter.addListener(
+      TypingEvent.BEGIN_TYPING,
+      (text: string) => {
+        setShowSkeleton(true);
+      },
+    );
+
+    const onEndTyping = emitter.addListener(TypingEvent.END_TYPING, () => {
+      setShowSkeleton(false);
+    });
+
     const unselect = emitter.addListener('unselect-file', () => {
       setIsSelected(false);
     });
 
     return () => {
       unselect.remove();
+      onTyping.remove();
+      onEndTyping.remove();
     };
   }, []);
+
+  if (showSkeleton) {
+    return <FileSkeleton index={index} />;
+  }
 
   return (
     <View style={[styles.root, wrapperMargin]}>
@@ -169,7 +185,7 @@ const styles = StyleSheet.create({
     width: SIZE,
     height: SIZE,
     position: 'absolute',
-    backgroundColor: 'rgba(51, 102, 255, 0.2)',
+    backgroundColor: 'rgba(51, 102, 255, 0.35)',
     borderRadius: 5,
   },
   selectionContainer: {

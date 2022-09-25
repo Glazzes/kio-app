@@ -1,6 +1,6 @@
 import {View, Text, Dimensions, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import React from 'react';
+import React, {useState} from 'react';
 import {
   BlurMask,
   Canvas,
@@ -18,23 +18,17 @@ const HEIGHT = 150;
 
 const Folder: React.FC<FolderProps> = ({}) => {
   return (
-    <View style={styles.root}>
+    <View style={styles.container}>
       <Canvas style={styles.canvas}>
         <RoundedRect
           y={HEIGHT * 0.53}
           x={(WIDTH * 0.25) / 2}
           width={WIDTH * 0.75}
-          height={52}
+          height={55}
           color={'#0b4199'}>
           <BlurMask blur={18} style={'normal'} />
         </RoundedRect>
-        <RoundedRect
-          x={0}
-          y={0}
-          width={WIDTH}
-          height={HEIGHT}
-          r={5}
-          color={'#3366ff'}>
+        <RoundedRect x={0} y={0} width={WIDTH} height={HEIGHT} r={5}>
           <LinearGradient
             colors={['#0b4199', '#3366ff']}
             start={vec(0, 0)}
@@ -42,55 +36,48 @@ const Folder: React.FC<FolderProps> = ({}) => {
           />
         </RoundedRect>
       </Canvas>
-      <View style={styles.container}>
-        <View style={styles.decorationContainer}>
-          <Icon name="folder" color={'#fff'} size={40} />
-          <AvatarGroup photos={[]} />
-        </View>
-        <View style={styles.titleContainer}>
-          <Text
-            style={styles.folderName}
-            ellipsizeMode={'tail'}
-            numberOfLines={2}>
-            My Developments
-          </Text>
 
-          <Icon color={'#fff'} name={'dots-vertical'} size={25} />
-        </View>
+      <View style={styles.decorationContainer}>
+        <Icon name="folder" color={'#fff'} size={40} />
+        <AvatarGroup photos={[]} />
+      </View>
 
-        <View style={styles.itemContainer}>
-          <Text style={styles.itemSubtitle}>
-            <Text style={styles.itemText}>20</Text> folders and{' '}
-          </Text>
-          <Text style={styles.itemSubtitle}>
-            <Text style={styles.itemText}>50</Text> files
-          </Text>
-        </View>
-        <View style={styles.created}>
-          <Text style={styles.itemSubtitle}>
-            Created: <Text style={styles.itemText}>20th October, 2022</Text>
-          </Text>
-        </View>
+      <View style={styles.titleContainer}>
+        <Text
+          style={styles.folderName}
+          ellipsizeMode={'tail'}
+          numberOfLines={2}>
+          My Developments
+        </Text>
+        <Icon color={'#fff'} name={'dots-vertical'} size={25} />
+      </View>
+
+      <View style={styles.itemContainer}>
+        <Text style={styles.itemSubtitle}>
+          <Text style={styles.itemText}>20</Text> folders and{' '}
+        </Text>
+        <Text style={styles.itemSubtitle}>
+          <Text style={styles.itemText}>50</Text> files
+        </Text>
+      </View>
+      <View style={styles.created}>
+        <Text style={styles.itemSubtitle}>
+          Created: <Text style={styles.itemText}>20th October, 2022</Text>
+        </Text>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  root: {
-    width: WIDTH,
-    height: HEIGHT + 30,
-  },
-  canvas: {
-    width: WIDTH,
-    height: HEIGHT + 30,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-  },
   container: {
     width: WIDTH,
     height: HEIGHT,
+  },
+  canvas: {
+    position: 'absolute',
+    width: WIDTH,
+    height: HEIGHT + 40,
   },
   decorationContainer: {
     flexDirection: 'row',

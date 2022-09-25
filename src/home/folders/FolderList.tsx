@@ -35,7 +35,9 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
     const beginTyping = emitter.addListener(
       TypingEvent.BEGIN_TYPING,
       (text: string) => {
-        setShowSkeletons(true);
+        if (!showSkeletons) {
+          setShowSkeletons(true);
+        }
       },
     );
 
@@ -47,6 +49,7 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
       beginTyping.remove();
       endTyping.remove();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -64,9 +67,9 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
           data={data}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
-          estimatedItemSize={150}
+          estimatedItemSize={HEIGHT}
           contentContainerStyle={styles.content}
-          estimatedListSize={{height: 140, width: SIZE * (data.length / 2)}}
+          estimatedListSize={{height: HEIGHT, width: SIZE * (data.length / 2)}}
           ItemSeparatorComponent={seperatorComponent}
         />
       )}

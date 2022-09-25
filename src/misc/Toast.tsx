@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     overflow: 'hidden',
     bottom: SPACING,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: 'center',
     alignSelf: 'center',
   },

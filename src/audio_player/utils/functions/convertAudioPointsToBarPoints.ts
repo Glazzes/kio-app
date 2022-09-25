@@ -1,10 +1,13 @@
-import {MAX_AUDIO_POINT, MAX_WAVES} from '../constants';
+import {Dimensions} from 'react-native';
+import {MAX_AUDIO_POINT} from '../constants';
+
+const {width} = Dimensions.get('window');
 
 export function convertAudioPointsToBarPoints(
   audioPoints: number[],
   waves?: number,
 ): number[] {
-  const maxWaves = waves ?? MAX_WAVES;
+  const maxWaves = waves ?? width / 4;
 
   if (audioPoints.length < maxWaves) {
     return audioPoints.map(point => Math.abs(point));

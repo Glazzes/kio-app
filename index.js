@@ -23,6 +23,7 @@ import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/Modals';
 import GenericModal from './src/home/modals/GenericModal';
 import UserMenu from './src/home/misc/UserMenu';
+import CreateAccount from './src/onboarding/CreateAccount';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -52,7 +53,7 @@ Navigation.registerComponent(
   () => PictureInPictureVideo,
 );
 
-Navigation.registerComponent('Login', () => Login);
+Navigation.registerComponent('Login', () => CreateAccount);
 
 Navigation.registerComponent('Pdf', () => PdfViewer);
 Navigation.registerComponent(Drawers.PDF_CONTENT_DRAWER, () => PdfContentTable);
