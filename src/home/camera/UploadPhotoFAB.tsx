@@ -3,6 +3,7 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
+import {Modals} from '../../navigation/Modals';
 
 type UploadPhotoFABProps = {
   componentId: string;
@@ -22,7 +23,7 @@ const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({
   const upload = async () => {
     Navigation.showModal({
       component: {
-        name: 'Generic',
+        name: Modals.GENERIC_DIALOG,
         passProps: {
           title: 'Upload photos',
           message:

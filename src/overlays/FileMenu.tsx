@@ -1,4 +1,11 @@
-import {Text, StyleSheet, Pressable, Dimensions, View} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+  View,
+  ScrollView,
+} from 'react-native';
 import React, {useEffect} from 'react';
 import {
   Navigation,
@@ -12,10 +19,13 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  useDerivedValue,
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
 import {peekLast} from '../store/navigationStore';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {clamp} from '../shared/functions/clamp';
 
 type FileMenuProps = {
   x: number;
@@ -30,6 +40,7 @@ const actions: {icon: string; text: string}[] = [
   {icon: 'ios-pencil', text: 'Edit'},
   {icon: 'ios-copy-outline', text: 'Copy '},
   {icon: 'ios-cut', text: 'Cut'},
+  {icon: 'ios-link-outline', text: 'Copy link'},
   {icon: 'ios-share-social', text: 'Share'},
   {icon: 'ios-cloud-download', text: 'Download'},
   {icon: 'ios-trash-outline', text: 'Delete'},
@@ -37,11 +48,10 @@ const actions: {icon: string; text: string}[] = [
 
 const {width, height} = Dimensions.get('window');
 const PADDING = width * 0.05;
-const WIDTH = 180;
-const MENU_HEIGHT = 40 * actions.length + PADDING * 2;
 const BORDER_RADIUS = 10;
 
 const AnimatedPresable = Animated.createAnimatedComponent(Pressable);
+const {statusBarHeight} = Navigation.constantsSync();
 
 const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   componentId,
@@ -51,10 +61,24 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
 }) => {
   const scale = useSharedValue<number>(0);
 
+  const translateY = useSharedValue<number>(height / 2);
+  const offset = useSharedValue<number>(0);
+
+  const translate = useDerivedValue<number>(() => {
+    return clamp(translateY.value, 0, height);
+  }, [translateY]);
+
+  const pan = Gesture.Pan()
+    .onStart(_ => {
+      offset.value = translate.value;
+    })
+    .onChange(e => {
+      translateY.value = e.translationY + offset.value;
+    });
+
   const rStyle = useAnimatedStyle(() => {
     return {
-      backgroundColor: dark ? '#1B2430' : '#fff',
-      transform: [{scale: 1}, {translateX: height / 2}],
+      transform: [{translateY: translate.value}],
     };
   });
 
@@ -99,44 +123,60 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   }, []);
 
   return (
-    <Pressable style={styles.root} onPress={close}>
-      <View style={[styles.menu]}>
-        <View style={styles.marker} />
-        <View style={styles.header}>
-          <Icon name={'ios-document'} size={25} color={'#000'} />
-          <Text style={styles.title}>Glaceon.png</Text>
-        </View>
-        {actions.map((action, index) => {
-          return (
-            <Pressable
-              onPress={showDetails}
-              key={`${action.text}-${index}`}
-              style={styles.actionContainer}>
-              <Icon
-                size={25}
-                color={
-                  action.icon === 'ios-trash-outline'
-                    ? '#ee3060'
-                    : dark
-                    ? '#fff'
-                    : '#000'
-                }
-                name={action.icon}
-                style={styles.icon}
-              />
-              <Text
-                style={
-                  action.icon === 'ios-trash-outline'
-                    ? styles.deleteText
-                    : styles.actionText
-                }>
-                {action.text}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </Pressable>
+    <View style={{flex: 1}}>
+      <GestureDetector gesture={pan}>
+        <Animated.View style={[styles.menu, rStyle]}>
+          <Canvas style={styles.canvas}>
+            <RoundedRect
+              x={0}
+              y={statusBarHeight}
+              width={width}
+              height={height}
+              color={'#fff'}
+              r={15}>
+              <Shadow blur={10} dx={0} dy={-5} color={'rgba(0, 0, 0, 0.2)'} />
+            </RoundedRect>
+          </Canvas>
+
+          <View style={styles.marker} />
+          <View style={styles.header}>
+            <Icon name={'ios-document'} size={25} color={'#000'} />
+            <Text style={styles.title}>Glaceon.png</Text>
+          </View>
+          <ScrollView style={styles.content} scrollEnabled={false}>
+            {actions.map((action, index) => {
+              return (
+                <Pressable
+                  onPress={showDetails}
+                  key={`${action.text}-${index}`}
+                  style={styles.actionContainer}>
+                  <Icon
+                    size={25}
+                    color={
+                      action.icon === 'ios-trash-outline'
+                        ? '#ee3060'
+                        : dark
+                        ? '#fff'
+                        : '#000'
+                    }
+                    name={action.icon}
+                    style={styles.icon}
+                  />
+                  <Text
+                    style={
+                      action.icon === 'ios-trash-outline'
+                        ? styles.deleteText
+                        : styles.actionText
+                    }>
+                    {action.text}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </Animated.View>
+      </GestureDetector>
+    </View>
   );
 };
 
@@ -158,16 +198,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   marker: {
     backgroundColor: '#2C3639',
     height: 5,
     width: width * 0.25,
-    borderRadius: 15,
+    borderRadius: BORDER_RADIUS,
     alignSelf: 'center',
-    marginTop: 5,
-    marginBottom: 5,
+    marginVertical: 10,
   },
   header: {
     width,
@@ -175,28 +213,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     paddingVertical: 10,
+    paddingHorizontal: width * 0.05,
     borderBottomColor: '#000',
   },
   title: {
     fontFamily: 'UberBold',
     color: '#000',
     marginLeft: 20,
+    fontSize: 15,
+  },
+  content: {
+    paddingHorizontal: width * 0.05,
   },
   menu: {
     width,
     height,
     borderRadius: BORDER_RADIUS,
-    padding: PADDING,
-    paddingHorizontal: width * 0.1,
-    transform: [{translateY: height * 0.25}],
     backgroundColor: '#fff',
   },
   canvas: {
     position: 'absolute',
-    top: -PADDING,
-    left: -PADDING,
-    width: WIDTH + 50,
-    height: MENU_HEIGHT + 60,
+    top: -statusBarHeight,
+    left: 0,
+    width: width,
+    height: height + statusBarHeight,
   },
   actionContainer: {
     flexDirection: 'row',

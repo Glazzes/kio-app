@@ -24,7 +24,7 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
   const editProfile = () => {
     Navigation.push(parentComponentId, {
       component: {
-        name: 'Edit.Profile',
+        name: 'Edit',
       },
     });
   };

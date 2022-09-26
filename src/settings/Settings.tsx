@@ -70,7 +70,10 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
 
 Settings.options = {
   statusBar: {
-    visible: false,
+    visible: true,
+    drawBehind: true,
+    backgroundColor: '#fff',
+    style: 'dark',
   },
   topBar: {
     visible: false,

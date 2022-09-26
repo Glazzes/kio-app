@@ -18,12 +18,13 @@ import {Overlays} from './src/shared/enum/Overlays';
 import {PictureInPictureVideo} from './src/overlays';
 import {Drawers} from './src/navigation/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
-import {GetStarted, Login} from './src/onboarding';
+import {GetStarted, Login, CreateAccount} from './src/onboarding';
 import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/Modals';
 import GenericModal from './src/home/modals/GenericModal';
 import UserMenu from './src/home/misc/UserMenu';
-import CreateAccount from './src/onboarding/CreateAccount';
+import {onBoardingRoot} from './src/navigation/roots';
+import {OnBoardingScreens} from './src/onboarding/screens';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -53,7 +54,13 @@ Navigation.registerComponent(
   () => PictureInPictureVideo,
 );
 
-Navigation.registerComponent('Login', () => CreateAccount);
+// OnBoarding screens
+Navigation.registerComponent(OnBoardingScreens.GET_STARTED, () => GetStarted);
+Navigation.registerComponent(OnBoardingScreens.LOGIN, () => Login);
+Navigation.registerComponent(
+  OnBoardingScreens.CREATE_ACCOUNT,
+  () => CreateAccount,
+);
 
 Navigation.registerComponent('Pdf', () => PdfViewer);
 Navigation.registerComponent(Drawers.PDF_CONTENT_DRAWER, () => PdfContentTable);
@@ -87,9 +94,7 @@ Navigation.registerComponent(Screens.SETTINGS, () =>
   gestureHandlerRootHOC(Settings),
 );
 
-Navigation.registerComponent('Edit.Profile', () =>
-  gestureHandlerRootHOC(EditProfile),
-);
+Navigation.registerComponent('Edit', () => gestureHandlerRootHOC(EditProfile));
 
 Navigation.registerComponent(Screens.EDITOR, () =>
   gestureHandlerRootHOC(CropEditor),
@@ -103,67 +108,16 @@ Navigation.registerComponent(
   () => CreateFolderModal,
 );
 
-Navigation.registerComponent(Modals.FILE_MENU, () => FileMenu);
+Navigation.registerComponent(Modals.FILE_MENU, () =>
+  gestureHandlerRootHOC(FileMenu),
+);
 
 Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);
 
-Navigation.registerComponent('Generic', () => GenericModal);
+Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericModal);
 
 Navigation.registerComponent('UserMenu', () => UserMenu);
 
 Navigation.events().registerAppLaunchedListener(() => {
-  Navigation.setRoot({
-    root: {
-      sideMenu: {
-        center: {
-          stack: {
-            id: 'Stack',
-            options: {
-              sideMenu: {
-                left: {
-                  enabled: false,
-                },
-              },
-            },
-            children: [
-              {
-                component: {
-                  id: Screens.MY_UNIT,
-                  name: Screens.MY_UNIT,
-                },
-              },
-            ],
-          },
-        },
-        right: {
-          component: {
-            id: Screens.LEFT_DRAWER,
-            name: Screens.LEFT_DRAWER,
-            options: {
-              statusBar: {
-                visible: false,
-              },
-              topBar: {
-                visible: false,
-              },
-            },
-          },
-        },
-        left: {
-          component: {
-            id: Drawers.PDF_CONTENT_DRAWER,
-            name: Drawers.PDF_CONTENT_DRAWER,
-            options: {
-              statusBar: {
-                visible: false,
-              },
-              topBar: {
-                visible: false,
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  Navigation.setRoot(onBoardingRoot);
 });

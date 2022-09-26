@@ -10,10 +10,12 @@ import {
 import React, {useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {withKeyboard} from '../utils/hoc';
+import {withKeyboard} from '../../utils/hoc';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import {Screens} from '../enums/screens';
-import {Notification} from '../enums/notification';
+import {Screens} from '../../enums/screens';
+import {Notification} from '../../enums/notification';
+import {OnBoardingScreens} from '../screens';
+import {mainRoot} from '../../navigation/roots';
 
 type LoginProps = {};
 
@@ -32,7 +34,16 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
     Navigation.pop(componentId);
   };
 
-  const onInvalidCredentails = () => {
+  const pushToCreateAccount = () => {
+    Navigation.push(componentId, {
+      component: {
+        name: OnBoardingScreens.CREATE_ACCOUNT,
+      },
+    });
+  };
+
+  const onInvalidCredentials = () => {
+    Navigation.setRoot(mainRoot);
     Navigation.showOverlay({
       component: {
         name: Screens.TOAST,
@@ -55,7 +66,7 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
       </View>
 
       <View style={styles.loginContainer}>
-        <Image source={require('./kotlin.png')} style={styles.logo} />
+        <Image source={require('../assets/kotlin.png')} style={styles.logo} />
 
         <View>
           <Text style={styles.login}>Login</Text>
@@ -98,12 +109,12 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
             <Text style={styles.forgotPassword}>Forgot password?</Text>
             <Pressable
               style={styles.loginButton}
-              onPress={onInvalidCredentails}>
+              onPress={onInvalidCredentials}>
               <Text style={styles.loginButtonText}>Login</Text>
             </Pressable>
             <View style={styles.newToContainer}>
               <Text style={styles.newText}>New to Kio?</Text>
-              <Pressable hitSlop={20}>
+              <Pressable hitSlop={20} onPress={pushToCreateAccount}>
                 <Text style={styles.register}> Register</Text>
               </Pressable>
             </View>

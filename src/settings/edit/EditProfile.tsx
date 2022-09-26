@@ -24,6 +24,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Notification} from '../../enums/notification';
+import {withKeyboard} from '../../utils/hoc';
+import {Modals} from '../../navigation/Modals';
 
 type EditProfileProps = {};
 
@@ -31,7 +33,7 @@ const {statusBarHeight} = Navigation.constantsSync();
 const {width, height} = Dimensions.get('window');
 
 const IMAGE_SIZE = 90;
-const BAGDE_SIZE = IMAGE_SIZE / 3.5;
+const BAGDE_SIZE = IMAGE_SIZE / 3.3;
 const ANGLE = -Math.PI / 4;
 
 const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
@@ -50,7 +52,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
   const onDeleteAccount = () => {
     Navigation.showModal({
       component: {
-        name: 'Generic',
+        name: Modals.GENERIC_DIALOG,
         passProps: {
           title: 'Delete account',
           message:
@@ -119,7 +121,10 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
 
   return (
     <View style={styles.root}>
-      <ScrollView style={styles.root} stickyHeaderIndices={[0]}>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        stickyHeaderIndices={[0]}>
         <Appbar title={'Edit Profile'} parentComponentId={componentId} />
         <View style={styles.imageContainer}>
           <Pressable onPress={openSheet}>
@@ -142,7 +147,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
         </View>
 
         <View style={styles.editContainer}>
-          <Text style={styles.username}>Account info</Text>
+          <Text style={styles.title}>Account info</Text>
 
           <View style={styles.textInputContainer}>
             <Icon
@@ -185,18 +190,29 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
             </Pressable>
           </View>
 
-          <Text style={styles.username}>Danger zone</Text>
-          <Pressable
-            style={[styles.button, styles.deleteAccountButton]}
-            onPress={onDeleteAccount}>
-            <Text style={styles.deleteAccountText}>Delete account</Text>
-          </Pressable>
+          <View>
+            <Text style={[styles.title]}>Danger zone</Text>
+            <Text style={styles.privacy}>
+              For more information on account deletion read our{' '}
+              <Text style={styles.date}>privacy policy</Text>{' '}
+            </Text>
+            <Pressable
+              style={[styles.button, styles.deleteAccountButton]}
+              onPress={onDeleteAccount}>
+              <Text style={styles.deleteAccountText}>Delete account</Text>
+            </Pressable>
+          </View>
 
-          <Pressable
-            style={[styles.button, styles.confirmButton]}
-            onPress={onSavedChanges}>
-            <Text style={styles.confirmButtonText}>Save changes</Text>
-          </Pressable>
+          <View>
+            <Pressable
+              style={[styles.button, styles.confirmButton]}
+              onPress={onSavedChanges}>
+              <Text style={styles.confirmButtonText}>Save changes</Text>
+            </Pressable>
+            <Text style={styles.joined}>
+              Joined <Text style={styles.date}>21 oct, 2020</Text>{' '}
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -209,6 +225,8 @@ EditProfile.options = {
   statusBar: {
     visible: true,
     drawBehind: true,
+    backgroundColor: '#fff',
+    style: 'dark',
   },
   topBar: {
     visible: false,
@@ -272,18 +290,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  username: {
+    fontFamily: 'UberBold',
+    color: '#000',
+    fontSize: 20,
+    marginTop: 10,
+  },
   emailText: {
     fontFamily: 'Uber',
-    color: '#d5d5d5',
+    color: '#9E9EA7',
   },
   editContainer: {
     alignSelf: 'center',
     width: width * 0.9,
   },
-  username: {
+  title: {
     fontFamily: 'UberBold',
     color: '#000',
-    fontSize: 15,
+    fontSize: 14,
     marginTop: 10,
   },
   textInputContainer: {
@@ -330,6 +354,21 @@ const styles = StyleSheet.create({
   deleteAccountText: {
     fontFamily: 'UberBold',
     color: '#ee3060',
+  },
+  privacy: {
+    fontSize: 12,
+    fontFamily: 'UberBold',
+    marginTop: 15,
+  },
+  joined: {
+    fontSize: 12,
+    fontFamily: 'UberBold',
+    alignSelf: 'center',
+  },
+  date: {
+    fontSize: 12,
+    fontFamily: 'UberBold',
+    color: '#3366ff',
   },
 });
 

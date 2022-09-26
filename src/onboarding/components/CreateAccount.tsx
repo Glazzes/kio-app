@@ -12,9 +12,9 @@ import React, {useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import {withKeyboard} from '../utils/hoc';
-import {Screens} from '../enums/screens';
-import {Notification} from '../enums/notification';
+import {withKeyboard} from '../../utils/hoc';
+import {Screens} from '../../enums/screens';
+import {Notification} from '../../enums/notification';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
@@ -56,7 +56,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
         </Pressable>
       </View>
 
-      <Image source={require('./kotlin.png')} style={styles.logo} />
+      <Image source={require('../assets/kotlin.png')} style={styles.logo} />
 
       <Text style={styles.signUp}>Sign up</Text>
 
@@ -107,7 +107,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
         </Pressable>
         <View style={styles.joinedContainer}>
           <Text style={styles.joined}>Joined us before?</Text>
-          <Pressable hitSlop={20}>
+          <Pressable hitSlop={20} onPress={goBack}>
             <Text style={styles.login}> Login</Text>
           </Pressable>
         </View>

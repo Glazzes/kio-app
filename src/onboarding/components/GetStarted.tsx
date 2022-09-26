@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {OnBoardingScreens} from '../screens';
 
 const {width} = Dimensions.get('window');
 
@@ -19,7 +20,15 @@ const folders: {color: string; offset: number}[] = [
   {color: '#011734', offset: -0.25},
 ];
 
-const GetStarted: NavigationFunctionComponent = ({}) => {
+const GetStarted: NavigationFunctionComponent = ({componentId}) => {
+  const pushToLogin = () => {
+    Navigation.push(componentId, {
+      component: {
+        name: OnBoardingScreens.LOGIN,
+      },
+    });
+  };
+
   return (
     <View style={styles.root}>
       {folders.map(({color, offset}, index) => {
@@ -43,6 +52,7 @@ const GetStarted: NavigationFunctionComponent = ({}) => {
         </Text>
       </View>
       <Pressable
+        onPress={pushToLogin}
         style={({pressed}) => {
           return {
             ...styles.button,

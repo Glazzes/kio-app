@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: 'UberBold',
+    fontFamily: 'Uber',
     fontSize: 15,
     color: '#000',
   },
