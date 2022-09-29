@@ -1,7 +1,7 @@
 import {View, StyleSheet, Dimensions, Pressable, Text} from 'react-native';
 import React from 'react';
 import {Navigation} from 'react-native-navigation';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 type AppbarProps = {
   title: string;
@@ -19,7 +19,7 @@ const Appbar: React.FC<AppbarProps> = ({title, parentComponentId}) => {
   return (
     <View style={styles.appbar}>
       <Pressable onPress={goBack} style={styles.pressable} hitSlop={50}>
-        <Icon name={'chevron-left'} size={25} color={'#000'} />
+        <Icon name={'ios-arrow-back'} size={22} color={'#000'} />
       </Pressable>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{title}</Text>

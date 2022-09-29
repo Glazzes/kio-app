@@ -151,9 +151,10 @@ const styles = StyleSheet.create({
   },
   topbar: {
     width,
-    height: statusBarHeight * 3,
+    height: statusBarHeight * 2,
     paddingTop: statusBarHeight,
     justifyContent: 'center',
+    //backgroundColor: 'pink',
   },
   logo: {
     width: 100,

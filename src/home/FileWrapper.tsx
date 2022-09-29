@@ -6,13 +6,9 @@ import {
   ViewStyle,
   Pressable,
 } from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedRef,
-} from 'react-native-reanimated';
+import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../navigation/Modals';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
@@ -20,24 +16,22 @@ import emitter from '../utils/emitter';
 import {Screens} from '../enums/screens';
 import FileSkeleton from './misc/FileSkeleton';
 import {TypingEvent} from './types';
+import {Context} from '../navigation/NavigationContext';
+import {SelectAction} from './utils/enums';
 
 type FileWrapperProps = {
   index: number;
-  parentComponentId: string;
 };
 
 const {width} = Dimensions.get('window');
 
 const SIZE = (width * 0.9 - 10) / 2;
 
-const FileWrapper: React.FC<FileWrapperProps> = ({
-  children,
-  index,
-  parentComponentId,
-}) => {
+const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
+  const componentId = useContext(Context);
+
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
-  const aref = useAnimatedRef();
 
   const openMenu = () => {
     Navigation.showModal({
@@ -55,7 +49,10 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
   const onPress = () => {
     if (isSelected) {
       setIsSelected(false);
-      emitter.emit('slr', `file-${index}`);
+      emitter.emit(
+        `${SelectAction.UNSELECT_FILE}-${componentId}`,
+        `file-${index}`,
+      );
       return;
     }
 
@@ -69,7 +66,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
   };
 
   const goToAudioPlayer = () => {
-    Navigation.push(parentComponentId, {
+    Navigation.push(componentId, {
       component: {
         name: Screens.AUDIO_PLAYER,
       },
@@ -82,9 +79,15 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
     setIsSelected(swap);
 
     if (swap) {
-      emitter.emit('sl', `file-${index}`);
+      emitter.emit(
+        `${SelectAction.SELECT_FILE}-${componentId}`,
+        `file-${index}`,
+      );
     } else {
-      emitter.emit('slr', `file-${index}`);
+      emitter.emit(
+        `${SelectAction.SELECT_FILE}-${componentId}`,
+        `file-${index}`,
+      );
     }
   };
 
@@ -100,9 +103,12 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
       setShowSkeleton(false);
     });
 
-    const unselect = emitter.addListener('unselect-file', () => {
-      setIsSelected(false);
-    });
+    const unselect = emitter.addListener(
+      `${SelectAction.UNSELECT_ALL}-${componentId}`,
+      () => {
+        setIsSelected(false);
+      },
+    );
 
     return () => {
       unselect.remove();
@@ -135,7 +141,6 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
           <Text style={styles.subtitle}>1MB</Text>
         </View>
         <Pressable
-          ref={aref}
           onPress={openMenu}
           hitSlop={50}
           style={({pressed}) => ({

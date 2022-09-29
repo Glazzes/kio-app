@@ -1,5 +1,5 @@
 import {Dimensions, StyleSheet, Pressable, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -17,10 +17,11 @@ import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../enums/screens';
 import AppCamera from '../../home/camera/AppCamera';
 import {FabAction, FabActionIcon} from './types';
+import {Context} from '../../navigation/NavigationContext';
+import {SelectAction} from '../../home/utils/enums';
 
 type FABProps = {
   parent?: Folder;
-  parentComponentId: string;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -48,7 +49,9 @@ const actions: FabAction[] = [
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const FAB: React.FC<FABProps> = ({parentComponentId}) => {
+const FAB: React.FC<FABProps> = () => {
+  const componentId = useContext(Context);
+
   const [blockBackInteraction, setBlockBackInteraction] =
     useState<boolean>(false);
 
@@ -73,6 +76,8 @@ const FAB: React.FC<FABProps> = ({parentComponentId}) => {
       rotation.value = withTiming(0);
       setBlockBackInteraction(false);
     } else {
+      emitter.emit(`${SelectAction.UNSELECT_ALL}-${componentId}`);
+
       progress.value = withSpring(1);
       buttonColor.value = withTiming('#b0b1b5');
       rotation.value = withTiming(Math.PI / 4);
@@ -85,7 +90,7 @@ const FAB: React.FC<FABProps> = ({parentComponentId}) => {
       'press',
       async (type: FabActionIcon) => {
         if (type === 'camera') {
-          await Navigation.push(parentComponentId, {
+          await Navigation.push(componentId, {
             component: {
               name: Screens.CAMERA,
             },

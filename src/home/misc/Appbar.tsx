@@ -1,12 +1,5 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Dimensions,
-  Pressable,
-} from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
 import SearchBar from './SearchBar';
 import {
@@ -17,9 +10,7 @@ import {
   useValue,
 } from '@shopify/react-native-skia';
 import Animated, {
-  BounceIn,
   Extrapolate,
-  FadeOut,
   interpolate,
   useAnimatedReaction,
   useAnimatedStyle,
@@ -28,10 +19,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import emitter from '../../utils/emitter';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {Context} from '../../navigation/NavigationContext';
+import UserAvatar from './UserAvatar';
+import {SelectAction} from '../utils/enums';
 
 type AppbarProps = {
   scrollY: Animated.SharedValue<number>;
-  parentComponentId: string;
 };
 
 const {statusBarHeight} = Navigation.constantsSync();
@@ -40,24 +33,10 @@ const IMAGE_SIZE = 40;
 
 const CANVAS_SIZE = statusBarHeight * 3 + 60;
 
-const Appbar: React.FC<AppbarProps> = ({scrollY, parentComponentId}) => {
-  const [files, setFiles] = useState<string[]>([]);
-  const imageRef = useRef<Image>(null);
+const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
+  const componentId = useContext(Context);
 
-  const openUserMenu = () => {
-    imageRef.current?.measure((x, y, w, h, pageX, pageY) => {
-      Navigation.showModal({
-        component: {
-          name: 'UserMenu',
-          passProps: {
-            x: pageX,
-            y: pageY,
-            parentComponentId,
-          },
-        },
-      });
-    });
-  };
+  const [files, setFiles] = useState<string[]>([]);
 
   const clear = () => {
     setFiles([]);
@@ -88,18 +67,31 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, parentComponentId}) => {
   );
 
   useEffect(() => {
-    const selectFile = emitter.addListener(`sl`, (item: string) => {
-      setFiles(f => [...f, item]);
-    });
+    const selectFile = emitter.addListener(
+      `${SelectAction.SELECT_FILE}-${componentId}`,
+      (item: string) => {
+        setFiles(f => [...f, item]);
+      },
+    );
 
-    const unselectFile = emitter.addListener('slr', (id: string) => {
-      setFiles(f => f.filter(file => file !== id));
-    });
+    const unselectFile = emitter.addListener(
+      `${SelectAction.UNSELECT_FILE}-${componentId}`,
+      (id: string) => {
+        setFiles(f => f.filter(file => file !== id));
+      },
+    );
+
+    const clearSelection = emitter.addListener(
+      `${SelectAction.UNSELECT_ALL}-${componentId}`,
+      clear,
+    );
 
     return () => {
       selectFile.remove();
       unselectFile.remove();
+      clearSelection.remove();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -124,21 +116,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, parentComponentId}) => {
               <Text style={styles.hi}>Hi,</Text>
               <Text style={styles.username}>Glaze</Text>
             </View>
-            <Pressable onPress={openUserMenu}>
-              <Image
-                ref={imageRef}
-                source={{
-                  uri: 'https://pettime.net/wp-content/uploads/2021/04/Dalmatian-2-10.jpg',
-                }}
-                style={styles.image}
-                resizeMode={'cover'}
-              />
-              <Animated.View
-                entering={BounceIn.duration(300)}
-                exiting={FadeOut.duration(300)}
-                style={styles.indicator}
-              />
-            </Pressable>
+            <UserAvatar />
           </View>
           <View style={styles.appbar}>
             <View style={styles.countContainer}>

@@ -15,17 +15,19 @@ import {
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {
-  Easing,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   useDerivedValue,
-  withDelay,
   withTiming,
+  withDecay,
+  withSpring,
+  withDelay,
 } from 'react-native-reanimated';
 import {peekLast} from '../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {clamp} from '../shared/functions/clamp';
+import {snapPoint} from 'react-native-redash';
 
 type FileMenuProps = {
   x: number;
@@ -47,51 +49,21 @@ const actions: {icon: string; text: string}[] = [
 ];
 
 const {width, height} = Dimensions.get('window');
-const PADDING = width * 0.05;
 const BORDER_RADIUS = 10;
 
-const AnimatedPresable = Animated.createAnimatedComponent(Pressable);
+// const AnimatedPresable = Animated.createAnimatedComponent(Pressable);
 const {statusBarHeight} = Navigation.constantsSync();
 
 const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   componentId,
-  x,
-  y,
   dark,
 }) => {
-  const scale = useSharedValue<number>(0);
-
-  const translateY = useSharedValue<number>(height / 2);
-  const offset = useSharedValue<number>(0);
-
-  const translate = useDerivedValue<number>(() => {
-    return clamp(translateY.value, 0, height);
-  }, [translateY]);
-
-  const pan = Gesture.Pan()
-    .onStart(_ => {
-      offset.value = translate.value;
-    })
-    .onChange(e => {
-      translateY.value = e.translationY + offset.value;
-    });
-
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{translateY: translate.value}],
-    };
-  });
-
-  const goBack = () => {
-    Navigation.dismissModal(componentId);
-  };
-
-  const close = () => {
+  const dissmiss = () => {
     Navigation.dismissModal(componentId);
   };
 
   const showDetails = () => {
-    scale.value = withTiming(0, undefined, finished => {
+    translateY.value = withTiming(height, undefined, finished => {
       if (finished) {
         runOnJS(closeAndOpenDrawer)();
       }
@@ -111,19 +83,65 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
     });
   };
 
+  const translateY = useSharedValue<number>(height);
+  const offset = useSharedValue<number>(0);
+
+  const translate = useDerivedValue<number>(() => {
+    return clamp(translateY.value, 0, height);
+  }, [translateY]);
+
+  const pan = Gesture.Pan()
+    .onStart(_ => {
+      offset.value = translate.value;
+    })
+    .onChange(e => {
+      translateY.value = e.translationY + offset.value;
+    })
+    .onEnd(({velocityY}) => {
+      const snap = snapPoint(translateY.value, velocityY, [
+        0,
+        height / 2,
+        height,
+      ]);
+
+      if (translateY.value < height / 2 || snap === 0) {
+        translateY.value = withDecay({
+          velocity: velocityY,
+          clamp: [0, height / 2],
+        });
+
+        return;
+      }
+
+      if (snap === height) {
+        translateY.value = withTiming(snap, undefined, finished => {
+          if (finished) {
+            runOnJS(dissmiss)();
+          }
+        });
+
+        return;
+      }
+
+      if (snap === height / 2) {
+        translateY.value = withSpring(snap);
+        return;
+      }
+    });
+
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{translateY: translate.value}],
+    };
+  });
+
   useEffect(() => {
-    scale.value = withDelay(
-      50,
-      withTiming(1, {
-        duration: 300,
-        easing: Easing.bezier(0.34, 1.56, 0.64, 1),
-      }),
-    );
+    translateY.value = withSpring(height / 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <View style={{flex: 1}}>
+    <View style={styles.root}>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.menu, rStyle]}>
           <Canvas style={styles.canvas}>
@@ -133,8 +151,8 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
               width={width}
               height={height}
               color={'#fff'}
-              r={15}>
-              <Shadow blur={10} dx={0} dy={-5} color={'rgba(0, 0, 0, 0.2)'} />
+              r={BORDER_RADIUS}>
+              <Shadow blur={10} dx={0} dy={3} color={'#a1a1a1'} />
             </RoundedRect>
           </Canvas>
 
@@ -143,7 +161,10 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
             <Icon name={'ios-document'} size={25} color={'#000'} />
             <Text style={styles.title}>Glaceon.png</Text>
           </View>
-          <ScrollView style={styles.content} scrollEnabled={false}>
+          <ScrollView
+            style={styles.content}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}>
             {actions.map((action, index) => {
               return (
                 <Pressable
@@ -196,8 +217,6 @@ FileMenu.options = {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   marker: {
     backgroundColor: '#2C3639',
@@ -228,7 +247,8 @@ const styles = StyleSheet.create({
   menu: {
     width,
     height,
-    borderRadius: BORDER_RADIUS,
+    borderTopRightRadius: BORDER_RADIUS,
+    borderTopLeftRadius: BORDER_RADIUS,
     backgroundColor: '#fff',
   },
   canvas: {

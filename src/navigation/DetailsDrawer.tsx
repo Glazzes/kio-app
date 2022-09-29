@@ -1,7 +1,19 @@
-import {View, Text, StyleSheet, ScrollView, Image} from 'react-native';
-import React from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Dimensions,
+} from 'react-native';
+import React, {useEffect} from 'react';
+import {
+  Navigation,
+  NavigationComponentListener,
+  NavigationFunctionComponent,
+} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Audio from './Audio';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -11,15 +23,41 @@ const CollapsableText: React.FC<{text: string}> = ({text}) => {
   );
 };
 
-const DetailsDrawer: NavigationFunctionComponent = () => {
+const {width, height} = Dimensions.get('window');
+const PREVIEW_SIZE = width * 0.75 - 15;
+
+const DetailsDrawer: NavigationFunctionComponent = ({componentId}) => {
+  useEffect(() => {
+    const listener: NavigationComponentListener = {
+      componentWillAppear: e => {
+        console.log(e.componentId);
+      },
+      componentDidDisappear: e => {
+        console.log(e.componentId, 'dissapeared');
+      },
+    };
+
+    const s = Navigation.events().registerComponentListener(
+      listener,
+      componentId,
+    );
+
+    return () => {
+      s.remove();
+    };
+  }, []);
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <Text style={styles.name}>Glaceon.jpg</Text>
-      <Image
-        source={{uri: 'file:///storage/sdcard0/Descargas/glaceon.jpg'}}
-        resizeMethod={'scale'}
-        style={styles.image}
-      />
+      <View style={styles.previewContainer}>
+        <Audio
+          height={PREVIEW_SIZE}
+          width={PREVIEW_SIZE}
+          lowerWaveHeight={PREVIEW_SIZE * 0.705}
+          upperWaveHeight={PREVIEW_SIZE * 0.7}
+        />
+      </View>
       <Text style={styles.title}>Properties</Text>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Size</Text>
@@ -95,14 +133,17 @@ const styles = StyleSheet.create({
     color: '#354259',
     marginBottom: 10,
   },
-  image: {
-    width: '65%',
-    height: undefined,
-    maxHeight: undefined,
-    aspectRatio: 1334 / 1817,
-    alignSelf: 'center',
-    borderRadius: 5,
+  previewContainer: {
+    width: PREVIEW_SIZE,
+    height: PREVIEW_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 10,
+  },
+  image: {
+    height: PREVIEW_SIZE,
+    width: (1000 / 1500) * PREVIEW_SIZE,
+    borderRadius: 5,
   },
   textContainer: {
     flexDirection: 'row',

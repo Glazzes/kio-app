@@ -25,6 +25,7 @@ import {
 import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
 import {push, removeByComponentId} from '../store/navigationStore';
 import PdfThumnail from './files/thumnnails/components/PdfThumnail';
+import {NavigationProvider} from '../navigation/NavigationContext';
 
 type HomeProps = {
   folderId?: string;
@@ -69,7 +70,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
 
       if (info.index === 2) {
         return (
-          <FileWrapper index={info.index} parentComponentId={componentId}>
+          <FileWrapper index={info.index}>
             <PdfThumnail
               parentComponentId={componentId}
               thumbnail={
@@ -81,7 +82,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
       }
 
       return (
-        <FileWrapper index={info.index} parentComponentId={componentId}>
+        <FileWrapper index={info.index}>
           {info.index % 2 === 0 ? (
             <AudioThumbnail
               parentComponentId={componentId}
@@ -122,33 +123,35 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
   }, []);
 
   return (
-    <View style={styles.root}>
-      <Appbar scrollY={scrollY} parentComponentId={componentId} />
+    <NavigationProvider componentId={componentId}>
+      <View style={styles.root}>
+        <Appbar scrollY={scrollY} />
 
-      <AnimatedFlashList
-        data={data}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        numColumns={2}
-        nestedScrollEnabled={true}
-        ListHeaderComponent={renderHeader}
-        estimatedItemSize={data.length}
-        estimatedListSize={{width: windowWidth, height: data.length * 65}}
-        contentContainerStyle={styles.content}
-        onScroll={onScroll}
-      />
+        <AnimatedFlashList
+          data={data}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          numColumns={2}
+          nestedScrollEnabled={true}
+          ListHeaderComponent={renderHeader}
+          estimatedItemSize={data.length}
+          estimatedListSize={{width: windowWidth, height: data.length * 65}}
+          contentContainerStyle={styles.content}
+          onScroll={onScroll}
+        />
 
-      <PinchableReflection
-        dimensions={dimensions}
-        translateX={translateX}
-        translateY={translateY}
-        scale={scale}
-        x={x}
-        y={y}
-      />
+        <PinchableReflection
+          dimensions={dimensions}
+          translateX={translateX}
+          translateY={translateY}
+          scale={scale}
+          x={x}
+          y={y}
+        />
 
-      <FAB parentComponentId={componentId} />
-    </View>
+        <FAB />
+      </View>
+    </NavigationProvider>
   );
 };
 

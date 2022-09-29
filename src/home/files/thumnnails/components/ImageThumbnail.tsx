@@ -159,8 +159,6 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
       pushToDetails();
     });
 
-    console.log('imagging');
-
     return () => {
       push.remove();
     };

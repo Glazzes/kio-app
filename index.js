@@ -23,7 +23,7 @@ import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/Modals';
 import GenericModal from './src/home/modals/GenericModal';
 import UserMenu from './src/home/misc/UserMenu';
-import {onBoardingRoot} from './src/navigation/roots';
+import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
@@ -119,5 +119,5 @@ Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericModal);
 Navigation.registerComponent('UserMenu', () => UserMenu);
 
 Navigation.events().registerAppLaunchedListener(() => {
-  Navigation.setRoot(onBoardingRoot);
+  Navigation.setRoot(mainRoot);
 });
