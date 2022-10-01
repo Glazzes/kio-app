@@ -25,7 +25,7 @@ import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Notification} from '../../enums/notification';
 import {withKeyboard} from '../../utils/hoc';
-import {Modals} from '../../navigation/Modals';
+import {Modals} from '../../navigation/screens/modals';
 
 type EditProfileProps = {};
 

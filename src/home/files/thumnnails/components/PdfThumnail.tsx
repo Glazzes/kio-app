@@ -1,14 +1,6 @@
-import {
-  Dimensions,
-  StyleSheet,
-  Image,
-  ImageStyle,
-  Pressable,
-  View,
-} from 'react-native';
+import {Dimensions, StyleSheet, Image, ImageStyle, View} from 'react-native';
 import React, {useEffect, useMemo, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
-import {Screens} from '../../../../enums/screens';
 
 type PdfThumnailProps = {
   thumbnail: string;

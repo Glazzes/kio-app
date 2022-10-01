@@ -9,7 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import emitter from '../utils/emitter';
 import {Overlays} from '../shared/enum/Overlays';
-import {Modals} from '../navigation/Modals';
+import {Modals} from '../navigation/screens/modals';
 
 type FileDetailsAppbarProps = {
   parentComponentId: string;

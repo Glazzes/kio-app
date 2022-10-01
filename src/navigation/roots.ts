@@ -1,7 +1,7 @@
 import {LayoutRoot} from 'react-native-navigation';
 import {Screens} from '../enums/screens';
 import {OnBoardingScreens} from '../onboarding/screens';
-import {Drawers} from './drawers';
+import {Drawers} from './screens/drawers';
 
 const onBoardingRoot: LayoutRoot = {
   root: {
@@ -36,6 +36,9 @@ const mainRoot: LayoutRoot = {
               component: {
                 id: Screens.MY_UNIT,
                 name: Screens.MY_UNIT,
+                passProps: {
+                  folderId: undefined,
+                },
               },
             },
           ],

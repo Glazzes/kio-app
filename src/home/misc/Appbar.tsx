@@ -19,28 +19,32 @@ import Animated, {
 } from 'react-native-reanimated';
 import emitter from '../../utils/emitter';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Context} from '../../navigation/NavigationContext';
+import {NavigationContext} from '../../navigation/NavigationContextProvider';
 import UserAvatar from './UserAvatar';
 import {SelectAction} from '../utils/enums';
 
 type AppbarProps = {
+  folderId?: string;
   scrollY: Animated.SharedValue<number>;
 };
 
 const {statusBarHeight} = Navigation.constantsSync();
 const {width} = Dimensions.get('window');
-const IMAGE_SIZE = 40;
 
 const CANVAS_SIZE = statusBarHeight * 3 + 60;
 
-const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
-  const componentId = useContext(Context);
+const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
+  const componentId = useContext(NavigationContext);
 
   const [files, setFiles] = useState<string[]>([]);
 
   const clear = () => {
     setFiles([]);
-    emitter.emit('unselect-file');
+    emitter.emit(`unselect-file`);
+  };
+
+  const goBack = () => {
+    Navigation.pop(componentId);
   };
 
   const opacity = useValue(0);
@@ -112,11 +116,28 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
       <View style={styles.appbarContainer}>
         <Animated.View style={rStyle}>
           <View style={styles.appbar}>
-            <View>
-              <Text style={styles.hi}>Hi,</Text>
-              <Text style={styles.username}>Glaze</Text>
-            </View>
-            <UserAvatar />
+            {folderId ? (
+              <View style={styles.appbarContent}>
+                <Pressable hitSlop={20} onPress={goBack}>
+                  <Icon name={'ios-arrow-back'} color={'#000'} size={22} />
+                </Pressable>
+                <View>
+                  <Text style={[styles.title, {textAlign: 'center'}]}>
+                    Music
+                  </Text>
+                  <Text style={styles.subTitle}>20 files, 2 folders</Text>
+                </View>
+                <UserAvatar />
+              </View>
+            ) : (
+              <View style={styles.appbarContent}>
+                <View>
+                  <Text style={styles.hi}>Hi,</Text>
+                  <Text style={styles.title}>Glaze</Text>
+                </View>
+                <UserAvatar />
+              </View>
+            )}
           </View>
           <View style={styles.appbar}>
             <View style={styles.countContainer}>
@@ -177,35 +198,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  canvas: {
-    position: 'absolute',
-    height: CANVAS_SIZE + 25,
-    width,
+  appbarContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   hi: {
     fontFamily: 'Uber',
     color: '#000',
   },
-  username: {
+  subTitle: {
+    fontFamily: 'UberBold',
+    fontSize: 12,
+  },
+  title: {
     fontFamily: 'UberBold',
     fontSize: 17,
     color: '#000',
   },
-  image: {
-    height: IMAGE_SIZE,
-    width: IMAGE_SIZE,
-    borderRadius: IMAGE_SIZE / 2,
-  },
-  indicator: {
-    height: 12,
-    width: 12,
-    borderRadius: 5,
-    backgroundColor: '#3366ff',
-    borderColor: '#fff',
-    borderWidth: 1,
+  canvas: {
     position: 'absolute',
-    top: IMAGE_SIZE / 2 - 6 + (IMAGE_SIZE / 2) * -Math.sin(Math.PI / 4),
-    left: IMAGE_SIZE / 2 - 6 + (IMAGE_SIZE / 2) * Math.cos(Math.PI / 4),
+    height: CANVAS_SIZE + 25,
+    width,
   },
   countContainer: {
     flexDirection: 'row',

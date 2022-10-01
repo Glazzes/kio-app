@@ -17,7 +17,7 @@ import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../enums/screens';
 import AppCamera from '../../home/camera/AppCamera';
 import {FabAction, FabActionIcon} from './types';
-import {Context} from '../../navigation/NavigationContext';
+import {NavigationContext} from '../../navigation/NavigationContextProvider';
 import {SelectAction} from '../../home/utils/enums';
 
 type FABProps = {
@@ -50,7 +50,7 @@ const actions: FabAction[] = [
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FAB: React.FC<FABProps> = () => {
-  const componentId = useContext(Context);
+  const componentId = useContext(NavigationContext);
 
   const [blockBackInteraction, setBlockBackInteraction] =
     useState<boolean>(false);

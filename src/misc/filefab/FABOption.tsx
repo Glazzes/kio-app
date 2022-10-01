@@ -9,7 +9,7 @@ import {
   Navigation,
   OptionsModalPresentationStyle,
 } from 'react-native-navigation';
-import {Modals} from '../../navigation/Modals';
+import {Modals} from '../../navigation/screens/modals';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};

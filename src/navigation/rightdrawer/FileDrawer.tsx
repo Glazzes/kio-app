@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   View,
   Text,
@@ -13,7 +14,7 @@ import {
   NavigationFunctionComponent,
 } from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import Audio from './Audio';
+import DrawerImageThumbnail from './DrawerImageThumbnail';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -23,10 +24,10 @@ const CollapsableText: React.FC<{text: string}> = ({text}) => {
   );
 };
 
-const {width, height} = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 const PREVIEW_SIZE = width * 0.75 - 15;
 
-const DetailsDrawer: NavigationFunctionComponent = ({componentId}) => {
+const FileDrawer: NavigationFunctionComponent = ({componentId}) => {
   useEffect(() => {
     const listener: NavigationComponentListener = {
       componentWillAppear: e => {
@@ -51,11 +52,10 @@ const DetailsDrawer: NavigationFunctionComponent = ({componentId}) => {
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <Text style={styles.name}>Glaceon.jpg</Text>
       <View style={styles.previewContainer}>
-        <Audio
-          height={PREVIEW_SIZE}
-          width={PREVIEW_SIZE}
-          lowerWaveHeight={PREVIEW_SIZE * 0.705}
-          upperWaveHeight={PREVIEW_SIZE * 0.7}
+        <DrawerImageThumbnail
+          contentType="image"
+          uri={'https://wallpaperaccess.com/full/4339739.jpg'}
+          dimensions={{width: 1080, height: 1920}}
         />
       </View>
       <Text style={styles.title}>Properties</Text>
@@ -109,7 +109,7 @@ const DetailsDrawer: NavigationFunctionComponent = ({componentId}) => {
   );
 };
 
-DetailsDrawer.options = {
+FileDrawer.options = {
   statusBar: {
     visible: false,
   },
@@ -186,4 +186,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DetailsDrawer;
+export default FileDrawer;

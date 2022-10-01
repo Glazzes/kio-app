@@ -1,11 +1,19 @@
-import {Text, StyleSheet, Pressable, Dimensions, View} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+  View,
+  SectionList,
+  SectionListRenderItemInfo,
+  SectionListData,
+} from 'react-native';
 import React, {useEffect} from 'react';
 import {
   Navigation,
   NavigationFunctionComponent,
   OptionsModalPresentationStyle,
 } from 'react-native-navigation';
-import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {
   runOnJS,
@@ -30,17 +38,45 @@ type FileMenuProps = {
   dark: boolean;
 };
 
-const actions: {icon: string; text: string}[] = [
-  {icon: 'ios-arrow-forward', text: 'Open'},
-  {icon: 'ios-information-circle', text: 'Details'},
-  {icon: 'ios-heart', text: 'Favorite'},
-  {icon: 'ios-pencil', text: 'Edit'},
-  {icon: 'ios-copy-outline', text: 'Copy '},
-  {icon: 'ios-cut', text: 'Cut'},
-  {icon: 'ios-link-outline', text: 'Copy link'},
-  {icon: 'ios-share-social', text: 'Share'},
-  {icon: 'ios-cloud-download', text: 'Download'},
-  {icon: 'ios-trash-outline', text: 'Delete'},
+type Action = {
+  icon: string;
+  text: string;
+};
+
+const sections: {title: string; data: Action[]}[] = [
+  {
+    title: 'General',
+    data: [
+      {icon: 'ios-arrow-forward', text: 'Open'},
+      {icon: 'ios-information-circle', text: 'Details'},
+      {icon: 'ios-cloud-download', text: 'Download'},
+    ],
+  },
+  {
+    title: 'Modify',
+    data: [
+      {icon: 'ios-heart', text: 'Favorite'},
+      {icon: 'ios-create', text: 'Rename'},
+    ],
+  },
+  {
+    title: 'Copy',
+    data: [
+      {icon: 'ios-copy', text: 'Copy '},
+      {icon: 'ios-cut', text: 'Cut'},
+    ],
+  },
+  {
+    title: 'Social',
+    data: [
+      {icon: 'ios-link-outline', text: 'Copy link'},
+      {icon: 'ios-share-social', text: 'Share'},
+    ],
+  },
+  {
+    title: 'Danger zone',
+    data: [{icon: 'ios-trash', text: 'Delete'}],
+  },
 ];
 
 const {width, height} = Dimensions.get('window');
@@ -49,11 +85,36 @@ const BORDER_RADIUS = 10;
 // const AnimatedPresable = Animated.createAnimatedComponent(Pressable);
 const {statusBarHeight} = Navigation.constantsSync();
 
+function renderItem(info: SectionListRenderItemInfo<Action>) {
+  const color = {
+    color: info.item.text === 'Delete' ? '#ee3060' : '#000',
+  };
+
+  return (
+    <View style={styles.actionContainer}>
+      <Icon
+        name={info.item.icon}
+        color={info.item.text === 'Delete' ? '#ee3060' : '#aaa'}
+        size={22}
+        style={styles.icon}
+      />
+      <Text style={[styles.actionText, color]}>{info.item.text}</Text>
+    </View>
+  );
+}
+
+function renderSectionHeader(info: SectionListData<Action>) {
+  return <Text style={styles.sectionTitle}>{info.section.title}</Text>;
+}
+
+function sectionSeparator() {
+  return <View style={{height: 15}} />;
+}
+
 const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   componentId,
-  dark,
 }) => {
-  const aRef = useAnimatedRef<Animated.ScrollView>();
+  const aRef = useAnimatedRef<SectionList>();
 
   const dissmiss = () => {
     Navigation.dismissModal(componentId);
@@ -80,6 +141,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
     });
   };
 
+  const backgroundColor = useSharedValue<string>('transparent');
   const translateY = useSharedValue<number>(height);
   const offset = useSharedValue<number>(0);
 
@@ -88,7 +150,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   }, [translateY]);
 
   const scroll = useDerivedValue<number>(() => {
-    return clamp(translateY.value, -50, height / 2);
+    return clamp(translateY.value, -225, height / 2);
   }, [translateY]);
 
   const pan = Gesture.Pan()
@@ -108,13 +170,14 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
       if (translateY.value < height / 2 || snap === 0) {
         translateY.value = withDecay({
           velocity: velocityY,
-          clamp: [-50, height / 2],
+          clamp: [-225, height / 2],
         });
 
         return;
       }
 
       if (snap === height) {
+        backgroundColor.value = withTiming('transparent', {duration: 150});
         translateY.value = withTiming(snap, undefined, finished => {
           if (finished) {
             runOnJS(dissmiss)();
@@ -136,6 +199,10 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
     };
   });
 
+  const rootStyles = useAnimatedStyle(() => {
+    return {backgroundColor: backgroundColor.value};
+  });
+
   useAnimatedReaction(
     () => scroll.value,
     y => {
@@ -144,69 +211,52 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   );
 
   useEffect(() => {
+    backgroundColor.value = withTiming('rgba(0, 0, 0, 0.3)');
     translateY.value = withSpring(height / 2);
+
+    const backLisnter =
+      Navigation.events().registerNavigationButtonPressedListener(
+        ({buttonId}) => {
+          if (buttonId === 'RNN.hardwareBackButton') {
+            backgroundColor.value = withTiming('transparent', {duration: 150});
+            translateY.value = withTiming(height, undefined, finished => {
+              if (finished) {
+                runOnJS(dissmiss)();
+              }
+            });
+          }
+        },
+      );
+
+    return () => {
+      backLisnter.remove();
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <View style={styles.root}>
+    <Animated.View style={[styles.root, rootStyles]}>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.menu, rStyle]}>
-          <Canvas style={styles.canvas}>
-            <RoundedRect
-              x={0}
-              y={statusBarHeight}
-              width={width}
-              height={height}
-              color={'#fff'}
-              r={BORDER_RADIUS}>
-              <Shadow blur={10} dx={0} dy={3} color={'#a1a1a1'} />
-            </RoundedRect>
-          </Canvas>
-
           <View style={styles.marker} />
           <View style={styles.header}>
-            <Icon name={'ios-document'} size={25} color={'#000'} />
+            <Icon name={'ios-document'} color={'#000'} size={22} />
             <Text style={styles.title}>Glaceon.png</Text>
           </View>
-          <Animated.ScrollView
+          <SectionList
             ref={aRef}
+            sections={sections}
+            renderItem={renderItem}
+            renderSectionHeader={renderSectionHeader}
+            SectionSeparatorComponent={sectionSeparator}
             style={styles.content}
             scrollEnabled={false}
-            showsVerticalScrollIndicator={false}>
-            {actions.map((action, index) => {
-              return (
-                <Pressable
-                  onPress={showDetails}
-                  key={`${action.text}-${index}`}
-                  style={styles.actionContainer}>
-                  <Icon
-                    size={25}
-                    color={
-                      action.icon === 'ios-trash-outline'
-                        ? '#ee3060'
-                        : dark
-                        ? '#fff'
-                        : '#000'
-                    }
-                    name={action.icon}
-                    style={styles.icon}
-                  />
-                  <Text
-                    style={
-                      action.icon === 'ios-trash-outline'
-                        ? styles.deleteText
-                        : styles.actionText
-                    }>
-                    {action.text}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </Animated.ScrollView>
+            showsVerticalScrollIndicator={false}
+          />
         </Animated.View>
       </GestureDetector>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -221,6 +271,9 @@ FileMenu.options = {
     backgroundColor: 'transparent',
   },
   modalPresentationStyle: OptionsModalPresentationStyle.overCurrentContext,
+  hardwareBackButton: {
+    dismissModalOnPress: false,
+  },
 };
 
 const styles = StyleSheet.create({
@@ -239,8 +292,9 @@ const styles = StyleSheet.create({
     width,
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
+    // borderBottomWidth: 1,
     paddingVertical: 10,
+    paddingBottom: 20,
     paddingHorizontal: width * 0.05,
     borderBottomColor: '#000',
   },
@@ -250,6 +304,11 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     fontSize: 15,
   },
+  sectionTitle: {
+    fontFamily: 'UberBold',
+    color: '#aaa',
+    fontSize: 14,
+  },
   content: {
     paddingHorizontal: width * 0.05,
   },
@@ -258,6 +317,8 @@ const styles = StyleSheet.create({
     height,
     borderTopRightRadius: BORDER_RADIUS,
     borderTopLeftRadius: BORDER_RADIUS,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     backgroundColor: '#fff',
   },
   canvas: {
@@ -270,8 +331,9 @@ const styles = StyleSheet.create({
   actionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 7.5,
     height: 30,
+    marginLeft: 20,
   },
   icon: {
     marginRight: 20,

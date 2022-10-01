@@ -1,39 +1,17 @@
-import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Dimensions} from 'react-native';
 import React from 'react';
-import {
-  Canvas,
-  Circle,
-  Fill,
-  Group,
-  LinearGradient,
-  Mask,
-  Paint,
-  RoundedRect,
-  useComputedValue,
-  useLoop,
-  useTiming,
-  vec,
-} from '@shopify/react-native-skia';
-import FileSkeleton from '../home/misc/FileSkeleton';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {Modals} from '../../../navigation/screens/modals';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Modals} from '../navigation/screens/modals';
 
-const SIZE = 120;
+type GenericFileDetailsProps = {};
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
 
-const Testing: NavigationFunctionComponent = ({componentId}) => {
-  const timing = useTiming({from: -1, to: 1, loop: true}, {duration: 1500});
-
-  const start = useComputedValue(() => vec(timing.current * 140, 0), [timing]);
-  const end = useComputedValue(
-    () => vec(140 * timing.current + 140, 0),
-    [timing],
-  );
-
+const GenericFileDetails: NavigationFunctionComponent<
+  GenericFileDetailsProps
+> = ({componentId}) => {
   const pop = () => {
     Navigation.pop(componentId);
   };
@@ -47,7 +25,7 @@ const Testing: NavigationFunctionComponent = ({componentId}) => {
   };
 
   return (
-    <Animated.View style={styles.root}>
+    <View style={styles.root}>
       <View style={styles.appbar}>
         <Pressable hitSlop={20} onPress={pop}>
           <Icon name={'ios-arrow-back'} size={22} color={'#000'} />
@@ -71,16 +49,13 @@ const Testing: NavigationFunctionComponent = ({componentId}) => {
           <Text style={styles.buttonText}>Download</Text>
         </Pressable>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
-Testing.options = {
+GenericFileDetails.options = {
   statusBar: {
-    visible: true,
-    drawBehind: true,
-    backgroundColor: '#fff',
-    style: 'dark',
+    visible: false,
   },
   topBar: {
     visible: false,
@@ -138,4 +113,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Testing;
+export default GenericFileDetails;

@@ -9,9 +9,9 @@ import {
   Path,
   vec,
 } from '@shopify/react-native-skia';
-import {convertAudioPointsToBarPoints} from '../audio_player/utils/functions/convertAudioPointsToBarPoints';
-import {createWaveFormPath} from '../audio_player/utils/functions/createWaveFormPath';
-import forest from '../home/files/thumnnails/assets/forest.json';
+import {convertAudioPointsToBarPoints} from '../../audio_player/utils/functions/convertAudioPointsToBarPoints';
+import {createWaveFormPath} from '../../audio_player/utils/functions/createWaveFormPath';
+import forest from '../../home/files/thumnnails/assets/forest.json';
 
 type AudioProps = {
   height: number;
@@ -35,6 +35,7 @@ const Audio: React.FC<AudioProps> = ({
       width,
       height,
       backgroundColor: backgroundColor ?? 'transparent',
+      position: 'absolute',
     }),
     [],
   );

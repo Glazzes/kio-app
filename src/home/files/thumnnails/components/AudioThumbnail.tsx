@@ -20,10 +20,7 @@ type AudioThumbnailProps = {
   index: number;
 };
 
-const AudioThumbnail: React.FC<AudioThumbnailProps> = ({
-  index,
-  parentComponentId,
-}) => {
+const AudioThumbnail: React.FC<AudioThumbnailProps> = ({index}) => {
   const audioPoints = useMemo(() => {
     return convertAudioPointsToBarPoints(
       index % 2 === 0 ? forest.data : json.data,

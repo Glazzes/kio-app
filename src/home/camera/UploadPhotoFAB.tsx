@@ -3,7 +3,7 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
-import {Modals} from '../../navigation/Modals';
+import {Modals} from '../../navigation/screens/modals';
 
 type UploadPhotoFABProps = {
   componentId: string;

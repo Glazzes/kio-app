@@ -1,5 +1,5 @@
 import {Dimensions, Image, StyleSheet, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {useVector} from 'react-native-redash';
 import Animated, {
   measure,
@@ -21,6 +21,7 @@ import {Dimension} from '../../../../shared/types';
 import {File} from '../../../../utils/types';
 import {useSnapshot} from 'valtio';
 import {SIZE} from '../utils/constants';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 
 type Reflection = {
   dimensions: Animated.SharedValue<Dimension>;
@@ -54,6 +55,8 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   y,
   dimensions,
 }) => {
+  const componentId = useContext(NavigationContext);
+
   const [imageDimensions, setImageDimensions] = useState<{
     width: number;
     height: number;
@@ -155,7 +158,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   }, []);
 
   useEffect(() => {
-    const push = emitter.addListener(`push-${index}`, () => {
+    const push = emitter.addListener(`push-${index}-${componentId}`, () => {
       pushToDetails();
     });
 

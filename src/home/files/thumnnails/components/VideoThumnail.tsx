@@ -1,6 +1,6 @@
 import {Image, StyleSheet, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {File} from '../../../../utils/types';
 import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {Navigation} from 'react-native-navigation';
@@ -72,7 +72,7 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
         resizeMode={'cover'}
         style={styles.video}
       />
-      <Icon name="play-outline" size={50} color={'#fff'} style={styles.icon} />
+      <Icon name="play" size={50} color={'#fff'} style={styles.icon} />
     </View>
   );
 };

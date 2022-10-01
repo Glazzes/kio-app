@@ -9,23 +9,24 @@ import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
 import {Home, Camera, CreateFolderModal} from './src/home';
 import {Toast} from './src/misc';
-import DetailsDrawer from './src/navigation/DetailsDrawer';
 import EditProfile from './src/settings/edit/EditProfile';
 import {AudioPlayer} from './src/audio_player';
 import VideoPlayer from './src/video_player/VideoPlayer';
 import {CropEditor} from './src/crop_editor';
 import {Overlays} from './src/shared/enum/Overlays';
 import {PictureInPictureVideo} from './src/overlays';
-import {Drawers} from './src/navigation/drawers';
+import {Drawers} from './src/navigation/screens/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
 import {GetStarted, Login, CreateAccount} from './src/onboarding';
 import FileMenu from './src/overlays/FileMenu';
-import {Modals} from './src/navigation/Modals';
+import {Modals} from './src/navigation/screens/modals';
 import GenericModal from './src/home/modals/GenericModal';
 import UserMenu from './src/home/misc/UserMenu';
+import {FileDrawer} from './src/navigation';
 import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
 import Testing from './src/misc/Testing';
+import GenericFileDetails from './src/home/files/details/GenericFileDetails';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -113,7 +114,9 @@ Navigation.registerComponent(Modals.FILE_MENU, () =>
   gestureHandlerRootHOC(FileMenu),
 );
 
-Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);
+Navigation.registerComponent('GF', () => GenericFileDetails);
+
+Navigation.registerComponent(Screens.LEFT_DRAWER, () => FileDrawer);
 
 Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericModal);
 

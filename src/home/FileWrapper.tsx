@@ -7,16 +7,21 @@ import {
   Pressable,
 } from 'react-native';
 import React, {useContext, useEffect, useMemo, useState} from 'react';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Animated, {
+  BounceIn,
+  FadeIn,
+  FadeOut,
+  ZoomOut,
+} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
-import {Modals} from '../navigation/Modals';
+import {Modals} from '../navigation/screens/modals';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import emitter from '../utils/emitter';
 import {Screens} from '../enums/screens';
 import FileSkeleton from './misc/FileSkeleton';
 import {TypingEvent} from './types';
-import {Context} from '../navigation/NavigationContext';
+import {NavigationContext} from '../navigation/NavigationContextProvider';
 import {SelectAction} from './utils/enums';
 
 type FileWrapperProps = {
@@ -28,7 +33,8 @@ const {width} = Dimensions.get('window');
 const SIZE = (width * 0.9 - 10) / 2;
 
 const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
-  const componentId = useContext(Context);
+  const componentId = useContext(NavigationContext);
+  const [isFavorite, setIsFavorite] = useState<boolean>(true);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
@@ -55,8 +61,16 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
       return;
     }
 
-    if (index % 2 === 1 || index === 0) {
-      emitter.emit(`push-${index}`);
+    if (index === 0) {
+      Navigation.push(componentId, {
+        component: {
+          name: 'GF',
+        },
+      });
+    }
+
+    if (index % 2 === 1) {
+      emitter.emit(`push-${index}-${componentId}`);
     }
 
     if (index % 2 === 0 && index >= 4) {
@@ -102,12 +116,9 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
       setShowSkeleton(false);
     });
 
-    const unselect = emitter.addListener(
-      `${SelectAction.UNSELECT_ALL}-${componentId}`,
-      () => {
-        setIsSelected(false);
-      },
-    );
+    const unselect = emitter.addListener(`unselect-file`, () => {
+      setIsSelected(false);
+    });
 
     return () => {
       unselect.remove();
@@ -129,6 +140,14 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
     <View style={[styles.root, wrapperMargin]}>
       <Pressable onPress={onPress} onLongPress={onLongPressSelect}>
         {children}
+        {isFavorite && (
+          <Animated.View
+            entering={BounceIn.duration(300)}
+            exiting={ZoomOut.duration(300)}
+            style={styles.heart}>
+            <Icon name={'ios-heart'} size={25} color={'#ee3060'} />
+          </Animated.View>
+        )}
         {isSelected && (
           <Animated.View
             entering={FadeIn.duration(200)}
@@ -151,7 +170,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
             opacity: pressed ? 0.3 : 1,
           })}>
           <Icon
-            name={'dots-vertical'}
+            name={'ellipsis-vertical'}
             size={20}
             color={'#282828'}
             style={styles.icon}
@@ -167,6 +186,11 @@ const styles = StyleSheet.create({
     width: SIZE,
     marginVertical: 10,
     alignSelf: 'center',
+  },
+  heart: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
   },
   infoContainer: {
     flexDirection: 'row',

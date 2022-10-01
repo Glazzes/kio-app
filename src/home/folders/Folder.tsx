@@ -1,6 +1,6 @@
-import {View, Text, Dimensions, StyleSheet} from 'react-native';
+import {View, Text, Dimensions, StyleSheet, Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import React, {useState} from 'react';
+import React, {useContext} from 'react';
 import {
   BlurMask,
   Canvas,
@@ -9,6 +9,10 @@ import {
   vec,
 } from '@shopify/react-native-skia';
 import AvatarGroup from '../../misc/AvatarGroup';
+import {Navigation} from 'react-native-navigation';
+import {Modals} from '../../navigation/screens/modals';
+import {NavigationContext} from '../../navigation/NavigationContextProvider';
+import {Screens} from '../../enums/screens';
 
 type FolderProps = {};
 
@@ -17,8 +21,29 @@ const WIDTH = width * 0.75;
 const HEIGHT = 150;
 
 const Folder: React.FC<FolderProps> = ({}) => {
+  const componentId = useContext(NavigationContext);
+
+  const pushFolder = () => {
+    Navigation.push(componentId, {
+      component: {
+        name: Screens.MY_UNIT,
+        passProps: {
+          folderId: 'id',
+        },
+      },
+    });
+  };
+
+  const onPress = () => {
+    Navigation.showModal({
+      component: {
+        name: Modals.FILE_MENU,
+      },
+    });
+  };
+
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container} onPress={pushFolder}>
       <Canvas style={styles.canvas}>
         <RoundedRect
           y={HEIGHT * 0.53}
@@ -49,7 +74,9 @@ const Folder: React.FC<FolderProps> = ({}) => {
           numberOfLines={2}>
           My Developments
         </Text>
-        <Icon color={'#fff'} name={'dots-vertical'} size={25} />
+        <Pressable hitSlop={20} onPress={onPress}>
+          <Icon color={'#fff'} name={'dots-vertical'} size={25} />
+        </Pressable>
       </View>
 
       <View style={styles.itemContainer}>
@@ -65,7 +92,7 @@ const Folder: React.FC<FolderProps> = ({}) => {
           Created: <Text style={styles.itemText}>20th October, 2022</Text>
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
