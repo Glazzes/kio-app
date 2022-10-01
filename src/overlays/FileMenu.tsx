@@ -1,11 +1,4 @@
-import {
-  Text,
-  StyleSheet,
-  Pressable,
-  Dimensions,
-  View,
-  ScrollView,
-} from 'react-native';
+import {Text, StyleSheet, Pressable, Dimensions, View} from 'react-native';
 import React, {useEffect} from 'react';
 import {
   Navigation,
@@ -22,7 +15,9 @@ import Animated, {
   withTiming,
   withDecay,
   withSpring,
-  withDelay,
+  useAnimatedReaction,
+  scrollTo,
+  useAnimatedRef,
 } from 'react-native-reanimated';
 import {peekLast} from '../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
@@ -58,6 +53,8 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   componentId,
   dark,
 }) => {
+  const aRef = useAnimatedRef<Animated.ScrollView>();
+
   const dissmiss = () => {
     Navigation.dismissModal(componentId);
   };
@@ -90,9 +87,13 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
     return clamp(translateY.value, 0, height);
   }, [translateY]);
 
+  const scroll = useDerivedValue<number>(() => {
+    return clamp(translateY.value, -50, height / 2);
+  }, [translateY]);
+
   const pan = Gesture.Pan()
     .onStart(_ => {
-      offset.value = translate.value;
+      offset.value = scroll.value;
     })
     .onChange(e => {
       translateY.value = e.translationY + offset.value;
@@ -107,7 +108,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
       if (translateY.value < height / 2 || snap === 0) {
         translateY.value = withDecay({
           velocity: velocityY,
-          clamp: [0, height / 2],
+          clamp: [-50, height / 2],
         });
 
         return;
@@ -135,6 +136,13 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
     };
   });
 
+  useAnimatedReaction(
+    () => scroll.value,
+    y => {
+      scrollTo(aRef, 0, -1 * y, false);
+    },
+  );
+
   useEffect(() => {
     translateY.value = withSpring(height / 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,7 +169,8 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
             <Icon name={'ios-document'} size={25} color={'#000'} />
             <Text style={styles.title}>Glaceon.png</Text>
           </View>
-          <ScrollView
+          <Animated.ScrollView
+            ref={aRef}
             style={styles.content}
             scrollEnabled={false}
             showsVerticalScrollIndicator={false}>
@@ -194,7 +203,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
                 </Pressable>
               );
             })}
-          </ScrollView>
+          </Animated.ScrollView>
         </Animated.View>
       </GestureDetector>
     </View>

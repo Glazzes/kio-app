@@ -26,12 +26,14 @@ import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
 import {push, removeByComponentId} from '../store/navigationStore';
 import PdfThumnail from './files/thumnnails/components/PdfThumnail';
 import {NavigationProvider} from '../navigation/NavigationContext';
+import {SkiaContextProvider} from '../misc/SkeletonContext';
+import FileSkeleton from './misc/FileSkeleton';
 
 type HomeProps = {
   folderId?: string;
 };
 
-const data: string[] = ['h', 'i', 'z', 'a', 'f', 'y', 'g', 't'];
+const data: string[] = ['h', 'i', 'a', 'b', 'c', 'd', 'e', 'f'];
 
 function keyExtractor(item: string): string {
   return item;
@@ -59,7 +61,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
     return (info: ListRenderItemInfo<string>): React.ReactElement => {
       if (info.index === 0) {
         return (
-          <FileWrapper index={info.index} parentComponentId={componentId}>
+          <FileWrapper index={info.index}>
             <VideoThumbnail
               parentComponentId={componentId}
               index={info.index}
@@ -124,33 +126,35 @@ const Home: NavigationFunctionComponent<HomeProps> = ({componentId}) => {
 
   return (
     <NavigationProvider componentId={componentId}>
-      <View style={styles.root}>
-        <Appbar scrollY={scrollY} />
+      <SkiaContextProvider>
+        <View style={styles.root}>
+          <Appbar scrollY={scrollY} />
 
-        <AnimatedFlashList
-          data={data}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          numColumns={2}
-          nestedScrollEnabled={true}
-          ListHeaderComponent={renderHeader}
-          estimatedItemSize={data.length}
-          estimatedListSize={{width: windowWidth, height: data.length * 65}}
-          contentContainerStyle={styles.content}
-          onScroll={onScroll}
-        />
+          <AnimatedFlashList
+            data={data}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            numColumns={2}
+            nestedScrollEnabled={true}
+            ListHeaderComponent={renderHeader}
+            estimatedItemSize={data.length}
+            estimatedListSize={{width: windowWidth, height: data.length * 65}}
+            contentContainerStyle={styles.content}
+            onScroll={onScroll}
+          />
 
-        <PinchableReflection
-          dimensions={dimensions}
-          translateX={translateX}
-          translateY={translateY}
-          scale={scale}
-          x={x}
-          y={y}
-        />
+          <PinchableReflection
+            dimensions={dimensions}
+            translateX={translateX}
+            translateY={translateY}
+            scale={scale}
+            x={x}
+            y={y}
+          />
 
-        <FAB />
-      </View>
+          <FAB />
+        </View>
+      </SkiaContextProvider>
     </NavigationProvider>
   );
 };

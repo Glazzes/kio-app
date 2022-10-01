@@ -29,9 +29,8 @@ const SIZE = (width * 0.9 - 10) / 2;
 
 const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
   const componentId = useContext(Context);
-
-  const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
+  const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
   const openMenu = () => {
     Navigation.showModal({
@@ -115,10 +114,15 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
       onTyping.remove();
       onEndTyping.remove();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (showSkeleton) {
-    return <FileSkeleton index={index} />;
+    return (
+      <View style={[styles.root, wrapperMargin]}>
+        <FileSkeleton />
+      </View>
+    );
   }
 
   return (

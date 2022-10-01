@@ -25,6 +25,7 @@ import GenericModal from './src/home/modals/GenericModal';
 import UserMenu from './src/home/misc/UserMenu';
 import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
+import Testing from './src/misc/Testing';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -117,6 +118,8 @@ Navigation.registerComponent(Screens.LEFT_DRAWER, () => DetailsDrawer);
 Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericModal);
 
 Navigation.registerComponent('UserMenu', () => UserMenu);
+
+Navigation.registerComponent('Testing', () => Testing);
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot(mainRoot);

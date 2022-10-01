@@ -37,7 +37,7 @@ const SearchBar: React.FC = ({}) => {
 
     const showResults = setTimeout(() => {
       emitter.emit(TypingEvent.END_TYPING, text);
-    }, 2000);
+    }, 1000);
 
     setSearchTerm(text);
     setTimer(showResults);
