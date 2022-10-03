@@ -1,4 +1,4 @@
-import {View, StyleSheet, Dimensions, Text, Image} from 'react-native';
+import {View, StyleSheet, Dimensions, Text} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
@@ -12,13 +12,7 @@ import {
   FlashListProps,
   ListRenderItemInfo,
 } from '@shopify/flash-list';
-import {
-  Canvas,
-  Circle,
-  LinearGradient,
-  Paint,
-  vec,
-} from '@shopify/react-native-skia';
+import Contributor from './Contributor';
 
 type ContributorsProps = {};
 
@@ -36,12 +30,6 @@ const STROKE_WIDTH = 1.5;
 const SIZE = 45 - STROKE_WIDTH * 2.5;
 const CANVAS_SIZE = 50;
 
-const gradients = [
-  ['#223843', '#d77a61'],
-  ['#ffb600', '#F69A97'],
-  ['#d9ed92', '#184e77'],
-];
-
 const AnimatedFlashList =
   Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
 
@@ -50,26 +38,7 @@ function keyExtractor(item: string, index: number): string {
 }
 
 function renderItem(info: ListRenderItemInfo<string>) {
-  return (
-    <View style={styles.photoContainer}>
-      <Canvas style={styles.canvas}>
-        <Circle
-          r={CANVAS_SIZE / 2 - STROKE_WIDTH}
-          cx={CANVAS_SIZE / 2}
-          cy={CANVAS_SIZE / 2}
-          color={'transparent'}>
-          <Paint style={'stroke'} strokeWidth={STROKE_WIDTH}>
-            <LinearGradient
-              start={vec(0, 0)}
-              end={vec(CANVAS_SIZE, CANVAS_SIZE)}
-              colors={gradients[info.index % gradients.length]}
-            />
-          </Paint>
-        </Circle>
-      </Canvas>
-      <Image source={{uri: info.item}} style={styles.photo} />
-    </View>
-  );
+  return <Contributor index={info.index} imageUrl={info.item} />;
 }
 
 function separatorComponent() {

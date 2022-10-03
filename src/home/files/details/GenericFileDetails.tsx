@@ -42,7 +42,7 @@ const GenericFileDetails: NavigationFunctionComponent<
         <Text style={styles.size}>5Mb</Text>
 
         <Text style={styles.message}>
-          We don't support this format for file pre visualization, read about it{' '}
+          This file format is not supported for visualization, read about it{' '}
           <Text style={styles.link}>here</Text>
         </Text>
         <Pressable style={styles.button}>

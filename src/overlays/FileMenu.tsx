@@ -31,11 +31,16 @@ import {peekLast} from '../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {clamp} from '../shared/functions/clamp';
 import {snapPoint} from 'react-native-redash';
+import emitter from '../utils/emitter';
+import {Modals} from '../navigation/screens/modals';
+import {Screens} from '../enums/screens';
+import {Notification} from '../enums/notification';
 
 type FileMenuProps = {
   x: number;
   y: number;
   dark: boolean;
+  index: number;
 };
 
 type Action = {
@@ -91,7 +96,9 @@ function renderItem(info: SectionListRenderItemInfo<Action>) {
   };
 
   return (
-    <View style={styles.actionContainer}>
+    <Pressable
+      style={styles.actionContainer}
+      onPress={() => emitter.emit('bs', info.item.text)}>
       <Icon
         name={info.item.icon}
         color={info.item.text === 'Delete' ? '#ee3060' : '#aaa'}
@@ -99,7 +106,7 @@ function renderItem(info: SectionListRenderItemInfo<Action>) {
         style={styles.icon}
       />
       <Text style={[styles.actionText, color]}>{info.item.text}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -113,24 +120,53 @@ function sectionSeparator() {
 
 const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   componentId,
+  index,
 }) => {
   const aRef = useAnimatedRef<SectionList>();
 
-  const dissmiss = () => {
-    Navigation.dismissModal(componentId);
-  };
-
-  const showDetails = () => {
-    translateY.value = withTiming(height, undefined, finished => {
+  const close = (text: string) => {
+    backgroundColor.value = withTiming('transparent');
+    translateY.value = withTiming(height, {duration: 450}, finished => {
       if (finished) {
-        runOnJS(closeAndOpenDrawer)();
+        runOnJS(performAction)(text);
       }
     });
   };
 
-  const closeAndOpenDrawer = () => {
-    Navigation.dismissModal(componentId);
+  const performAction = (text: string) => {
+    dissmiss();
 
+    switch (text) {
+      case 'Open':
+        open();
+        return;
+      case 'Details':
+        openDetails();
+        return;
+      case 'Delete':
+        openDeleteWarning();
+        return;
+      case 'Copy link':
+        copyLink();
+        return;
+      case 'Favorite':
+        faveFile();
+        return;
+      default:
+        return;
+    }
+  };
+
+  const open = () => {
+    const lastFolderScreen = peekLast();
+    Navigation.push(lastFolderScreen.componentId, {
+      component: {
+        name: 'GF',
+      },
+    });
+  };
+
+  const openDetails = () => {
     const lastFolderScreen = peekLast();
     Navigation.mergeOptions(lastFolderScreen.componentId, {
       sideMenu: {
@@ -139,6 +175,40 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
         },
       },
     });
+  };
+
+  const openDeleteWarning = () => {
+    Navigation.showModal({
+      component: {
+        name: Modals.GENERIC_DIALOG,
+        passProps: {
+          title: 'Delete file',
+          message:
+            'Are you sure you want to delete this file? This action can not be undone',
+        },
+      },
+    });
+  };
+
+  const faveFile = () => {
+    emitter.emit(`favorite-${index}`);
+  };
+
+  const copyLink = () => {
+    Navigation.showOverlay({
+      component: {
+        name: Screens.TOAST,
+        passProps: {
+          title: 'Link copied',
+          message: 'Link has been copied to your clipboard.',
+          type: Notification.INFO,
+        },
+      },
+    });
+  };
+
+  const dissmiss = () => {
+    Navigation.dismissModal(componentId);
   };
 
   const backgroundColor = useSharedValue<string>('transparent');
@@ -214,6 +284,10 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
     backgroundColor.value = withTiming('rgba(0, 0, 0, 0.3)');
     translateY.value = withSpring(height / 2);
 
+    const actionListener = emitter.addListener('bs', (text: string) => {
+      close(text);
+    });
+
     const backLisnter =
       Navigation.events().registerNavigationButtonPressedListener(
         ({buttonId}) => {
@@ -229,6 +303,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
       );
 
     return () => {
+      actionListener.remove();
       backLisnter.remove();
     };
 
@@ -241,7 +316,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
         <Animated.View style={[styles.menu, rStyle]}>
           <View style={styles.marker} />
           <View style={styles.header}>
-            <Icon name={'ios-document'} color={'#000'} size={22} />
+            <Icon name={'ios-folder'} color={'#000'} size={22} />
             <Text style={styles.title}>Glaceon.png</Text>
           </View>
           <SectionList

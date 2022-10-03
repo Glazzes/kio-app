@@ -34,14 +34,17 @@ const SIZE = (width * 0.9 - 10) / 2;
 
 const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
   const componentId = useContext(NavigationContext);
-  const [isFavorite, setIsFavorite] = useState<boolean>(true);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
   const openMenu = () => {
     Navigation.showModal({
       component: {
-        name: Modals.FILE_MENU,
+        name: 'SM', //Modals.FILE_MENU,
+        passProps: {
+          index,
+        },
       },
     });
   };
@@ -120,10 +123,15 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
       setIsSelected(false);
     });
 
+    const favoriteFile = emitter.addListener(`favorite-${index}`, () => {
+      setIsFavorite(s => !s);
+    });
+
     return () => {
       unselect.remove();
       onTyping.remove();
       onEndTyping.remove();
+      favoriteFile.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

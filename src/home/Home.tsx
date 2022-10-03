@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Dimensions, View} from 'react-native';
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/AppHeader';
 import {
@@ -26,12 +26,13 @@ import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
 import {push, removeByComponentId} from '../store/navigationStore';
 import PdfThumnail from './files/thumnnails/components/PdfThumnail';
 import {NavigationContextProvider} from '../navigation';
+import NoContent from './misc/NoContent';
 
 type HomeProps = {
   folderId?: string;
 };
 
-const data: string[] = ['h', 'i', 'a', 'b', 'c', 'd', 'e', 'f'];
+const data: string[] = ['h']; // ['h', 'i', 'a', 'b', 'c', 'd', 'e', 'f'];
 
 function keyExtractor(item: string): string {
   return item;
@@ -45,6 +46,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   componentId,
   folderId,
 }) => {
+  const ref = useRef<typeof AnimatedFlashList>(null);
+
   const scrollY = useSharedValue<number>(0);
 
   const dimensions = useSharedValue<Dimension>({width: 1, height: 1});
@@ -57,6 +60,12 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   const renderHeader = useCallback(() => {
     return <AppHeader />;
   }, []);
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: e => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
 
   const renderItem = useMemo(() => {
     return (info: ListRenderItemInfo<string>): React.ReactElement => {
@@ -111,12 +120,6 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     };
   }, []);
 
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: e => {
-      scrollY.value = e.contentOffset.y;
-    },
-  });
-
   useEffect(() => {
     push({name: '', componentId});
 
@@ -131,13 +134,15 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
         <Appbar scrollY={scrollY} folderId={folderId} />
 
         <AnimatedFlashList
+          ref={ref}
           data={data}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           numColumns={2}
           nestedScrollEnabled={true}
           ListHeaderComponent={renderHeader}
-          estimatedItemSize={data.length}
+          ListEmptyComponent={NoContent}
+          estimatedItemSize={Math.max(1, data.length)}
           estimatedListSize={{width: windowWidth, height: data.length * 65}}
           contentContainerStyle={styles.content}
           onScroll={onScroll}

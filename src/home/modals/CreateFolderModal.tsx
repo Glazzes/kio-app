@@ -231,7 +231,6 @@ const styles = StyleSheet.create({
   modalContainer: {
     width,
     height: 220,
-
     alignItems: 'center',
   },
   canvas: {

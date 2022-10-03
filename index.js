@@ -27,6 +27,7 @@ import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
 import Testing from './src/misc/Testing';
 import GenericFileDetails from './src/home/files/details/GenericFileDetails';
+import ShareModal from './src/misc/ShareModal';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -113,6 +114,8 @@ Navigation.registerComponent(
 Navigation.registerComponent(Modals.FILE_MENU, () =>
   gestureHandlerRootHOC(FileMenu),
 );
+
+Navigation.registerComponent('SM', () => ShareModal);
 
 Navigation.registerComponent('GF', () => GenericFileDetails);
 

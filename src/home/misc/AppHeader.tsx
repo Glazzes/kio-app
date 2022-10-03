@@ -4,6 +4,7 @@ import Contributors from '../../misc/Contributors';
 import FolderList from '../folders/FolderList';
 import FileHeader from '../../misc/FileHeader';
 import BreadCrumbs from '../../misc/BreadCrumbs';
+import NoContent from './NoContent';
 
 type AppHeaderProps = {};
 
