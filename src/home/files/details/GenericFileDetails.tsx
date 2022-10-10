@@ -3,15 +3,18 @@ import React from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {File} from '../../../shared/types';
 
-type GenericFileDetailsProps = {};
+type GenericFileDetailsProps = {
+  file: File;
+};
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
 
 const GenericFileDetails: NavigationFunctionComponent<
   GenericFileDetailsProps
-> = ({componentId}) => {
+> = ({componentId, file}) => {
   const pop = () => {
     Navigation.pop(componentId);
   };
@@ -37,7 +40,7 @@ const GenericFileDetails: NavigationFunctionComponent<
       <View style={styles.container}>
         <Icon name={'ios-document'} size={120} color={'#3366ff'} />
         <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
-          Glaceon.png
+          {file.name}
         </Text>
         <Text style={styles.size}>5Mb</Text>
 

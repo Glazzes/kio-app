@@ -125,7 +125,11 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
         style={styles.root}
         contentContainerStyle={styles.content}
         stickyHeaderIndices={[0]}>
-        <Appbar title={'Edit Profile'} parentComponentId={componentId} />
+        <Appbar
+          title={'Edit Profile'}
+          parentComponentId={componentId}
+          backgroundColor={'#fff'}
+        />
         <View style={styles.imageContainer}>
           <Pressable onPress={openSheet}>
             <Image

@@ -15,7 +15,6 @@ import Animated, {
   ZoomOut,
 } from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
-import {Modals} from '../navigation/screens/modals';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import emitter from '../utils/emitter';
 import {Screens} from '../enums/screens';
@@ -23,27 +22,34 @@ import FileSkeleton from './misc/FileSkeleton';
 import {TypingEvent} from './types';
 import {NavigationContext} from '../navigation/NavigationContextProvider';
 import {SelectAction} from './utils/enums';
+import {File} from '../shared/types';
+import {Modals} from '../navigation/screens/modals';
+import {getSimpleMimeType} from '../shared/functions/getMimeType';
+import {MimeType} from '../shared/enum/MimeType';
+import {pushToScreen} from '../shared/functions/navigation/pushToScreen';
+import {convertBytesToRedableUnit} from '../shared/functions/convertBytesToRedableUnit';
 
 type FileWrapperProps = {
   index: number;
+  file: File;
 };
 
 const {width} = Dimensions.get('window');
 
 const SIZE = (width * 0.9 - 10) / 2;
 
-const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
+const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   const componentId = useContext(NavigationContext);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
-  const openMenu = () => {
-    Navigation.showModal({
+  const openMenu = async () => {
+    Navigation.showOverlay({
       component: {
-        name: 'SM', //Modals.FILE_MENU,
+        name: Modals.FILE_MENU,
         passProps: {
-          index,
+          file,
         },
       },
     });
@@ -64,29 +70,28 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
       return;
     }
 
-    if (index === 0) {
-      Navigation.push(componentId, {
-        component: {
-          name: 'GF',
-        },
-      });
-    }
+    const mimeType = getSimpleMimeType(file.mimeType);
+    switch (mimeType) {
+      case MimeType.AUDIO:
+        pushToScreen(componentId, Screens.AUDIO_PLAYER, {file});
+        return;
 
-    if (index % 2 === 1) {
-      emitter.emit(`push-${index}-${componentId}`);
-    }
+      case MimeType.IMAGE:
+        emitter.emit(`push-${file.id}-image`);
+        return;
 
-    if (index % 2 === 0 && index >= 4) {
-      goToAudioPlayer();
-    }
-  };
+      case MimeType.PDF:
+        pushToScreen(componentId, Screens.PDF_READER, {file});
+        return;
 
-  const goToAudioPlayer = () => {
-    Navigation.push(componentId, {
-      component: {
-        name: Screens.AUDIO_PLAYER,
-      },
-    });
+      case MimeType.VIDEO:
+        pushToScreen(componentId, Screens.VIDEO_PLAYER, {file});
+        return;
+
+      default:
+        pushToScreen(componentId, Screens.GENERIC_DETAILS, {file});
+        return;
+    }
   };
 
   const onLongPressSelect = async () => {
@@ -119,11 +124,11 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
       setShowSkeleton(false);
     });
 
-    const unselect = emitter.addListener(`unselect-file`, () => {
+    const unselect = emitter.addListener('unselect-file', () => {
       setIsSelected(false);
     });
 
-    const favoriteFile = emitter.addListener(`favorite-${index}`, () => {
+    const favoriteFile = emitter.addListener(`favorite-${file.id}`, () => {
       setIsFavorite(s => !s);
     });
 
@@ -167,13 +172,15 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index}) => {
       <View style={styles.infoContainer}>
         <View style={styles.flex}>
           <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
-            Glaceon.png
+            {file.name}
           </Text>
-          <Text style={styles.subtitle}>1MB</Text>
+          <Text style={styles.subtitle}>
+            {convertBytesToRedableUnit(file.size)}
+          </Text>
         </View>
         <Pressable
           onPress={openMenu}
-          hitSlop={50}
+          hitSlop={25}
           style={({pressed}) => ({
             opacity: pressed ? 0.3 : 1,
           })}>

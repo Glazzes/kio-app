@@ -1,20 +1,18 @@
 import {Dimensions, StyleSheet, Image, ImageStyle, View} from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 
 type PdfThumnailProps = {
   thumbnail: string;
-  parentComponentId: string;
 };
 
 const {width} = Dimensions.get('window');
 const SIZE = (width * 0.9 - 10) / 2;
 const THUMBNAIL_WIDTH = SIZE * 0.85;
 
-const PdfThumnail: React.FC<PdfThumnailProps> = ({
-  thumbnail,
-  parentComponentId,
-}) => {
+const PdfThumnail: React.FC<PdfThumnailProps> = ({thumbnail}) => {
+  const componentId = useContext(NavigationContext);
   const [dimensions, setDimensions] = useState({width: 1, height: 1});
 
   const imageStyles: ImageStyle = useMemo(
@@ -27,7 +25,7 @@ const PdfThumnail: React.FC<PdfThumnailProps> = ({
   );
 
   const goToReader = () => {
-    Navigation.push(parentComponentId, {
+    Navigation.push(componentId, {
       component: {
         name: 'Pdf',
       },

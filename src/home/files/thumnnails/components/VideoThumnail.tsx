@@ -1,23 +1,21 @@
 import {Image, StyleSheet, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {File} from '../../../../utils/types';
 import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
 import {SIZE} from '../utils/constants';
 import emitter from '../../../../utils/emitter';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {File} from '../../../../shared/types';
 
 type VideoThumnailProps = {
-  file?: File;
+  file: File;
   index: number;
-  parentComponentId: string;
 };
 
-const VideoThumnail: React.FC<VideoThumnailProps> = ({
-  index,
-  parentComponentId,
-}) => {
+const VideoThumnail: React.FC<VideoThumnailProps> = ({index, file}) => {
+  const componentId = useContext(NavigationContext);
   const [poster, setPoster] = useState<string>('');
 
   const getPoster = async () => {
@@ -37,13 +35,14 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({
   };
 
   const pushToPlayer = () => {
-    Navigation.push(parentComponentId, {
+    Navigation.push(componentId, {
       component: {
         name: Screens.VIDEO_PLAYER,
         passProps: {
           thumbnail: poster,
           index,
           isVideo: true,
+          file,
         },
       },
     });

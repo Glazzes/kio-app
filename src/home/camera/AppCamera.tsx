@@ -346,6 +346,7 @@ AppCamera.options = {
   sideMenu: {
     right: {
       enabled: false,
+      visible: false,
     },
   },
 };

@@ -3,23 +3,23 @@ import React, {useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import Video from 'react-native-video';
 import FileDetailsAppbar from '../misc/FileDetailsAppbar';
+import {File} from '../shared/types';
 
 type VideoPlayerProps = {
   thumbnail: string;
-  index: number;
+  file: File;
 };
 
 const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
   componentId,
   thumbnail,
-  index,
+  file,
 }) => {
   const [ready, setReady] = useState<boolean>(false);
 
   return (
     <View style={styles.root}>
       <Video
-        nativeID={`video-${index}-dest`}
         source={require('./assets/gru.mp4')}
         paused={false}
         controls={true}
@@ -31,6 +31,7 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
         onReadyForDisplay={() => setReady(true)}
       />
       <FileDetailsAppbar
+        file={file}
         parentComponentId={componentId}
         isVideo={ready}
         isModal={false}
@@ -39,25 +40,14 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
   );
 };
 
-VideoPlayer.options = ({index}) => ({
+VideoPlayer.options = {
   statusBar: {
     visible: false,
   },
   topBar: {
     visible: false,
   },
-  animations: {
-    push: {
-      sharedElementTransitions: [
-        {
-          fromId: `video-${index}`,
-          toId: `video-${index}-dest`,
-          duration: 300,
-        },
-      ],
-    },
-  },
-});
+};
 
 const styles = StyleSheet.create({
   root: {

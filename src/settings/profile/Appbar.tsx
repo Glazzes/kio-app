@@ -6,18 +6,23 @@ import Icon from 'react-native-vector-icons/Ionicons';
 type AppbarProps = {
   title: string;
   parentComponentId: string;
+  backgroundColor?: string;
 };
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
 
-const Appbar: React.FC<AppbarProps> = ({title, parentComponentId}) => {
+const Appbar: React.FC<AppbarProps> = ({
+  title,
+  parentComponentId,
+  backgroundColor,
+}) => {
   const goBack = async () => {
     await Navigation.pop(parentComponentId);
   };
 
   return (
-    <View style={styles.appbar}>
+    <View style={[styles.appbar, {backgroundColor}]}>
       <Pressable onPress={goBack} style={styles.pressable} hitSlop={50}>
         <Icon name={'ios-arrow-back'} size={22} color={'#000'} />
       </Pressable>

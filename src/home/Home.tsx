@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Dimensions, View} from 'react-native';
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/AppHeader';
 import {
@@ -12,10 +12,9 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
-import {File} from '../utils/types';
 import Appbar from './misc/Appbar';
 import {FAB} from '../misc';
-import {Dimension} from '../shared/types';
+import {Dimension, File} from '../shared/types';
 import FileWrapper from './FileWrapper';
 import {
   ImageThumbnail,
@@ -27,6 +26,9 @@ import {push, removeByComponentId} from '../store/navigationStore';
 import PdfThumnail from './files/thumnnails/components/PdfThumnail';
 import {NavigationContextProvider} from '../navigation';
 import NoContent from './misc/NoContent';
+import GenericThumbnail from './files/thumnnails/components/GenericThumbnail';
+import {getSimpleMimeType} from '../shared/functions/getMimeType';
+import {MimeType} from '../shared/enum/MimeType';
 
 type HomeProps = {
   folderId?: string;
@@ -34,13 +36,51 @@ type HomeProps = {
 
 const data: string[] = ['h']; // ['h', 'i', 'a', 'b', 'c', 'd', 'e', 'f'];
 
-function keyExtractor(item: string): string {
-  return item;
+const files: File[] = [
+  {
+    id: '1',
+    name: 'Husky.png',
+    size: 2.359 * 1024 * 1024,
+    mimeType: 'image/png',
+    isFavorite: true,
+  },
+  {
+    id: '5',
+    name: 'Docker in action.pdf',
+    size: 856000,
+    mimeType: 'application/pdf',
+    isFavorite: false,
+  },
+  {
+    id: '2',
+    name: 'Call your name.mp3',
+    size: 13 * 1024 * 1024,
+    mimeType: 'audio/mp3',
+    isFavorite: true,
+  },
+  {
+    id: '3',
+    name: 'Randoooom.mp4',
+    size: 856000,
+    mimeType: 'video/mp4',
+    isFavorite: false,
+  },
+  {
+    id: '4',
+    name: 'One.psd',
+    size: 856000,
+    mimeType: 'application/json',
+    isFavorite: false,
+  },
+];
+
+function keyExtractor(item: File): string {
+  return item.id;
 }
 
 const {width: windowWidth, height: windowHeight} = Dimensions.get('window');
 const AnimatedFlashList =
-  Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
+  Animated.createAnimatedComponent<FlashListProps<File>>(FlashList);
 
 const Home: NavigationFunctionComponent<HomeProps> = ({
   componentId,
@@ -67,57 +107,48 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     },
   });
 
-  const renderItem = useMemo(() => {
-    return (info: ListRenderItemInfo<string>): React.ReactElement => {
-      if (info.index === 0) {
-        return (
-          <FileWrapper index={info.index}>
-            <VideoThumbnail
-              parentComponentId={componentId}
-              index={info.index}
-            />
-          </FileWrapper>
-        );
-      }
+  const renderItem = useCallback((info: ListRenderItemInfo<File>) => {
+    const mimeType = getSimpleMimeType(info.item.mimeType);
 
-      if (info.index === 2) {
-        return (
-          <FileWrapper index={info.index}>
-            <PdfThumnail
-              parentComponentId={componentId}
-              thumbnail={
-                'https://images-na.ssl-images-amazon.com/images/I/71X432GjWpL.jpg'
-              }
-            />
-          </FileWrapper>
-        );
-      }
-
-      return (
-        <FileWrapper index={info.index}>
-          {info.index % 2 === 0 ? (
-            <AudioThumbnail
-              parentComponentId={componentId}
-              index={info.index}
-            />
-          ) : (
+    const defineComponent = () => {
+      switch (mimeType) {
+        case MimeType.IMAGE:
+          return (
             <ImageThumbnail
-              image={{} as File}
+              file={info.item}
               pic={
                 'https://images.unsplash.com/photo-1616567214738-22fc0c6332b3?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8c2liZXJpYW4lMjBodXNreXxlbnwwfHwwfHw%3D&w=1000&q=80'
               }
-              index={info.index}
-              scale={scale}
               dimensions={dimensions}
               translateX={translateX}
               translateY={translateY}
               x={x}
               y={y}
+              scale={scale}
             />
-          )}
-        </FileWrapper>
-      );
+          );
+
+        case MimeType.AUDIO:
+          return <AudioThumbnail index={info.index} />;
+
+        case MimeType.VIDEO:
+          return <VideoThumbnail index={info.index} file={info.item} />;
+
+        case MimeType.PDF:
+          return (
+            <PdfThumnail thumbnail="https://images.manning.com/book/9/9a102d1-8e4d-4f20-a095-c60ca54fc5e6/Nickoloff-Docker-2ed-RGB.jpg" />
+          );
+
+        default:
+          return <GenericThumbnail mimeType="image" />;
+      }
     };
+
+    return (
+      <FileWrapper index={info.index} file={info.item}>
+        {defineComponent()}
+      </FileWrapper>
+    );
   }, []);
 
   useEffect(() => {
@@ -135,7 +166,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
 
         <AnimatedFlashList
           ref={ref}
-          data={data}
+          data={files}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           numColumns={2}
@@ -190,6 +221,10 @@ Home.options = {
     right: {
       enabled: true,
     },
+  },
+  layout: {
+    backgroundColor: 'transparent',
+    componentBackgroundColor: 'transparent',
   },
 };
 

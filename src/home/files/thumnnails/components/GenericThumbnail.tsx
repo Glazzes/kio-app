@@ -1,20 +1,20 @@
 import {View, StyleSheet} from 'react-native';
 import React, {useMemo} from 'react';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {codeTypes, compressedTypes, SIZE} from '../utils/constants';
 
-type GenericThumbnailProps = {};
+type GenericThumbnailProps = {
+  mimeType: string;
+};
 
-const type = 'application/zip';
-
-const GenericThumbnail: React.FC<GenericThumbnailProps> = ({}) => {
+const GenericThumbnail: React.FC<GenericThumbnailProps> = ({mimeType}) => {
   const iconName = useMemo(() => {
-    let icon = 'file';
-    if (compressedTypes.includes(type)) {
+    let icon = 'ios-document';
+    if (compressedTypes.includes(mimeType)) {
       return 'zip-box';
     }
 
-    if (codeTypes.includes(type)) {
+    if (codeTypes.includes(mimeType)) {
       return 'code-braces';
     }
 

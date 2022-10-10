@@ -15,6 +15,8 @@ import {
 } from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DrawerImageThumbnail from './DrawerImageThumbnail';
+import {useSnapshot} from 'valtio';
+import {navigationState, popFile} from '../../store/navigationStore';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -28,13 +30,12 @@ const {width} = Dimensions.get('window');
 const PREVIEW_SIZE = width * 0.75 - 15;
 
 const FileDrawer: NavigationFunctionComponent = ({componentId}) => {
+  const snap = useSnapshot(navigationState);
+
   useEffect(() => {
     const listener: NavigationComponentListener = {
-      componentWillAppear: e => {
-        console.log(e.componentId);
-      },
       componentDidDisappear: e => {
-        console.log(e.componentId, 'dissapeared');
+        popFile();
       },
     };
 
@@ -50,7 +51,9 @@ const FileDrawer: NavigationFunctionComponent = ({componentId}) => {
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <Text style={styles.name}>Glaceon.jpg</Text>
+      <Text style={styles.name}>
+        {snap.file ? snap.file.name : 'Last folder name'}
+      </Text>
       <View style={styles.previewContainer}>
         <DrawerImageThumbnail
           contentType="image"

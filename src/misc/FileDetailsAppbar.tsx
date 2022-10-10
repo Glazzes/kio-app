@@ -6,19 +6,20 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import emitter from '../utils/emitter';
 import {Overlays} from '../shared/enum/Overlays';
 import {Modals} from '../navigation/screens/modals';
+import {File} from '../shared/types';
 
 type FileDetailsAppbarProps = {
+  file: File;
   parentComponentId: string;
   isVideo: boolean;
   isModal: boolean;
 };
 
 const {width} = Dimensions.get('window');
-const WIDTH = 180;
 
 const {statusBarHeight} = Navigation.constantsSync();
 
@@ -26,6 +27,7 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
   parentComponentId,
   isVideo,
   isModal,
+  file,
 }) => {
   const isHidden = useRef<boolean>(false);
   const ref = useRef<View>();
@@ -58,22 +60,21 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
     Navigation.showOverlay({
       component: {
         name: Overlays.PICTURE_IN_PICTURE_VIDEO,
+        passProps: {
+          file,
+        },
       },
     });
   };
 
   const openMenu = () => {
-    ref.current?.measure((x, y, w, h, pageX, pageY) => {
-      Navigation.showModal({
-        component: {
-          name: Modals.FILE_MENU,
-          passProps: {
-            x: pageX - WIDTH,
-            y: pageY,
-            dark: true,
-          },
+    Navigation.showOverlay({
+      component: {
+        name: Modals.FILE_MENU,
+        passProps: {
+          file,
         },
-      });
+      },
     });
   };
 
@@ -103,15 +104,15 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
       <View style={styles.infoContainer}>
         <Pressable hitSlop={40} onPress={pop}>
           <Icon
-            name={'chevron-left'}
-            size={25}
+            name={'ios-arrow-back'}
+            size={22}
             color={'#fff'}
             style={styles.icon}
           />
         </Pressable>
         <View style={styles.titleContainer}>
           <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
-            Super_ULtra-EPIC_PPUPYHuksy.png
+            {file.name}
           </Text>
         </View>
       </View>
@@ -119,18 +120,18 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
         {isVideo && (
           <Pressable hitSlop={30} onPress={openPIP}>
             <Icon
-              name={'picture-in-picture-top-right'}
-              size={25}
+              name={'ios-open-outline'}
+              size={22}
               color={'#fff'}
               style={styles.pictureInPicture}
             />
           </Pressable>
         )}
         <Pressable
-          ref={ref}
+          ref={ref as any}
           onPress={openMenu}
           style={({pressed}) => ({opacity: pressed ? 0.3 : 1})}>
-          <Icon name={'dots-vertical'} size={25} color={'#fff'} />
+          <Icon name={'ellipsis-vertical'} size={20} color={'#fff'} />
         </Pressable>
       </View>
     </Animated.View>

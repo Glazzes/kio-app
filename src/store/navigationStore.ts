@@ -1,4 +1,5 @@
 import {proxy} from 'valtio';
+import {File} from '../shared/types';
 
 type NavigationScreen = {
   name: string;
@@ -6,27 +7,28 @@ type NavigationScreen = {
 };
 
 type State = {
-  screens: NavigationScreen[];
+  file: File | null;
+  folders: NavigationScreen[];
 };
 
-export const navigationState = proxy<State>({screens: []});
+export const navigationState = proxy<State>({folders: [], file: null});
 
 // actions
 export function push(screen: NavigationScreen) {
-  navigationState.screens.push(screen);
+  navigationState.folders.push(screen);
 }
 
 export function peekLast(): NavigationScreen {
-  return navigationState.screens[navigationState.screens.length - 1];
+  return navigationState.folders[navigationState.folders.length - 1];
 }
 
 export function removeLast() {
-  navigationState.screens.pop();
+  navigationState.folders.pop();
 }
 
 export function findLastByName(name: string): string {
   let componentId: string | null = null;
-  for (let s of navigationState.screens) {
+  for (let s of navigationState.folders) {
     if (s.name === name) {
       componentId = s.componentId;
     }
@@ -40,17 +42,26 @@ export function findLastByName(name: string): string {
 }
 
 export function removeByComponentId(componentId: string) {
-  navigationState.screens = navigationState.screens.filter(
+  navigationState.folders = navigationState.folders.filter(
     s => s.componentId !== componentId,
   );
 }
 
 export function takeUntil(componentId: string) {
   const remainingScreens = [];
-  for (let screen of navigationState.screens) {
+  for (let screen of navigationState.folders) {
     remainingScreens.push(screen);
     if (screen.componentId === componentId) {
       return;
     }
   }
+}
+
+// files
+export function pushFile(file: File) {
+  navigationState.file = file;
+}
+
+export function popFile() {
+  navigationState.file = null;
 }

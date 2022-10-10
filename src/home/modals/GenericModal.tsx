@@ -152,7 +152,6 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'UberBold',
     color: '#000',
-    fontSize: 16,
     marginBottom: 10,
   },
   buttonContainer: {

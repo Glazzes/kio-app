@@ -1,4 +1,12 @@
 // File
+export type File = {
+  id: string;
+  name: string;
+  size: number;
+  mimeType: string;
+  isFavorite: boolean;
+};
+
 export type FileMetadata = {
   width: number | undefined;
   height: number | undefined;

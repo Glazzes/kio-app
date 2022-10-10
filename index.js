@@ -28,6 +28,7 @@ import {OnBoardingScreens} from './src/onboarding/screens';
 import Testing from './src/misc/Testing';
 import GenericFileDetails from './src/home/files/details/GenericFileDetails';
 import ShareModal from './src/misc/ShareModal';
+import ProgressIndicator from './src/misc/ProgressIndicator';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -65,7 +66,7 @@ Navigation.registerComponent(
   () => CreateAccount,
 );
 
-Navigation.registerComponent('Pdf', () => PdfViewer);
+Navigation.registerComponent(Screens.PDF_READER, () => PdfViewer);
 Navigation.registerComponent(Drawers.PDF_CONTENT_DRAWER, () => PdfContentTable);
 
 Navigation.registerComponent(Screens.AUDIO_PLAYER, () =>
@@ -117,7 +118,12 @@ Navigation.registerComponent(Modals.FILE_MENU, () =>
 
 Navigation.registerComponent('SM', () => ShareModal);
 
-Navigation.registerComponent('GF', () => GenericFileDetails);
+Navigation.registerComponent(Screens.GENERIC_DETAILS, () => GenericFileDetails);
+
+Navigation.registerComponent(
+  Overlays.PROGRESS_INDICATOR,
+  () => ProgressIndicator,
+);
 
 Navigation.registerComponent(Screens.LEFT_DRAWER, () => FileDrawer);
 

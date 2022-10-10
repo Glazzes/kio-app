@@ -2,7 +2,6 @@ import {Dimensions, StyleSheet, View} from 'react-native';
 import React, {useEffect, useRef} from 'react';
 import Pdf from 'react-native-pdf';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {useSharedValue, withTiming} from 'react-native-reanimated';
 import PdfProgressIndicator from './PdfProgressIndicator';
 import {pdfState, setPdfContents, setPdfIndexes} from '../../store/pdfStore';
 import emitter from '../../utils/emitter';
@@ -23,8 +22,6 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
   componentId,
 }) => {
   const pdf = useSnapshot(pdfState);
-
-  const progress = useSharedValue<number>(0);
   const ref = useRef<Pdf>();
 
   const mergeOptions = () => {
@@ -68,12 +65,7 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
           uri: 'https://raw.githubusercontent.com/divyesh008/eBooks/main/Clean%20Coder.pdf',
         }}
         trustAllCerts={false}
-        onLoadProgress={percent => {
-          progress.value = withTiming(percent);
-        }}
-        renderActivityIndicator={() => (
-          <PdfProgressIndicator progress={progress} />
-        )}
+        renderActivityIndicator={() => <PdfProgressIndicator />}
         onPageChanged={onPageChanged}
         onLoadComplete={(pages, path, size, contents) => {
           if (contents !== undefined) {

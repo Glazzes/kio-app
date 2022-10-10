@@ -11,17 +11,15 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {Navigation} from 'react-native-navigation';
 import emitter from '../../../../utils/emitter';
 import authState from '../../../../store/authStore';
-import {Screens} from '../../../../enums/screens';
 import {clamp} from '../../../../shared/functions/clamp';
 import {pinch} from '../../../../utils/animations';
-import {Dimension} from '../../../../shared/types';
-import {File} from '../../../../utils/types';
+import {Dimension, File} from '../../../../shared/types';
 import {useSnapshot} from 'valtio';
 import {SIZE} from '../utils/constants';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {pushToImageDetails} from '../../../../shared/functions/navigation/pushToImageDetails';
 
 type Reflection = {
   dimensions: Animated.SharedValue<Dimension>;
@@ -33,9 +31,8 @@ type Reflection = {
 };
 
 type ImageThumbnailProps = {
-  image: File;
+  file: File;
   pic: string;
-  index: number;
 };
 
 const {height} = Dimensions.get('window');
@@ -46,7 +43,7 @@ const center = {
 };
 
 const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
-  index,
+  file,
   pic,
   translateX,
   translateY,
@@ -73,20 +70,6 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
 
   const setEmpty = () => {
     emitter.emit('empty');
-  };
-
-  const pushToDetails = () => {
-    Navigation.showModal({
-      component: {
-        name: Screens.IMAGE_DETAILS,
-        passProps: {
-          index,
-          uri: pic,
-          opacity: opacity,
-          dimensions: imageDimensions,
-        },
-      },
-    }).then(() => (opacity.value = 0));
   };
 
   const aref = useAnimatedRef<View>();
@@ -158,8 +141,8 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   }, []);
 
   useEffect(() => {
-    const push = emitter.addListener(`push-${index}-${componentId}`, () => {
-      pushToDetails();
+    const push = emitter.addListener(`push-${file.id}-image`, () => {
+      pushToImageDetails(file, pic, opacity, imageDimensions);
     });
 
     return () => {
@@ -167,7 +150,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pushToDetails]);
+  }, [imageDimensions]);
 
   return (
     <View style={styles.root} ref={aref}>
@@ -179,7 +162,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
 
         <Animated.View style={[styles.thumb]}>
           <Animated.Image
-            nativeID={`img-${pic}-${index}`}
+            nativeID={`img-${file.id}`}
             style={[styles.image, cc]}
             source={{uri: pic, headers: {Authorization: snap.accessToken}}}
             resizeMode={'cover'}

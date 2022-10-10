@@ -39,6 +39,11 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       return;
     }
 
+    if (action.icon === 'account') {
+      openShareModal();
+      return;
+    }
+
     emitter.emit('press', 'camera');
   };
 
@@ -57,6 +62,14 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
           message:
             'This process may take a while depending on your internet connection, be patient',
         },
+      },
+    });
+  };
+
+  const openShareModal = () => {
+    Navigation.showModal({
+      component: {
+        name: 'SM',
       },
     });
   };

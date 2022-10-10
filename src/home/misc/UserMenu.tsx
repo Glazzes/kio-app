@@ -108,10 +108,6 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
           </Canvas>
         )}
 
-        <Pressable style={styles.action} onPress={pushToUserProfile}>
-          <Icon name={'ios-person-outline'} size={20} color={COLOR} />
-          <Text style={styles.actionText}>Profile</Text>
-        </Pressable>
         <View style={styles.notificationContainer}>
           <View style={styles.action}>
             <Icon name={'ios-notifications-outline'} size={20} color={COLOR} />
@@ -119,6 +115,11 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
           </View>
           <Animated.View style={styles.indicator} />
         </View>
+
+        <Pressable style={styles.action} onPress={pushToUserProfile}>
+          <Icon name={'ios-options'} size={20} color={COLOR} />
+          <Text style={styles.actionText}>Settings</Text>
+        </Pressable>
 
         <Pressable style={styles.button}>
           <Text style={styles.buttonText}>Buy storage</Text>

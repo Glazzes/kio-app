@@ -4,7 +4,7 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import Appbar from './profile/Appbar';
 import UserInfo from './profile/UserInfo';
 import UnitInfo from './profile/UnitInfo';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 
 const {width} = Dimensions.get('window');
@@ -16,15 +16,15 @@ type Action = {
 
 const actions: Action[] = [
   {
-    icon: 'account',
+    icon: 'ios-person',
     title: 'Account Management',
   },
   {
-    icon: 'information',
+    icon: 'ios-information-circle',
     title: 'Information',
   },
   {
-    icon: 'arrow-right-bold',
+    icon: 'ios-exit-outline',
     title: 'Log Out',
   },
 ];
@@ -32,7 +32,7 @@ const actions: Action[] = [
 const Settings: NavigationFunctionComponent = ({componentId}) => {
   return (
     <View style={styles.root}>
-      <Appbar title={'My Profile'} parentComponentId={componentId} />
+      <Appbar title={'Settings'} parentComponentId={componentId} />
       <UserInfo parentComponentId={componentId} />
       <UnitInfo />
 
@@ -54,12 +54,12 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
               style={styles.optionContaier}
               key={`${action.title}-${index}`}>
               <View style={styles.optionIconContainer}>
-                <Icon name={action.icon} size={25} color={'#000'} />
+                <Icon name={action.icon} size={22} color={'#000'} />
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.optionText}>{action.title}</Text>
               </View>
-              <Icon name="chevron-right" size={25} color={'#000'} />
+              <Icon name="ios-chevron-forward" size={22} color={'#000'} />
             </View>
           );
         })}
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   optionIconContainer: {
     padding: 8,
     borderRadius: 10,
-    backgroundColor: '#F3F3F4',
+    backgroundColor: '#F3F3F3',
     justifyContent: 'center',
     alignItems: 'center',
   },

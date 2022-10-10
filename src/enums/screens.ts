@@ -15,6 +15,9 @@ export enum Screens {
   LEFT_DRAWER = 'Left drawer',
   TOAST = 'Toast',
 
+  // Details
+  PDF_READER = 'Pdf.Reader',
+  GENERIC_DETAILS = 'Generic.Details',
   VIDEO_PLAYER = 'Video.Player',
   AUDIO_PLAYER = 'Audio.Player',
 

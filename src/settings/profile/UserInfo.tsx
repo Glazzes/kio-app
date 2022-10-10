@@ -63,7 +63,7 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
         </View>
       </View>
       <Pressable onPress={editProfile} hitSlop={30}>
-        <Icon name={'pencil'} size={20} color={'#9E9EA7'} />
+        <Icon name={'pencil'} size={20} color={'#000'} />
       </Pressable>
     </View>
   );

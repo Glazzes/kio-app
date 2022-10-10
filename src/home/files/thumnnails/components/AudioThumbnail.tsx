@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, View} from 'react-native';
-import React, {useMemo} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {
   BlurMask,
   Canvas,
@@ -14,13 +14,15 @@ import json from '../assets/waves.json';
 import forest from '../assets/forest.json';
 import {STROKE_WIDTH} from '../../../../audio_player/utils/constants';
 import {SIZE} from '../utils/constants';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 
 type AudioThumbnailProps = {
-  parentComponentId: string;
   index: number;
 };
 
 const AudioThumbnail: React.FC<AudioThumbnailProps> = ({index}) => {
+  const componentId = useContext(NavigationContext);
+
   const audioPoints = useMemo(() => {
     return convertAudioPointsToBarPoints(
       index % 2 === 0 ? forest.data : json.data,

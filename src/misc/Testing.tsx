@@ -1,4 +1,11 @@
-import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+  Image,
+} from 'react-native';
 import React from 'react';
 import {
   Canvas,
@@ -22,8 +29,14 @@ import {Modals} from '../navigation/screens/modals';
 
 const SIZE = 120;
 
+const h = 200 / (800 / 1280);
+const angle = Math.PI / 9;
+const a = 800 / 1280;
+
+const x = 200 * Math.abs(Math.cos(angle)) + h * Math.abs(Math.sin(angle));
+const y = 200 * Math.abs(Math.sin(angle)) + h * Math.abs(Math.cos(angle));
+
 const {width} = Dimensions.get('window');
-const {statusBarHeight} = Navigation.constantsSync();
 
 const Testing: NavigationFunctionComponent = ({componentId}) => {
   const timing = useTiming({from: -1, to: 1, loop: true}, {duration: 1500});
@@ -48,28 +61,15 @@ const Testing: NavigationFunctionComponent = ({componentId}) => {
 
   return (
     <Animated.View style={styles.root}>
-      <View style={styles.appbar}>
-        <Pressable hitSlop={20} onPress={pop}>
-          <Icon name={'ios-arrow-back'} size={22} color={'#000'} />
-        </Pressable>
-        <Pressable hitSlop={20} onPress={openFileMenu}>
-          <Icon name={'ios-ellipsis-vertical'} size={22} color={'#000'} />
-        </Pressable>
-      </View>
       <View style={styles.container}>
-        <Icon name={'ios-document'} size={120} color={'#3366ff'} />
-        <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
-          Glaceon.png
-        </Text>
-        <Text style={styles.size}>5Mb</Text>
-
-        <Text style={styles.message}>
-          We don't support this format for file pre visualization, read about it{' '}
-          <Text style={styles.link}>here</Text>
-        </Text>
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Download</Text>
-        </Pressable>
+        <Image
+          source={{
+            uri: 'https://static1.e621.net/data/79/30/7930b21a7348e57fa3e703a12e6f6eec.jpg',
+          }}
+          style={[styles.container, styles.abs, styles.image]}
+        />
+        <View style={[styles.abs, styles.border]} />
+        <View style={[styles.tester]} />
       </View>
     </Animated.View>
   );
@@ -77,64 +77,64 @@ const Testing: NavigationFunctionComponent = ({componentId}) => {
 
 Testing.options = {
   statusBar: {
-    visible: true,
-    drawBehind: true,
-    backgroundColor: '#fff',
-    style: 'dark',
+    visible: false,
   },
   topBar: {
     visible: false,
   },
 };
 
+const size = Math.sin(angle) * 200 + Math.cos(angle) + 200 / a;
+const space = (h * Math.tan(angle)) / 2;
+const t = space * Math.sin(angle);
+const h2 = t * Math.sin(angle);
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: width * 0.05,
-  },
-  appbar: {
-    width: width * 0.9,
-    height: statusBarHeight * 3,
-    paddingTop: statusBarHeight,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  container: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontFamily: 'UberBold',
-    color: '#000',
-    fontSize: 20,
+  container: {
+    width: 200,
+    height: h,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: 'lime',
   },
-  size: {
-    fontFamily: 'UberBold',
-    color: '#000',
-    marginBottom: 20,
+  abs: {
+    position: 'absolute',
   },
-  message: {
-    fontFamily: 'UberBold',
-    textAlign: 'center',
-    marginBottom: 20,
+  image: {
+    width: x,
+    height: x / a,
+    transform: [{rotate: `${angle}rad`}, {scale: 1}],
   },
-  link: {
-    fontFamily: 'UberBold',
-    color: '#3366ff',
+  tester: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    borderColor: 'red',
+    opacity: 0,
+    borderWidth: 2,
+    width: 200,
+    height: space,
+    transform: [
+      {
+        translateY: -space,
+      },
+      {translateX: t},
+    ],
   },
-  button: {
-    width: width * 0.9,
-    padding: 15,
-    borderRadius: 10,
-    backgroundColor: '#3366ff',
-  },
-  buttonText: {
-    fontFamily: 'UberBold',
-    color: '#fff',
-    textAlign: 'center',
+  border: {
+    width: 200,
+    height: h,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: 'lime',
+    transform: [{translateY: -space}, {translateX: t}],
   },
 });
 

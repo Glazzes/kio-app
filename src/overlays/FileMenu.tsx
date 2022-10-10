@@ -27,7 +27,7 @@ import Animated, {
   scrollTo,
   useAnimatedRef,
 } from 'react-native-reanimated';
-import {peekLast} from '../store/navigationStore';
+import {peekLast, pushFile} from '../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {clamp} from '../shared/functions/clamp';
 import {snapPoint} from 'react-native-redash';
@@ -35,12 +35,14 @@ import emitter from '../utils/emitter';
 import {Modals} from '../navigation/screens/modals';
 import {Screens} from '../enums/screens';
 import {Notification} from '../enums/notification';
+import {File} from '../shared/types';
+import {Overlays} from '../shared/enum/Overlays';
+import {getSimpleMimeType} from '../shared/functions/getMimeType';
+import {MimeType} from '../shared/enum/MimeType';
+import {pushToScreen} from '../shared/functions/navigation/pushToScreen';
 
 type FileMenuProps = {
-  x: number;
-  y: number;
-  dark: boolean;
-  index: number;
+  file: File;
 };
 
 type Action = {
@@ -120,7 +122,7 @@ function sectionSeparator() {
 
 const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   componentId,
-  index,
+  file,
 }) => {
   const aRef = useAnimatedRef<SectionList>();
 
@@ -131,6 +133,23 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
         runOnJS(performAction)(text);
       }
     });
+  };
+
+  const defineIcon = () => {
+    let icon = 'ios-folder-open';
+    if (file.mimeType.startsWith('audio')) {
+      icon = 'ios-headset';
+    }
+
+    if (file.mimeType.startsWith('video')) {
+      icon = 'ios-film';
+    }
+
+    if (file.mimeType === 'application/pdf') {
+      icon = 'ios-book';
+    }
+
+    return icon;
   };
 
   const performAction = (text: string) => {
@@ -152,22 +171,43 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
       case 'Favorite':
         faveFile();
         return;
+      case 'Download':
+        download();
+        return;
       default:
         return;
     }
   };
 
   const open = () => {
-    const lastFolderScreen = peekLast();
-    Navigation.push(lastFolderScreen.componentId, {
-      component: {
-        name: 'GF',
-      },
-    });
+    const {componentId: lastComponentId} = peekLast();
+    const mimeType = getSimpleMimeType(file.mimeType);
+    switch (mimeType) {
+      case MimeType.AUDIO:
+        pushToScreen(lastComponentId, Screens.AUDIO_PLAYER, {file});
+        return;
+
+      case MimeType.VIDEO:
+        pushToScreen(lastComponentId, Screens.VIDEO_PLAYER, {file});
+        return;
+
+      case MimeType.IMAGE:
+        emitter.emit(`push-${file.id}-image`);
+        return;
+
+      case MimeType.PDF:
+        pushToScreen(lastComponentId, Screens.PDF_READER, {file});
+        return;
+
+      default:
+        pushToScreen(lastComponentId, Screens.GENERIC_DETAILS, {file});
+        return;
+    }
   };
 
   const openDetails = () => {
     const lastFolderScreen = peekLast();
+    pushFile(file);
     Navigation.mergeOptions(lastFolderScreen.componentId, {
       sideMenu: {
         right: {
@@ -182,7 +222,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
       component: {
         name: Modals.GENERIC_DIALOG,
         passProps: {
-          title: 'Delete file',
+          title: `Delete "${file.name}"`,
           message:
             'Are you sure you want to delete this file? This action can not be undone',
         },
@@ -191,7 +231,15 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   };
 
   const faveFile = () => {
-    emitter.emit(`favorite-${index}`);
+    emitter.emit(`favorite-${file.id}`);
+  };
+
+  const download = () => {
+    Navigation.showOverlay({
+      component: {
+        name: Overlays.PROGRESS_INDICATOR,
+      },
+    });
   };
 
   const copyLink = () => {
@@ -208,7 +256,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   };
 
   const dissmiss = () => {
-    Navigation.dismissModal(componentId);
+    Navigation.dismissOverlay(componentId);
   };
 
   const backgroundColor = useSharedValue<string>('transparent');
@@ -316,8 +364,8 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
         <Animated.View style={[styles.menu, rStyle]}>
           <View style={styles.marker} />
           <View style={styles.header}>
-            <Icon name={'ios-folder'} color={'#000'} size={22} />
-            <Text style={styles.title}>Glaceon.png</Text>
+            <Icon name={defineIcon()} color={'#000'} size={22} />
+            <Text style={styles.title}>{file.name}</Text>
           </View>
           <SectionList
             ref={aRef}

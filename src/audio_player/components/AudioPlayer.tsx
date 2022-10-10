@@ -12,23 +12,27 @@ import {
   useDerivedValue,
   withTiming,
 } from 'react-native-reanimated';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import AuidoControls from './Controls';
 import Waves from './Waves';
+import {File} from '../../shared/types';
 
 Sound.setCategory('Playback');
 
-type AudioPlayerProps = {};
+type AudioPlayerProps = {
+  file: File;
+};
 
 const {statusBarHeight} = Navigation.constantsSync();
 const {width} = Dimensions.get('window');
 
 const WIDTH = width * 0.9;
-const ICON_SIZE = 23;
+const ICON_SIZE = 20;
 
 const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   componentId,
+  file,
 }) => {
   const [duration, setDuration] = useState<number>(0);
   const [loaded, setLoaded] = useState<boolean>(false);
@@ -111,16 +115,16 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
     <View style={styles.root}>
       <View style={styles.appbar}>
         <Pressable onPress={goBack}>
-          <Icon name={'chevron-left'} color={'#000'} size={ICON_SIZE} />
+          <Icon name={'ios-arrow-back'} color={'#000'} size={ICON_SIZE} />
         </Pressable>
 
         {/*<Text style={styles.title}>Now playing</Text> */}
-        <Icon name={'dots-vertical'} size={ICON_SIZE} color={'#000'} />
+        <Icon name={'ellipsis-vertical'} size={ICON_SIZE} color={'#000'} />
       </View>
 
       <View style={styles.titleContainer}>
         <Text style={styles.audioName} numberOfLines={2} ellipsizeMode={'tail'}>
-          Attack on titan - Call your name
+          {file.name}
         </Text>
         <Pressable onPress={toggleFavorite}>
           <Icon

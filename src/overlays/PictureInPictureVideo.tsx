@@ -14,9 +14,11 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {peekLast} from '../store/navigationStore';
 import {Screens} from '../enums/screens';
+import {File} from '../shared/types';
 
 type PictureInPictureVideoProps = {
   uri: string;
+  file: File;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -29,20 +31,22 @@ to not longer work, so in order to drag the video around it's necesary to use an
 */
 const PictureInPictureVideo: NavigationFunctionComponent<
   PictureInPictureVideoProps
-> = ({componentId}) => {
+> = ({componentId, file}) => {
   const videoRef = useRef<Video>(null);
   const translate = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
   const scale = useRef(new Animated.Value(1)).current;
   const hasFinished = useRef(false);
 
   const goFullScreen = () => {
-    console.log('Full');
     const lastFolderScreen = peekLast();
     Navigation.dismissOverlay(componentId);
 
     Navigation.push(lastFolderScreen.componentId, {
       component: {
         name: Screens.VIDEO_PLAYER,
+        passProps: {
+          file,
+        },
       },
     });
   };

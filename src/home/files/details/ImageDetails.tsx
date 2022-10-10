@@ -17,13 +17,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import {snapPoint, useVector} from 'react-native-redash';
 import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
-import {Dimension} from '../../../shared/types';
+import {Dimension, File} from '../../../shared/types';
 import {getMaxImageScale} from '../../../crop_editor/utils/functions/getMaxImageScale';
 import emitter from '../../../utils/emitter';
 import FileDetailsAppbar from '../../../misc/FileDetailsAppbar';
 
 type ImageDetailsProps = {
-  index: number;
+  file: File;
   uri: string;
   opacity: Animated.SharedValue<number>;
   dimensions: Dimension;
@@ -33,10 +33,10 @@ const {width, height} = Dimensions.get('window');
 
 const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   componentId,
-  index,
   uri,
   opacity,
   dimensions,
+  file,
 }) => {
   const imageS: ViewStyle = imageStyles(dimensions);
 
@@ -246,7 +246,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
               layout.x.value = nativeEvent.layout.width;
               layout.y.value = nativeEvent.layout.height;
             }}
-            nativeID={`img-${uri}-${index}-dest`}
+            nativeID={`img-${file.id}-dest`}
             source={{uri}}
             resizeMethod={'scale'}
             resizeMode={'cover'}
@@ -255,6 +255,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
         </Animated.View>
       </GestureDetector>
       <FileDetailsAppbar
+        file={file}
         parentComponentId={componentId}
         isVideo={false}
         isModal={true}
@@ -263,7 +264,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   );
 };
 
-ImageDetails.options = ({uri, index}) => ({
+ImageDetails.options = ({file}) => ({
   statusBar: {
     visible: true,
     drawBehind: true,
@@ -284,8 +285,8 @@ ImageDetails.options = ({uri, index}) => ({
     showModal: {
       sharedElementTransitions: [
         {
-          fromId: `img-${uri}-${index}`,
-          toId: `img-${uri}-${index}-dest`,
+          fromId: `img-${file.id}`,
+          toId: `img-${file.id}-dest`,
           duration: 300,
         },
       ],
@@ -293,8 +294,8 @@ ImageDetails.options = ({uri, index}) => ({
     dismissModal: {
       sharedElementTransitions: [
         {
-          fromId: `img-${uri}-${index}-dest`,
-          toId: `img-${uri}-${index}`,
+          fromId: `img-${file.id}-dest`,
+          toId: `img-${file.id}`,
           duration: 300,
         },
       ],
