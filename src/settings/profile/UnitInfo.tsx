@@ -15,6 +15,7 @@ import {
   useFont,
   useComputedValue,
 } from '@shopify/react-native-skia';
+import {Navigation} from 'react-native-navigation';
 
 type UnitInfoProps = {};
 
@@ -53,6 +54,14 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
 
   const animateWheel = () => {
     runTiming(end, {from: 0, to: 0.58}, {duration: 2000});
+  };
+
+  const showPricingSheet = () => {
+    Navigation.showModal({
+      component: {
+        name: 'PS',
+      },
+    });
   };
 
   useEffect(() => {
@@ -121,7 +130,7 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
         <Text style={styles.space}>
           <Text style={styles.used}>1GB</Text> of 5GB used
         </Text>
-        <Pressable style={styles.button}>
+        <Pressable style={styles.button} onPress={showPricingSheet}>
           <Text style={styles.buttonText}>Buy Storage</Text>
         </Pressable>
       </View>

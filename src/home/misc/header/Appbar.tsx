@@ -17,11 +17,12 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../../utils/emitter';
+import emitter from '../../../utils/emitter';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {NavigationContext} from '../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 import UserAvatar from './UserAvatar';
-import {SelectAction} from '../utils/enums';
+import {SelectAction} from '../../utils/enums';
+import {Modals} from '../../../navigation/screens/modals';
 
 type AppbarProps = {
   folderId?: string;
@@ -45,6 +46,39 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
 
   const goBack = () => {
     Navigation.pop(componentId);
+  };
+
+  const copyCutSelection = () => {
+    clear();
+    Navigation.showOverlay({
+      component: {
+        name: 'Copy',
+      },
+    });
+  };
+
+  const downloadSelection = () => {
+    Navigation.showModal({
+      component: {
+        name: Modals.GENERIC_DIALOG,
+        passProps: {
+          title: 'Download selection',
+          message: `${files.length} files will be downloaded, this may take a while`,
+        },
+      },
+    });
+  };
+
+  const deleteSelection = () => {
+    Navigation.showModal({
+      component: {
+        name: Modals.GENERIC_DIALOG,
+        passProps: {
+          title: 'Delete selection',
+          message: `${files.length} files will be deleted, this action can not be undone`,
+        },
+      },
+    });
   };
 
   const opacity = useValue(0);
@@ -147,30 +181,41 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
               <Text style={styles.count}>{files.length}</Text>
             </View>
             <View style={styles.countContainer}>
-              <Icon
-                name={'ios-copy-outline'}
-                size={23}
-                color={'#000'}
-                style={styles.icon}
-              />
-              <Icon
-                name={'ios-cut'}
-                size={23}
-                color={'#000'}
-                style={styles.icon}
-              />
-              <Icon
-                name={'ios-cloud-download'}
-                size={23}
-                color={'#000'}
-                style={styles.icon}
-              />
-              <Icon
-                name={'ios-trash-outline'}
-                size={23}
-                color={'#ee3060'}
-                style={styles.icon}
-              />
+              <Pressable onPress={copyCutSelection}>
+                <Icon
+                  name={'ios-copy-outline'}
+                  size={23}
+                  color={'#000'}
+                  style={styles.icon}
+                />
+              </Pressable>
+
+              <Pressable onPress={copyCutSelection}>
+                <Icon
+                  name={'ios-cut'}
+                  size={23}
+                  color={'#000'}
+                  style={styles.icon}
+                />
+              </Pressable>
+
+              <Pressable onPress={downloadSelection}>
+                <Icon
+                  name={'ios-cloud-download'}
+                  size={23}
+                  color={'#000'}
+                  style={styles.icon}
+                />
+              </Pressable>
+
+              <Pressable onPress={deleteSelection}>
+                <Icon
+                  name={'ios-trash-outline'}
+                  size={23}
+                  color={'#ee3060'}
+                  style={styles.icon}
+                />
+              </Pressable>
             </View>
           </View>
         </Animated.View>

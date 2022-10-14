@@ -2,7 +2,7 @@ import {StyleSheet, Image, Pressable} from 'react-native';
 import React, {useContext, useRef} from 'react';
 import Animated, {BounceIn, FadeOut} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
-import {NavigationContext} from '../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 
 const IMAGE_SIZE = 40;
 

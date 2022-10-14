@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import emitter from '../../utils/emitter';
+import emitter from '../../../utils/emitter';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
-import {withKeyboard} from '../../utils/hoc';
-import {TypingEvent} from '../types';
+import {withKeyboard} from '../../../utils/hoc';
+import {TypingEvent} from '../../types';
 
 const {width} = Dimensions.get('window');
 const CLOSE_ICON_SIZE = 20;

@@ -9,16 +9,16 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {Folder} from '../../utils/types';
+import {Folder} from '../../../utils/types';
 import FABOption from './FABOption';
-import emitter from '../../utils/emitter';
-import {Event} from '../../enums/events';
+import emitter from '../../../utils/emitter';
+import {Event} from '../../../enums/events';
 import {Navigation} from 'react-native-navigation';
-import {Screens} from '../../enums/screens';
-import AppCamera from '../../home/camera/AppCamera';
+import {Screens} from '../../../enums/screens';
+import AppCamera from '../../camera/AppCamera';
 import {FabAction, FabActionIcon} from './types';
-import {NavigationContext} from '../../navigation/NavigationContextProvider';
-import {SelectAction} from '../../home/utils/enums';
+import {NavigationContext} from '../../../navigation/NavigationContextProvider';
+import {SelectAction} from '../../utils/enums';
 
 type FABProps = {
   parent?: Folder;

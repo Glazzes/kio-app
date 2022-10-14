@@ -137,16 +137,26 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
 
   const defineIcon = () => {
     let icon = 'ios-folder-open';
-    if (file.mimeType.startsWith('audio')) {
-      icon = 'ios-headset';
-    }
+    const mimeType = getSimpleMimeType(file.mimeType);
+    switch (mimeType) {
+      case MimeType.AUDIO:
+        icon = 'ios-headset';
+        break;
 
-    if (file.mimeType.startsWith('video')) {
-      icon = 'ios-film';
-    }
+      case MimeType.VIDEO:
+        icon = 'ios-film';
+        break;
 
-    if (file.mimeType === 'application/pdf') {
-      icon = 'ios-book';
+      case MimeType.PDF:
+        icon = 'ios-book';
+        break;
+
+      case MimeType.IMAGE:
+        icon = 'ios-image';
+        break;
+
+      default:
+        icon = 'ios-document';
     }
 
     return icon;

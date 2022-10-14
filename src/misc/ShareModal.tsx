@@ -6,15 +6,14 @@ import {
   TextInput,
   Pressable,
   LayoutChangeEvent,
-  ViewStyle,
+  Keyboard,
+  ListRenderItemInfo,
 } from 'react-native';
-import React, {useState, useMemo, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {FlashList, ListRenderItemInfo} from '@shopify/flash-list';
 import Contributor from './Contributor';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -22,12 +21,15 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
+import Shadow from './Shadow';
+import {FlatList} from 'react-native-gesture-handler';
 
 type ShareModalProps = {};
 
 const {width} = Dimensions.get('window');
 const WIDTH = width * 0.85;
 
+/*
 const photos = [
   'https://randomuser.me/api/portraits/women/10.jpg',
   'https://randomuser.me/api/portraits/women/21.jpg',
@@ -35,6 +37,7 @@ const photos = [
   'https://randomuser.me/api/portraits/men/81.jpg',
   'https://randomuser.me/api/portraits/men/68.jpg',
 ];
+*/
 
 function renderItem(info: ListRenderItemInfo<string>) {
   return <Contributor index={info.index} imageUrl={info.item} name={'glaze'} />;
@@ -44,27 +47,21 @@ function keyExtractor(item: string, index: number): string {
   return `${item}-${index}`;
 }
 
+function SeperatorComponent() {
+  return <View style={styles.seperator} />;
+}
+
 const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
   componentId,
 }) => {
   const inputRef = useRef<TextInput>(null);
 
+  const [coowners, setCoowners] = useState<string[]>([]);
   const [text, setText] = useState<string>('');
   const [timer, setTimer] = useState<NodeJS.Timeout>();
   const [dimensions, setDimensions] = useState({width: 1, height: 0});
   const [isStyping, setIsStyping] = useState<boolean>(false);
   const [hasFetched, setHasFetched] = useState<boolean>(false);
-
-  const canvaStyles: ViewStyle = useMemo(
-    () => ({
-      width: dimensions.width + 60,
-      height: dimensions.height + 60,
-      position: 'absolute',
-      transform: [{translateX: -10}, {translateY: -10}],
-      backgroundColor: '#fff',
-    }),
-    [dimensions],
-  );
 
   const onLayout = ({nativeEvent: {layout}}: LayoutChangeEvent) => {
     setDimensions({width: layout.width, height: layout.height});
@@ -89,8 +86,19 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
     setTimer(newTimer);
   };
 
+  const addCoowner = () => {
+    inputRef.current?.clear();
+    setText('');
+
+    setCoowners(c => [
+      ...c,
+      'https://randomuser.me/api/portraits/women/10.jpg',
+    ]);
+  };
+
   const dissmis = () => {
     Navigation.dismissModal(componentId);
+    Keyboard.dismiss();
   };
 
   const scale = useSharedValue<number>(0);
@@ -116,17 +124,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
     <View style={styles.root}>
       <Animated.View style={[styles.modal, rStyle]} onLayout={onLayout}>
         {dimensions.width !== 1 && (
-          <Canvas style={canvaStyles}>
-            <RoundedRect
-              x={10}
-              y={10}
-              width={dimensions.width}
-              height={dimensions.height}
-              r={10}
-              color={'#fff'}>
-              <Shadow blur={10} dx={10} dy={12} color={'rgba(0, 0, 0, 0.2)'} />
-            </RoundedRect>
-          </Canvas>
+          <Shadow width={dimensions.width} height={dimensions.height} />
         )}
 
         <View style={styles.titleContainer}>
@@ -147,7 +145,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
               placeholder={'Email / Username'}
             />
           </View>
-          <Pressable style={styles.addButton}>
+          <Pressable style={styles.addButton} onPress={addCoowner}>
             <Text style={styles.buttonText}>Add</Text>
           </Pressable>
         </View>
@@ -189,19 +187,21 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
           </View>
         )}
 
-        <Text style={styles.listHeader}>Will share with</Text>
-        <View style={styles.listContainer}>
-          <FlashList
-            data={photos}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            estimatedItemSize={50}
-            estimatedListSize={{width: 50 * photos.length, height: 50}}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={{width: 10}} />}
-          />
-        </View>
+        {coowners.length > 0 && (
+          <View>
+            <Text style={styles.listHeader}>Will share with</Text>
+            <View style={styles.listContainer}>
+              <FlatList
+                data={coowners}
+                renderItem={renderItem}
+                keyExtractor={keyExtractor}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                ItemSeparatorComponent={SeperatorComponent}
+              />
+            </View>
+          </View>
+        )}
 
         <View style={styles.buttonContainer}>
           <Pressable
@@ -303,6 +303,9 @@ const styles = StyleSheet.create({
   listContainer: {
     height: 50,
     marginVertical: 10,
+  },
+  seperator: {
+    width: 10,
   },
   buttonContainer: {
     marginTop: 10,

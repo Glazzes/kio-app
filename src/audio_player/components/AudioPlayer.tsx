@@ -118,21 +118,24 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
           <Icon name={'ios-arrow-back'} color={'#000'} size={ICON_SIZE} />
         </Pressable>
 
-        {/*<Text style={styles.title}>Now playing</Text> */}
-        <Icon name={'ellipsis-vertical'} size={ICON_SIZE} color={'#000'} />
+        <View style={{flexDirection: 'row'}}>
+          <Pressable onPress={toggleFavorite}>
+            <Icon
+              name={isFavorite ? 'ios-heart' : 'ios-heart-outline'}
+              size={ICON_SIZE + 3}
+              color={isFavorite ? '#ee3060' : '#000'}
+              style={styles.icon}
+            />
+          </Pressable>
+          <Icon name={'ellipsis-vertical'} size={ICON_SIZE} color={'#000'} />
+        </View>
       </View>
 
       <View style={styles.titleContainer}>
         <Text style={styles.audioName} numberOfLines={2} ellipsizeMode={'tail'}>
           {file.name}
         </Text>
-        <Pressable onPress={toggleFavorite}>
-          <Icon
-            name={'heart'}
-            color={isFavorite ? '#ee3060' : '#C5C8D7'}
-            size={30}
-          />
-        </Pressable>
+        <Text style={styles.artist}>Unkwon artist</Text>
       </View>
 
       <View style={styles.wavesContainer}>
@@ -203,8 +206,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     width: WIDTH,
     height: 100,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
@@ -215,8 +217,16 @@ const styles = StyleSheet.create({
   audioName: {
     maxWidth: width * 0.5,
     fontFamily: 'UberBold',
+    textAlign: 'center',
     fontSize: 16,
-    color: '#1c1514',
+    color: '#000',
+  },
+  artist: {
+    fontFamily: 'UberBold',
+    color: '#C5C8D7',
+  },
+  icon: {
+    marginRight: 10,
   },
 });
 

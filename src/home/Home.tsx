@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Dimensions, View} from 'react-native';
 import React, {useCallback, useEffect, useRef} from 'react';
-import {NavigationFunctionComponent} from 'react-native-navigation';
-import AppHeader from './misc/AppHeader';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import AppHeader from './misc/header/AppHeader';
 import {
   FlashList,
   FlashListProps,
@@ -12,10 +12,10 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
-import Appbar from './misc/Appbar';
-import {FAB} from '../misc';
+import Appbar from './misc/header/Appbar';
+import FAB from './misc/filefab/FAB';
 import {Dimension, File} from '../shared/types';
-import FileWrapper from './FileWrapper';
+import FileWrapper from './files/thumnnails/components/FileWrapper';
 import {
   ImageThumbnail,
   PinchableReflection,
@@ -154,6 +154,12 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   useEffect(() => {
     push({name: '', componentId});
 
+    Navigation.showModal({
+      component: {
+        name: 'M',
+      },
+    });
+
     return () => {
       removeByComponentId(componentId);
     };
@@ -165,7 +171,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
         <Appbar scrollY={scrollY} folderId={folderId} />
 
         <AnimatedFlashList
-          ref={ref}
+          ref={ref as any}
           data={files}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
@@ -179,6 +185,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           onScroll={onScroll}
         />
 
+        <FAB />
+
         <PinchableReflection
           dimensions={dimensions}
           translateX={translateX}
@@ -187,8 +195,6 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           x={x}
           y={y}
         />
-
-        <FAB />
       </View>
     </NavigationContextProvider>
   );

@@ -21,14 +21,17 @@ import {GetStarted, Login, CreateAccount} from './src/onboarding';
 import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/screens/modals';
 import GenericModal from './src/home/modals/GenericModal';
-import UserMenu from './src/home/misc/UserMenu';
+import UserMenu from './src/home/misc/header/UserMenu';
 import {FileDrawer} from './src/navigation';
 import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
-import Testing from './src/misc/Testing';
 import GenericFileDetails from './src/home/files/details/GenericFileDetails';
 import ShareModal from './src/misc/ShareModal';
 import ProgressIndicator from './src/misc/ProgressIndicator';
+import emitter from './src/utils/emitter';
+import CopyModal from './src/misc/CopyModal';
+import Pricing from './src/overlays/Pricing';
+import EditModal from './src/misc/EditModal';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -131,8 +134,40 @@ Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericModal);
 
 Navigation.registerComponent('UserMenu', () => UserMenu);
 
-Navigation.registerComponent('Testing', () => Testing);
+Navigation.registerComponent('Copy', () => CopyModal);
+
+Navigation.registerComponent('PS', () => gestureHandlerRootHOC(Pricing));
+
+Navigation.registerComponent('M', () => EditModal);
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot(mainRoot);
+});
+
+// Global event listeners
+Navigation.events().registerComponentWillAppearListener(e => {
+  if (e.componentName === Screens.MY_UNIT) {
+    emitter.emit('show');
+    return;
+  }
+
+  const removalScreens = [
+    Screens.AUDIO_PLAYER,
+    Screens.VIDEO_PLAYER,
+    Screens.PDF_READER,
+    Screens.GENERIC_DETAILS,
+    Screens.EDITOR,
+    Screens.IMAGE_DETAILS,
+    Screens.SETTINGS,
+  ];
+
+  if (removalScreens.includes(e.componentName)) {
+    emitter.emit('hide');
+  }
+});
+
+Navigation.events().registerModalDismissedListener(e => {
+  if (e.componentName === Screens.IMAGE_DETAILS) {
+    emitter.emit('show');
+  }
 });

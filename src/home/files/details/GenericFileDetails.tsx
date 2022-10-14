@@ -4,6 +4,7 @@ import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {File} from '../../../shared/types';
+import {convertBytesToRedableUnit} from '../../../shared/functions/convertBytesToRedableUnit';
 
 type GenericFileDetailsProps = {
   file: File;
@@ -42,7 +43,7 @@ const GenericFileDetails: NavigationFunctionComponent<
         <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
           {file.name}
         </Text>
-        <Text style={styles.size}>5Mb</Text>
+        <Text style={styles.size}>{convertBytesToRedableUnit(file.size)}</Text>
 
         <Text style={styles.message}>
           This file format is not supported for visualization, read about it{' '}

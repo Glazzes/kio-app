@@ -16,18 +16,18 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import emitter from '../utils/emitter';
-import {Screens} from '../enums/screens';
-import FileSkeleton from './misc/FileSkeleton';
-import {TypingEvent} from './types';
-import {NavigationContext} from '../navigation/NavigationContextProvider';
-import {SelectAction} from './utils/enums';
-import {File} from '../shared/types';
-import {Modals} from '../navigation/screens/modals';
-import {getSimpleMimeType} from '../shared/functions/getMimeType';
-import {MimeType} from '../shared/enum/MimeType';
-import {pushToScreen} from '../shared/functions/navigation/pushToScreen';
-import {convertBytesToRedableUnit} from '../shared/functions/convertBytesToRedableUnit';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {Modals} from '../../../../navigation/screens/modals';
+import emitter from '../../../../utils/emitter';
+import {SelectAction} from '../../../utils/enums';
+import {getSimpleMimeType} from '../../../../shared/functions/getMimeType';
+import {MimeType} from '../../../../shared/enum/MimeType';
+import {pushToScreen} from '../../../../shared/functions/navigation/pushToScreen';
+import {Screens} from '../../../../enums/screens';
+import {TypingEvent} from '../../../types';
+import {convertBytesToRedableUnit} from '../../../../shared/functions/convertBytesToRedableUnit';
+import FileSkeleton from './FileSkeleton';
+import {File} from '../../../../shared/types';
 
 type FileWrapperProps = {
   index: number;
@@ -106,7 +106,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       );
     } else {
       emitter.emit(
-        `${SelectAction.SELECT_FILE}-${componentId}`,
+        `${SelectAction.UNSELECT_FILE}-${componentId}`,
         `file-${index}`,
       );
     }

@@ -8,7 +8,7 @@ import {
   RoundedRect,
   vec,
 } from '@shopify/react-native-skia';
-import AvatarGroup from '../../misc/AvatarGroup';
+import AvatarGroup from './AvatarGroup';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../navigation/screens/modals';
 import {NavigationContext} from '../../navigation/NavigationContextProvider';

@@ -23,7 +23,7 @@ const mainRoot: LayoutRoot = {
     sideMenu: {
       center: {
         stack: {
-          id: 'Stack',
+          id: 'MainContent.Stack',
           options: {
             sideMenu: {
               left: {
@@ -36,9 +36,6 @@ const mainRoot: LayoutRoot = {
               component: {
                 id: Screens.MY_UNIT,
                 name: Screens.MY_UNIT,
-                passProps: {
-                  folderId: undefined,
-                },
               },
             },
           ],

@@ -5,11 +5,9 @@ import {
   Dimensions,
   Pressable,
   LayoutChangeEvent,
-  ViewStyle,
 } from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -19,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Shadow from '../../misc/Shadow';
 
 type GenericModalProps = {
   title: string;
@@ -41,17 +40,6 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
     const {width: w, height: h} = e.nativeEvent.layout;
     setDimensions({with: w, height: h});
   };
-
-  const canvaStyles: ViewStyle = useMemo(
-    () => ({
-      width: dimensions.with + 60,
-      height: dimensions.height + 60,
-      position: 'absolute',
-      transform: [{translateX: -10}, {translateY: -10}],
-      backgroundColor: '#fff',
-    }),
-    [dimensions],
-  );
 
   const toggleSelected = async () => {
     await impactAsync(ImpactFeedbackStyle.Light);
@@ -84,17 +72,7 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
     <View style={styles.root}>
       <Animated.View style={[styles.modal, rStyle]} onLayout={onLayout}>
         {dimensions.with !== 1 && (
-          <Canvas style={canvaStyles}>
-            <RoundedRect
-              x={10}
-              y={10}
-              width={dimensions.with}
-              height={dimensions.height}
-              r={SPACING}
-              color={'#fff'}>
-              <Shadow blur={10} dx={10} dy={12} color={'rgba(0, 0, 0, 0.2)'} />
-            </RoundedRect>
-          </Canvas>
+          <Shadow width={dimensions.with} height={dimensions.height} />
         )}
         <Text style={styles.title}>{title}</Text>
         <Text>{message}</Text>

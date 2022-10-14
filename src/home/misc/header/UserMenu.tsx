@@ -17,7 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {Screens} from '../../enums/screens';
+import {Screens} from '../../../enums/screens';
 
 type UserMenuProps = {
   x: number;
@@ -55,6 +55,15 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
 
   const close = () => {
     Navigation.dismissModal(componentId);
+  };
+
+  const showPricingSheet = () => {
+    Navigation.dismissModal(componentId);
+    Navigation.showModal({
+      component: {
+        name: 'PS',
+      },
+    });
   };
 
   const pushToUserProfile = () => {
@@ -121,7 +130,7 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
           <Text style={styles.actionText}>Settings</Text>
         </Pressable>
 
-        <Pressable style={styles.button}>
+        <Pressable style={styles.button} onPress={showPricingSheet}>
           <Text style={styles.buttonText}>Buy storage</Text>
         </Pressable>
 

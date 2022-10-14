@@ -2,14 +2,14 @@ import {StyleSheet, Dimensions, Pressable} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
-import emitter from '../../utils/emitter';
+import emitter from '../../../utils/emitter';
 import Sound from 'react-native-sound';
 import {pickMultiple} from 'react-native-document-picker';
 import {
   Navigation,
   OptionsModalPresentationStyle,
 } from 'react-native-navigation';
-import {Modals} from '../../navigation/screens/modals';
+import {Modals} from '../../../navigation/screens/modals';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
