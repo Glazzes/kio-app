@@ -17,10 +17,9 @@ import {Overlays} from './src/shared/enum/Overlays';
 import {PictureInPictureVideo} from './src/overlays';
 import {Drawers} from './src/navigation/screens/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
-import {GetStarted, Login, CreateAccount} from './src/onboarding';
 import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/screens/modals';
-import GenericModal from './src/home/modals/GenericModal';
+import {Login, CreateAccount, GetStarted} from './src/onboarding';
 import UserMenu from './src/home/misc/header/UserMenu';
 import {FileDrawer} from './src/navigation';
 import {mainRoot, onBoardingRoot} from './src/navigation/roots';
@@ -32,6 +31,13 @@ import emitter from './src/utils/emitter';
 import CopyModal from './src/misc/CopyModal';
 import Pricing from './src/overlays/Pricing';
 import EditModal from './src/misc/EditModal';
+import GenericModal from './src/home/modals/GenericModal';
+import Rotation from './src/misc/Rotation';
+import axios, {AxiosError} from 'axios';
+import {mmkv} from './src/store/mmkv';
+import {axiosInstance} from './src/shared/requests/axiosInstance';
+
+import authState from './src/store/authStore';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -61,11 +67,13 @@ Navigation.registerComponent(
   () => PictureInPictureVideo,
 );
 
-// OnBoarding screens
+Navigation.registerComponent('F', () => gestureHandlerRootHOC(Rotation));
+
+// On boarding screens
 Navigation.registerComponent(OnBoardingScreens.GET_STARTED, () => GetStarted);
 Navigation.registerComponent(OnBoardingScreens.LOGIN, () => Login);
 Navigation.registerComponent(
-  OnBoardingScreens.CREATE_ACCOUNT,
+  OnBoardingScreens.CREATE_ACCOUNT.toString(),
   () => CreateAccount,
 );
 
@@ -140,8 +148,43 @@ Navigation.registerComponent('PS', () => gestureHandlerRootHOC(Pricing));
 
 Navigation.registerComponent('M', () => EditModal);
 
-Navigation.events().registerAppLaunchedListener(() => {
-  Navigation.setRoot(mainRoot);
+Navigation.events().registerAppLaunchedListener(async () => {
+  const tokenString = mmkv.getString('tokens');
+
+  if (!tokenString) {
+    Navigation.setRoot(onBoardingRoot);
+    return;
+  }
+
+  const tokens = JSON.parse(tokenString);
+  try {
+    await axios.post(
+      'http://192.168.42.232:8080/api/v1/auth/introspect',
+      undefined,
+      {
+        params: {
+          refresh_token: tokens.refreshToken,
+        },
+      },
+    );
+  } catch (e) {
+    if (e.response.status === 404) {
+      Navigation.setRoot(onBoardingRoot);
+      return;
+    }
+  }
+
+  try {
+    const {data: user} = await axiosInstance.get('/api/v1/users/me');
+
+    authState.user = user;
+    authState.tokens = tokens;
+
+    console.log(user);
+    Navigation.setRoot(mainRoot);
+  } catch (e) {
+    Navigation.setRoot(onBoardingRoot);
+  }
 });
 
 // Global event listeners

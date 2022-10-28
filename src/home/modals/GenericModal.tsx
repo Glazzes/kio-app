@@ -1,23 +1,9 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Pressable,
-  LayoutChangeEvent,
-} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
+import React, {useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Shadow from '../../misc/Shadow';
+import ModalWrapper from '../../shared/components/ModalWrapper';
 
 type GenericModalProps = {
   title: string;
@@ -34,12 +20,6 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
   message,
 }) => {
   const [selected, setSelected] = useState<boolean>(false);
-  const [dimensions, setDimensions] = useState({with: 1, height: 1});
-
-  const onLayout = (e: LayoutChangeEvent) => {
-    const {width: w, height: h} = e.nativeEvent.layout;
-    setDimensions({with: w, height: h});
-  };
 
   const toggleSelected = async () => {
     await impactAsync(ImpactFeedbackStyle.Light);
@@ -50,30 +30,9 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
     Navigation.dismissModal(componentId);
   };
 
-  const scale = useSharedValue<number>(0);
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{scale: scale.value}],
-    };
-  });
-
-  useEffect(() => {
-    scale.value = withDelay(
-      200,
-      withTiming(1, {
-        duration: 300,
-        easing: Easing.bezierFn(0.34, 1.56, 0.64, 1), // https://easings.net/#easeOutBack
-      }),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <View style={styles.root}>
-      <Animated.View style={[styles.modal, rStyle]} onLayout={onLayout}>
-        {dimensions.with !== 1 && (
-          <Shadow width={dimensions.with} height={dimensions.height} />
-        )}
+      <ModalWrapper>
         <Text style={styles.title}>{title}</Text>
         <Text>{message}</Text>
 
@@ -101,7 +60,7 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
             <Text style={styles.confirmButtonText}>Confirm</Text>
           </Pressable>
         </View>
-      </Animated.View>
+      </ModalWrapper>
     </View>
   );
 };

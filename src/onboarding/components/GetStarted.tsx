@@ -6,10 +6,12 @@ import {
   ViewStyle,
   Pressable,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {OnBoardingScreens} from '../screens';
+import {mmkv} from '../../store/mmkv';
+import RNBootSplash from 'react-native-bootsplash';
 
 const {width} = Dimensions.get('window');
 
@@ -21,6 +23,7 @@ const folders: {color: string; offset: number}[] = [
 ];
 
 const GetStarted: NavigationFunctionComponent = ({componentId}) => {
+  mmkv.set('Get.Started', true);
   const pushToLogin = () => {
     Navigation.push(componentId, {
       component: {
@@ -28,6 +31,10 @@ const GetStarted: NavigationFunctionComponent = ({componentId}) => {
       },
     });
   };
+
+  useEffect(() => {
+    RNBootSplash.hide({fade: true});
+  }, []);
 
   return (
     <View style={styles.root}>

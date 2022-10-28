@@ -1,24 +1,16 @@
 import {
   View,
   Text,
-  LayoutChangeEvent,
   StyleSheet,
   Dimensions,
   TextInput,
   Pressable,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import Shadow from './Shadow';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated';
 import {Point} from '../shared/types';
+import ModalWrapper from '../shared/components/ModalWrapper';
 
 type EditModalProps = {};
 
@@ -52,21 +44,12 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
 }) => {
   const ref = useRef<View>();
 
-  const [dimensions, setDimensions] = useState({width: 0, height: 0});
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [position, setposition] = useState<Point>({x: 0, y: 0});
 
   const [visibility, setVisibility] = useState<
     'Owner' | 'Restricted' | 'Public'
   >('Owner');
-
-  const onLayout = ({
-    nativeEvent: {
-      layout: {width: w, height: h},
-    },
-  }: LayoutChangeEvent) => {
-    setDimensions({width: w, height: h});
-  };
 
   const toggleDropdown = () => {
     ref.current?.measure((x, y, w, h, pageX, pageY) => {
@@ -79,28 +62,9 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
     Navigation.dismissModal(componentId);
   };
 
-  const scale = useSharedValue<number>(0);
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{scale: scale.value}],
-    };
-  });
-
-  useEffect(() => {
-    scale.value = withDelay(
-      100,
-      withTiming(1, {
-        duration: 300,
-        easing: Easing.bezierFn(0.34, 1.56, 0.64, 1), // https://easings.net/#easeOutBack
-      }),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <View style={styles.root}>
-      <Animated.View style={[styles.menu, rStyle]} onLayout={onLayout}>
-        <Shadow width={dimensions.width} height={dimensions.height} />
+      <ModalWrapper>
         <Text style={styles.title}>Modify glaceon.png</Text>
         <View style={styles.inputContainer}>
           <TextInput placeholder="Change name" />
@@ -130,7 +94,7 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
             <Text style={styles.confirmButtonText}>Confirm</Text>
           </Pressable>
         </View>
-      </Animated.View>
+      </ModalWrapper>
       {showDropdown && (
         <View style={[styles.dropwdown, {top: position.y, left: position.x}]}>
           {visibilites.map((v, index) => {

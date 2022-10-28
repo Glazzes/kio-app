@@ -8,14 +8,15 @@ type User = {
 
 type Store = {
   user: User;
-  accessToken: string;
-  refreshToken: string;
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
 };
 
 const authState = proxy<Store>({
   user: {} as User,
-  accessToken: '',
-  refreshToken: '',
+  tokens: {accessToken: '', refreshToken: ''},
 });
 
 export default authState;

@@ -15,10 +15,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import emitter from '../utils/emitter';
-import Shadow from './Shadow';
 import {Screens} from '../enums/screens';
 import {Event} from '../enums/events';
 import Icon from 'react-native-vector-icons/Ionicons';
+import ModalWrapper from '../shared/components/ModalWrapper';
 
 type CopyModalProps = {};
 
@@ -93,28 +93,27 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
 
   return (
     <Animated.View style={[styles.root, rStyle]} onLayout={onLayout}>
-      {dimensions.width !== 1 && (
-        <Shadow width={dimensions.width} height={dimensions.height} />
-      )}
-      <View>
-        <Text style={styles.title}>Paste here</Text>
-        <Text style={styles.subtitle}>3 files</Text>
-      </View>
-      <View style={styles.row}>
-        <Pressable onPress={dissmisSelection}>
+      <ModalWrapper>
+        <View>
+          <Text style={styles.title}>Paste here</Text>
+          <Text style={styles.subtitle}>3 files</Text>
+        </View>
+        <View style={styles.row}>
+          <Pressable onPress={dissmisSelection}>
+            <Icon
+              name={'ios-close-circle-outline'}
+              size={30}
+              color={'#C5C8D7'}
+              style={styles.icon}
+            />
+          </Pressable>
           <Icon
-            name={'ios-close-circle-outline'}
+            name={'ios-checkmark-circle-outline'}
             size={30}
-            color={'#C5C8D7'}
-            style={styles.icon}
+            color={'#3366ff'}
           />
-        </Pressable>
-        <Icon
-          name={'ios-checkmark-circle-outline'}
-          size={30}
-          color={'#3366ff'}
-        />
-      </View>
+        </View>
+      </ModalWrapper>
     </Animated.View>
   );
 };

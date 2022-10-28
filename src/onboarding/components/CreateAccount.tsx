@@ -8,19 +8,29 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {withKeyboard} from '../../utils/hoc';
 import {Screens} from '../../enums/screens';
 import {Notification} from '../../enums/notification';
+import axios, {AxiosResponse} from 'axios';
+import {host} from '../../shared/constants';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
 
+type AccountErrors = {
+  [field: string]: string | undefined;
+};
+
 const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
+  const data = useRef({username: '', password: '', email: ''});
+
   const [isSecure, setIsSecure] = useState<boolean>(true);
+  const [fieldErrors, setFieldErrors] = useState<AccountErrors>({});
+  const [timer, setTimer] = useState<NodeJS.Timeout>();
 
   const toggleIsSecure = async () => {
     await impactAsync(ImpactFeedbackStyle.Light);
@@ -31,18 +41,54 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
     Navigation.pop(componentId);
   };
 
-  const onAccountCreated = () => {
-    Navigation.showOverlay({
-      component: {
-        name: Screens.TOAST,
-        passProps: {
-          title: 'Account created',
-          message:
-            'Your account has been created successfuly, you can now login!',
-          type: Notification.SUCCESS,
+  const onChangeEmail = (text: string) => {
+    data.current.username = text;
+    fieldErrors.email = undefined;
+
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(async () => {
+      try {
+        await axios.get(`${host}/api/v1/users`, {params: {q: text}});
+        setFieldErrors({
+          email: '* An account is already registered with this email',
+        });
+      } catch (e) {}
+    }, 1000);
+
+    setTimer(newTimer);
+  };
+
+  const onChangeText = (
+    text: string,
+    field: 'email' | 'username' | 'password',
+  ) => {
+    data.current[field] = text;
+  };
+
+  const createAccount = async () => {
+    try {
+      await axios.post(`${host}/api/v1/users`, data.current);
+      Navigation.pop(componentId);
+
+      Navigation.showOverlay({
+        component: {
+          name: Screens.TOAST,
+          passProps: {
+            title: 'Account created',
+            message:
+              'Your account has been created successfuly, you can now login!',
+            type: Notification.SUCCESS,
+          },
         },
-      },
-    });
+      });
+    } catch ({response}) {
+      const {data: errorData} = response as AxiosResponse;
+      fieldErrors.email = errorData.email;
+      fieldErrors.username = errorData.username;
+    }
   };
 
   return (
@@ -60,19 +106,42 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
       <Text style={styles.signUp}>Sign up</Text>
 
-      <View style={styles.textInputContainer}>
-        <Icon name={'ios-at'} size={22} color={'#9E9EA7'} style={styles.icon} />
-        <TextInput style={styles.textInput} placeholder={'Email'} />
+      <View>
+        <View style={styles.textInputContainer}>
+          <Icon
+            name={'ios-at'}
+            size={22}
+            color={'#9E9EA7'}
+            style={styles.icon}
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder={'Email'}
+            onChangeText={onChangeEmail}
+          />
+        </View>
+        {fieldErrors.email && (
+          <Text style={styles.error}>{fieldErrors.email}</Text>
+        )}
       </View>
 
-      <View style={styles.textInputContainer}>
-        <Icon
-          name={'ios-person'}
-          size={22}
-          color={'#9E9EA7'}
-          style={styles.icon}
-        />
-        <TextInput style={styles.textInput} placeholder={'Username'} />
+      <View>
+        <View style={styles.textInputContainer}>
+          <Icon
+            name={'ios-person'}
+            size={22}
+            color={'#9E9EA7'}
+            style={styles.icon}
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder={'Username'}
+            onChangeText={text => onChangeText(text, 'username')}
+          />
+        </View>
+        {fieldErrors.username && (
+          <Text style={styles.error}>{fieldErrors.username}</Text>
+        )}
       </View>
 
       <View style={styles.textInputContainer}>
@@ -86,6 +155,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
           style={styles.textInput}
           placeholder={'Password'}
           secureTextEntry={isSecure}
+          onChangeText={text => onChangeText(text, 'password')}
         />
         <Pressable onPress={toggleIsSecure} hitSlop={40}>
           <Icon
@@ -102,7 +172,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
           <Text style={styles.login}>terms and conditions</Text> and our{' '}
           <Text style={styles.login}>privicy policy.</Text>
         </Text>
-        <Pressable style={styles.confirmButton} onPress={onAccountCreated}>
+        <Pressable style={styles.confirmButton} onPress={createAccount}>
           <Text style={styles.confirmButtonText}>Confirm</Text>
         </Pressable>
         <View style={styles.joinedContainer}>
@@ -175,6 +245,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Uber',
     backgroundColor: '#F3F3F4',
     color: '#C5C8D7',
+  },
+  error: {
+    fontFamily: 'UberBold',
+    marginLeft: 10,
+    marginBottom: 10,
+    color: '#ee3060',
+    fontSize: 12,
   },
   buttonContainer: {
     marginTop: 10,

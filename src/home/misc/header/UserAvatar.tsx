@@ -1,14 +1,17 @@
-import {StyleSheet, Image, Pressable} from 'react-native';
+import {StyleSheet, Image, Pressable, View, Text} from 'react-native';
 import React, {useContext, useRef} from 'react';
 import Animated, {BounceIn, FadeOut} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
+import {useSnapshot} from 'valtio';
+import authState from '../../../store/authStore';
 
 const IMAGE_SIZE = 40;
 
 const UserAvatar = () => {
+  const state = useSnapshot(authState);
   const componentId = useContext(NavigationContext);
-  const ref = useRef<Image>(null);
+  const ref = useRef<View>(null);
 
   const openUserMenu = () => {
     ref.current?.measure((x, y, w, h, pageX, pageY) => {
@@ -26,15 +29,21 @@ const UserAvatar = () => {
   };
 
   return (
-    <Pressable hitSlop={40} onPress={openUserMenu}>
-      <Image
-        ref={ref}
-        source={{
-          uri: 'https://pettime.net/wp-content/uploads/2021/04/Dalmatian-2-10.jpg',
-        }}
-        style={styles.image}
-        resizeMode={'cover'}
-      />
+    <Pressable ref={ref} hitSlop={40} onPress={openUserMenu}>
+      {state.user.profilePicture ? (
+        <Image
+          source={{
+            uri: state.user.profilePicture,
+          }}
+          style={styles.image}
+          resizeMode={'cover'}
+        />
+      ) : (
+        <View style={styles.initialContainer}>
+          <Text style={styles.initial}>{state.user.username.slice(0, 1)}</Text>
+        </View>
+      )}
+
       <Animated.View
         entering={BounceIn.duration(300)}
         exiting={FadeOut.duration(300)}
@@ -49,6 +58,20 @@ const styles = StyleSheet.create({
     height: IMAGE_SIZE,
     width: IMAGE_SIZE,
     borderRadius: IMAGE_SIZE / 2,
+  },
+  initialContainer: {
+    height: IMAGE_SIZE,
+    width: IMAGE_SIZE,
+    borderRadius: IMAGE_SIZE / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#3366ff',
+  },
+  initial: {
+    fontFamily: 'UberBold',
+    fontSize: 15,
+    color: '#fff',
+    textTransform: 'capitalize',
   },
   indicator: {
     height: 12,

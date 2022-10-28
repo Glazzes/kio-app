@@ -1,7 +1,10 @@
 import {LayoutRoot} from 'react-native-navigation';
 import {Screens} from '../enums/screens';
 import {OnBoardingScreens} from '../onboarding/screens';
+import {mmkv} from '../store/mmkv';
 import {Drawers} from './screens/drawers';
+
+const hasGottenStarted = mmkv.getBoolean('Get.Started');
 
 const onBoardingRoot: LayoutRoot = {
   root: {
@@ -10,7 +13,9 @@ const onBoardingRoot: LayoutRoot = {
       children: [
         {
           component: {
-            name: OnBoardingScreens.GET_STARTED,
+            name: hasGottenStarted
+              ? OnBoardingScreens.LOGIN
+              : OnBoardingScreens.GET_STARTED,
           },
         },
       ],

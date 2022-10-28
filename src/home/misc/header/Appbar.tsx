@@ -23,6 +23,8 @@ import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 import UserAvatar from './UserAvatar';
 import {SelectAction} from '../../utils/enums';
 import {Modals} from '../../../navigation/screens/modals';
+import {useSnapshot} from 'valtio';
+import authState from '../../../store/authStore';
 
 type AppbarProps = {
   folderId?: string;
@@ -35,6 +37,8 @@ const {width} = Dimensions.get('window');
 const CANVAS_SIZE = statusBarHeight * 3 + 60;
 
 const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
+  const authenticatedUser = useSnapshot(authState.user);
+
   const componentId = useContext(NavigationContext);
 
   const [files, setFiles] = useState<string[]>([]);
@@ -167,7 +171,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
               <View style={styles.appbarContent}>
                 <View>
                   <Text style={styles.hi}>Hi,</Text>
-                  <Text style={styles.title}>Glaze</Text>
+                  <Text style={styles.title}>{authenticatedUser.username}</Text>
                 </View>
                 <UserAvatar />
               </View>
@@ -261,6 +265,7 @@ const styles = StyleSheet.create({
     fontFamily: 'UberBold',
     fontSize: 17,
     color: '#000',
+    textTransform: 'capitalize',
   },
   canvas: {
     position: 'absolute',

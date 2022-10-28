@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Dimensions, View} from 'react-native';
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/header/AppHeader';
 import {
@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Appbar from './misc/header/Appbar';
 import FAB from './misc/filefab/FAB';
-import {Dimension, File} from '../shared/types';
+import {Dimension, File, Page} from '../shared/types';
 import FileWrapper from './files/thumnnails/components/FileWrapper';
 import {
   ImageThumbnail,
@@ -29,50 +29,14 @@ import NoContent from './misc/NoContent';
 import GenericThumbnail from './files/thumnnails/components/GenericThumbnail';
 import {getSimpleMimeType} from '../shared/functions/getMimeType';
 import {MimeType} from '../shared/enum/MimeType';
+import {axiosInstance} from '../shared/requests/axiosInstance';
+import RNBootSplash from 'react-native-bootsplash';
 
 type HomeProps = {
   folderId?: string;
 };
 
 const data: string[] = ['h']; // ['h', 'i', 'a', 'b', 'c', 'd', 'e', 'f'];
-
-const files: File[] = [
-  {
-    id: '1',
-    name: 'Husky.png',
-    size: 2.359 * 1024 * 1024,
-    mimeType: 'image/png',
-    isFavorite: true,
-  },
-  {
-    id: '5',
-    name: 'Docker in action.pdf',
-    size: 856000,
-    mimeType: 'application/pdf',
-    isFavorite: false,
-  },
-  {
-    id: '2',
-    name: 'Call your name.mp3',
-    size: 13 * 1024 * 1024,
-    mimeType: 'audio/mp3',
-    isFavorite: true,
-  },
-  {
-    id: '3',
-    name: 'Randoooom.mp4',
-    size: 856000,
-    mimeType: 'video/mp4',
-    isFavorite: false,
-  },
-  {
-    id: '4',
-    name: 'One.psd',
-    size: 856000,
-    mimeType: 'application/json',
-    isFavorite: false,
-  },
-];
 
 function keyExtractor(item: File): string {
   return item.id;
@@ -87,6 +51,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   folderId,
 }) => {
   const ref = useRef<typeof AnimatedFlashList>(null);
+
+  const [files, setFiles] = useState<File[]>([]);
 
   const scrollY = useSharedValue<number>(0);
 
@@ -108,7 +74,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   });
 
   const renderItem = useCallback((info: ListRenderItemInfo<File>) => {
-    const mimeType = getSimpleMimeType(info.item.mimeType);
+    const mimeType = getSimpleMimeType(info.item.contentType);
 
     const defineComponent = () => {
       switch (mimeType) {
@@ -154,15 +120,31 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   useEffect(() => {
     push({name: '', componentId});
 
-    Navigation.showModal({
-      component: {
-        name: 'M',
-      },
-    });
-
     return () => {
       removeByComponentId(componentId);
     };
+  }, []);
+
+  const getUnitAndFiles = async () => {
+    try {
+      const {data: unit} = await axiosInstance.get('/api/v1/folders/my-unit');
+      console.log(unit);
+
+      const {data: page}: {data: Page<File[]>} = await axiosInstance.get(
+        `/api/v1/folders/${unit.id}/files`,
+        {params: {page: 0}},
+      );
+
+      setFiles(page.content);
+      console.log(page.content);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    getUnitAndFiles();
+    RNBootSplash.hide({fade: true});
   }, []);
 
   return (

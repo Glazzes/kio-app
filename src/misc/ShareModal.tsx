@@ -5,24 +5,16 @@ import {
   Dimensions,
   TextInput,
   Pressable,
-  LayoutChangeEvent,
   Keyboard,
   ListRenderItemInfo,
 } from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useRef} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Contributor from './Contributor';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated';
-import Shadow from './Shadow';
 import {FlatList} from 'react-native-gesture-handler';
+import ModalWrapper from '../shared/components/ModalWrapper';
 
 type ShareModalProps = {};
 
@@ -59,13 +51,8 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
   const [coowners, setCoowners] = useState<string[]>([]);
   const [text, setText] = useState<string>('');
   const [timer, setTimer] = useState<NodeJS.Timeout>();
-  const [dimensions, setDimensions] = useState({width: 1, height: 0});
   const [isStyping, setIsStyping] = useState<boolean>(false);
   const [hasFetched, setHasFetched] = useState<boolean>(false);
-
-  const onLayout = ({nativeEvent: {layout}}: LayoutChangeEvent) => {
-    setDimensions({width: layout.width, height: layout.height});
-  };
 
   const onChangeText = (value: string) => {
     setIsStyping(true);
@@ -101,32 +88,9 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
     Keyboard.dismiss();
   };
 
-  const scale = useSharedValue<number>(0);
-  const rStyle = useAnimatedStyle(() => {
-    return {transform: [{scale: scale.value}]};
-  });
-
-  useEffect(() => {
-    scale.value = withDelay(
-      100,
-      withTiming(1, {easing: Easing.bezierFn(0.34, 1.56, 0.64, 1)}),
-    );
-
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <View style={styles.root}>
-      <Animated.View style={[styles.modal, rStyle]} onLayout={onLayout}>
-        {dimensions.width !== 1 && (
-          <Shadow width={dimensions.width} height={dimensions.height} />
-        )}
-
+      <ModalWrapper style={styles.modal}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Share file</Text>
         </View>
@@ -213,7 +177,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
             <Text style={styles.confirmButtonText}>Confirm</Text>
           </Pressable>
         </View>
-      </Animated.View>
+      </ModalWrapper>
     </View>
   );
 };

@@ -3,8 +3,17 @@ export type File = {
   id: string;
   name: string;
   size: number;
-  mimeType: string;
   isFavorite: boolean;
+  contentType: string;
+  createdAt: string;
+  lastModified: string;
+};
+
+export type Page<T> = {
+  content: T;
+  last: boolean;
+  pageNumber: number;
+  totalPages: number;
 };
 
 export type FileMetadata = {
@@ -40,4 +49,9 @@ export type SharedTransitionInfo = {
   fromId: string;
   toId: string;
   duration?: number;
+};
+
+export type TokenResponse = {
+  accessToken: string;
+  refreshToken: string;
 };

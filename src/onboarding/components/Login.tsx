@@ -7,22 +7,34 @@ import {
   TextInput,
   Image,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {withKeyboard} from '../../utils/hoc';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {Screens} from '../../enums/screens';
 import {Notification} from '../../enums/notification';
 import {OnBoardingScreens} from '../screens';
+import {mmkv} from '../../store/mmkv';
+import axios from 'axios';
+import {host} from '../../shared/constants';
+import {TokenResponse} from '../../shared/types';
+import authState from '../../store/authStore';
+import {axiosInstance} from '../../shared/requests/axiosInstance';
+import {withKeyboard} from '../../utils/hoc';
 import {mainRoot} from '../../navigation/roots';
-
-type LoginProps = {};
+import RNBootSplash from 'react-native-bootsplash';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
+const hasGottenStarted = mmkv.getBoolean('Get.Started');
 
-const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
+type UsernamePasswordLogin = {
+  username: string;
+  password: string;
+};
+
+const Login: NavigationFunctionComponent = ({componentId}) => {
+  const login = useRef<UsernamePasswordLogin>({username: '', password: ''});
   const [isSecure, setisSecure] = useState<boolean>(true);
 
   const toggleIsSecure = async () => {
@@ -34,6 +46,56 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
     Navigation.pop(componentId);
   };
 
+  const onChangeText = (text: string, type: 'username' | 'password') => {
+    if (type === 'username') {
+      login.current.username = text;
+    }
+
+    if (type === 'password') {
+      login.current.password = text;
+    }
+  };
+
+  const signIn = async () => {
+    try {
+      const {data}: {data: TokenResponse} = await axios.post(
+        `${host}/api/v1/auth/login`,
+        login.current,
+      );
+
+      authState.tokens = data;
+      mmkv.set('tokens', JSON.stringify(data));
+
+      /*
+      axiosInstance.interceptors.request.use(config => {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${authState.tokens.accessToken}`,
+        };
+
+        return config;
+      });
+      */
+
+      const {data: user} = await axiosInstance.get('/api/v1/users/me');
+      authState.user = user;
+
+      Navigation.setRoot(mainRoot);
+    } catch (e) {
+      Navigation.showOverlay({
+        component: {
+          name: Screens.TOAST,
+          passProps: {
+            title: 'Failed Login',
+            message:
+              'You provided invalid credentials, invalid username or password',
+            type: Notification.ERROR,
+          },
+        },
+      });
+    }
+  };
+
   const pushToCreateAccount = () => {
     Navigation.push(componentId, {
       component: {
@@ -42,25 +104,17 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
     });
   };
 
-  const onInvalidCredentials = () => {
-    Navigation.setRoot(mainRoot);
-    Navigation.showOverlay({
-      component: {
-        name: Screens.TOAST,
-        passProps: {
-          title: 'Failed Login',
-          message:
-            'You provided invalid credentials, invalid username or password',
-          type: Notification.ERROR,
-        },
-      },
-    });
-  };
+  useEffect(() => {
+    RNBootSplash.hide({fade: true});
+  }, []);
 
   return (
     <View style={styles.root}>
       <View style={styles.topbar}>
-        <Pressable onPress={goBack} hitSlop={40}>
+        <Pressable
+          onPress={goBack}
+          hitSlop={40}
+          style={{opacity: !hasGottenStarted ? 1 : 0}}>
           <Icon name={'ios-arrow-back'} color={'#000'} size={22} />
         </Pressable>
       </View>
@@ -81,6 +135,8 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
             <TextInput
               style={styles.textInput}
               placeholder={'Email / Username'}
+              onChangeText={t => onChangeText(t, 'username')}
+              autoCapitalize={'none'}
             />
           </View>
 
@@ -95,6 +151,8 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
               style={styles.textInput}
               secureTextEntry={isSecure}
               placeholder={'Password'}
+              onChangeText={t => onChangeText(t, 'password')}
+              autoCapitalize={'none'}
             />
             <Pressable onPress={toggleIsSecure} hitSlop={40}>
               <Icon
@@ -107,9 +165,7 @@ const Login: NavigationFunctionComponent<LoginProps> = ({componentId}) => {
 
           <View style={styles.buttonContainer}>
             <Text style={styles.forgotPassword}>Forgot password?</Text>
-            <Pressable
-              style={styles.loginButton}
-              onPress={onInvalidCredentials}>
+            <Pressable style={styles.loginButton} onPress={signIn}>
               <Text style={styles.loginButtonText}>Login</Text>
             </Pressable>
             <View style={styles.newToContainer}>
