@@ -6,7 +6,7 @@ import {
   ViewStyle,
   Pressable,
 } from 'react-native';
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {
   BounceIn,
@@ -28,6 +28,7 @@ import {TypingEvent} from '../../../types';
 import {convertBytesToRedableUnit} from '../../../../shared/functions/convertBytesToRedableUnit';
 import FileSkeleton from './FileSkeleton';
 import {File} from '../../../../shared/types';
+import SearchableText from '../../../../misc/SearchableText';
 
 type FileWrapperProps = {
   index: number;
@@ -39,7 +40,9 @@ const {width} = Dimensions.get('window');
 const SIZE = (width * 0.9 - 10) / 2;
 
 const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
+  const searchTerm = useRef<string>('');
   const componentId = useContext(NavigationContext);
+
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
@@ -70,7 +73,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       return;
     }
 
-    const mimeType = getSimpleMimeType(file.mimeType);
+    const mimeType = getSimpleMimeType(file.contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
         pushToScreen(componentId, Screens.AUDIO_PLAYER, {file});
@@ -114,9 +117,10 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
 
   useEffect(() => {
     const onTyping = emitter.addListener(
-      TypingEvent.BEGIN_TYPING,
+      TypingEvent.IS_TYPING,
       (text: string) => {
         setShowSkeleton(true);
+        searchTerm.current = text;
       },
     );
 
@@ -171,9 +175,18 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       </Pressable>
       <View style={styles.infoContainer}>
         <View style={styles.flex}>
-          <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
-            {file.name}
-          </Text>
+          {searchTerm.current === '' ? (
+            <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
+              {file.name}
+            </Text>
+          ) : (
+            <SearchableText
+              text={file.name}
+              searchTerm={searchTerm.current}
+              style={styles.title}
+              selectedColor={'#3366ff'}
+            />
+          )}
           <Text style={styles.subtitle}>
             {convertBytesToRedableUnit(file.size)}
           </Text>

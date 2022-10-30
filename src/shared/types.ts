@@ -7,6 +7,14 @@ export type File = {
   contentType: string;
   createdAt: string;
   lastModified: string;
+  details: FileDetails;
+};
+
+export type FileDetails = {
+  dimensions: string | null;
+  duration: string | null;
+  audioSamples: number[] | null;
+  pages: string | null;
 };
 
 export type Page<T> = {

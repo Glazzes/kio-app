@@ -17,6 +17,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DrawerImageThumbnail from './DrawerImageThumbnail';
 import {useSnapshot} from 'valtio';
 import {navigationState, popFile} from '../../store/navigationStore';
+import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
+import authState from '../../store/authStore';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -31,6 +33,7 @@ const PREVIEW_SIZE = width * 0.75 - 15;
 
 const FileDrawer: NavigationFunctionComponent = ({componentId}) => {
   const snap = useSnapshot(navigationState);
+  const authSnap = useSnapshot(authState);
 
   useEffect(() => {
     const listener: NavigationComponentListener = {
@@ -64,26 +67,30 @@ const FileDrawer: NavigationFunctionComponent = ({componentId}) => {
       <Text style={styles.title}>Properties</Text>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Size</Text>
-        <Text style={styles.data}>1Mb</Text>
+        <Text style={styles.data}>
+          {snap.file ? convertBytesToRedableUnit(snap.file!!.size) : '1MB'}
+        </Text>
       </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.item}>Type</Text>
-        <Text style={styles.data}>Image</Text>
-      </View>
+      {snap.file && (
+        <View style={styles.textContainer}>
+          <Text style={styles.item}>Type</Text>
+          <Text style={styles.data}>{snap.file.contentType}</Text>
+        </View>
+      )}
       <View style={styles.textContainer}>
         <Text style={styles.item}>Dimensions</Text>
         <Text style={styles.data}>1334x1817</Text>
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Created</Text>
-        <Text style={styles.data}>11st October, 2021</Text>
+        <Text style={styles.data}>{snap.file?.createdAt}</Text>
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Modified</Text>
-        <Text style={styles.data}>13th Novermber, 2022</Text>
+        <Text style={styles.data}>{snap.file?.lastModified}</Text>
       </View>
       <View style={styles.textContainer}>
-        <Text style={styles.item}>State</Text>
+        <Text style={styles.item}>Visibility</Text>
         <Text style={styles.data}>Public</Text>
       </View>
       <View style={styles.textContainer}>
@@ -105,7 +112,7 @@ const FileDrawer: NavigationFunctionComponent = ({componentId}) => {
             source={{uri: 'file:///storage/sdcard0/Descargas/glaceon.jpg'}}
             style={styles.avatar}
           />
-          <CollapsableText text="You" />
+          <CollapsableText text={authSnap.user.username} />
         </View>
       </View>
     </ScrollView>

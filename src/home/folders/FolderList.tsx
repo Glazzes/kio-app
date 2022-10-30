@@ -33,7 +33,7 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
 
   useEffect(() => {
     const beginTyping = emitter.addListener(
-      TypingEvent.BEGIN_TYPING,
+      TypingEvent.IS_TYPING,
       (text: string) => {
         if (!showSkeletons) {
           setShowSkeletons(true);

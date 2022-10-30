@@ -137,7 +137,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
 
   const defineIcon = () => {
     let icon = 'ios-folder-open';
-    const mimeType = getSimpleMimeType(file.mimeType);
+    const mimeType = getSimpleMimeType(file.contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
         icon = 'ios-headset';
@@ -191,7 +191,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
 
   const open = () => {
     const {componentId: lastComponentId} = peekLast();
-    const mimeType = getSimpleMimeType(file.mimeType);
+    const mimeType = getSimpleMimeType(file.contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
         pushToScreen(lastComponentId, Screens.AUDIO_PLAYER, {file});

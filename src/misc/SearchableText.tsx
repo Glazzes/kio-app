@@ -1,12 +1,19 @@
-import {Text, StyleSheet} from 'react-native';
+import {Text, TextStyle} from 'react-native';
 import React, {useEffect, useState} from 'react';
 
 type SearchableTextProps = {
   text: string;
   searchTerm: string;
+  style: TextStyle;
+  selectedColor: string;
 };
 
-const SearchableText: React.FC<SearchableTextProps> = ({text, searchTerm}) => {
+const SearchableText: React.FC<SearchableTextProps> = ({
+  text,
+  searchTerm,
+  style,
+  selectedColor,
+}) => {
   const [fragments, setFragments] = useState<string[]>([]);
 
   useEffect(() => {
@@ -24,36 +31,29 @@ const SearchableText: React.FC<SearchableTextProps> = ({text, searchTerm}) => {
     const newFragments = [];
     for (let i = 0; i < frags.length; i++) {
       newFragments.push(frags[i]);
-      if (frags[i] !== '' && frags[i + 1] !== '') {
+      if (frags[i] !== '' && frags[i + 1] && frags[i + 1] !== '') {
         newFragments.push('');
       }
     }
 
+    console.log(fragments);
     setFragments(newFragments);
-  }, [text, searchTerm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <Text style={styles.text} numberOfLines={1} ellipsizeMode={'tail'}>
-      {fragments.map((frag, index) => {
+    <Text style={style} numberOfLines={1} ellipsizeMode={'tail'}>
+      {fragments.map((fragment, index) => {
         return (
-          <Text style={frag === '' ? styles.match : {}} key={`${frag}${index}`}>
-            {frag === '' ? searchTerm.toLocaleLowerCase() : frag}
+          <Text
+            style={fragment === '' ? {color: selectedColor} : {}}
+            key={`${fragment}${index}`}>
+            {fragment === '' ? searchTerm.toLocaleLowerCase() : fragment}
           </Text>
         );
       })}
     </Text>
   );
 };
-
-const styles = StyleSheet.create({
-  text: {
-    fontFamily: 'UberBold',
-    fontSize: 15,
-    flex: 1,
-  },
-  match: {
-    color: '#3366ff',
-  },
-});
 
 export default SearchableText;

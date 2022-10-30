@@ -10,24 +10,19 @@ import {
 } from '@shopify/react-native-skia';
 import {convertAudioPointsToBarPoints} from '../../../../audio_player/utils/functions/convertAudioPointsToBarPoints';
 import {createWaveFormPath} from '../../../../audio_player/utils/functions/createWaveFormPath';
-import json from '../assets/waves.json';
-import forest from '../assets/forest.json';
 import {STROKE_WIDTH} from '../../../../audio_player/utils/constants';
 import {SIZE} from '../utils/constants';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 
 type AudioThumbnailProps = {
-  index: number;
+  samples: number[] | null;
 };
 
-const AudioThumbnail: React.FC<AudioThumbnailProps> = ({index}) => {
+const AudioThumbnail: React.FC<AudioThumbnailProps> = ({samples}) => {
   const componentId = useContext(NavigationContext);
 
   const audioPoints = useMemo(() => {
-    return convertAudioPointsToBarPoints(
-      index % 2 === 0 ? forest.data : json.data,
-      SIZE / 4,
-    );
+    return convertAudioPointsToBarPoints(samples!!);
   }, []);
 
   const upperWaveForm = useMemo(() => {

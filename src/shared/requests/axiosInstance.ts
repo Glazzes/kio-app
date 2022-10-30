@@ -3,7 +3,7 @@ import authState from '../../store/authStore';
 import {mmkv} from '../../store/mmkv';
 import {TokenResponse} from '../types';
 
-const baseURL = 'http://192.168.42.232:8080';
+const baseURL = 'http://192.168.42.95:8080';
 
 export const axiosInstance = axios.create({
   baseURL,

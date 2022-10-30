@@ -66,17 +66,6 @@ const Login: NavigationFunctionComponent = ({componentId}) => {
       authState.tokens = data;
       mmkv.set('tokens', JSON.stringify(data));
 
-      /*
-      axiosInstance.interceptors.request.use(config => {
-        config.headers = {
-          ...config.headers,
-          Authorization: `Bearer ${authState.tokens.accessToken}`,
-        };
-
-        return config;
-      });
-      */
-
       const {data: user} = await axiosInstance.get('/api/v1/users/me');
       authState.user = user;
 

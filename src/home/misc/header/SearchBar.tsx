@@ -28,7 +28,7 @@ const SearchBar: React.FC = ({}) => {
 
   const onChangeText = (text: string) => {
     if (Math.abs(lastTextLength.current - text.length) === 1) {
-      emitter.emit(TypingEvent.BEGIN_TYPING);
+      emitter.emit(TypingEvent.IS_TYPING, text);
     }
 
     if (timer) {
@@ -36,7 +36,7 @@ const SearchBar: React.FC = ({}) => {
     }
 
     const showResults = setTimeout(() => {
-      emitter.emit(TypingEvent.END_TYPING, text);
+      emitter.emit(TypingEvent.END_TYPING);
     }, 1000);
 
     setSearchTerm(text);

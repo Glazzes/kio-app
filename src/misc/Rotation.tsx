@@ -1,17 +1,9 @@
 import {View, StyleSheet, Dimensions} from 'react-native';
 import React from 'react';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import Animated, {
-  Extrapolate,
-  useAnimatedStyle,
-  useSharedValue,
-  interpolate,
-  useDerivedValue,
-  withTiming,
-} from 'react-native-reanimated';
-import {clamp} from '../shared/functions/clamp';
-import {useCanvasRef} from '@shopify/react-native-skia';
 import {useVector} from 'react-native-redash';
+import {clamp} from '../shared/functions/clamp';
 
 type RotationProps = {};
 
@@ -24,133 +16,58 @@ const aspectRatio = 872 / 1280;
 const baseWidth = 200;
 const baseHeight = baseWidth / aspectRatio;
 
-const distance = width / 2 - 20;
+const angle = Math.PI / 18;
+const scale = 1.3;
 
-const keepWithinBounds = (
-  angle: number,
-  scale: number,
-  widths: number,
-  height: number,
-  translateY: number,
-): {x: number; y: number} => {
-  'worklet';
-  angle = Math.abs(angle);
-  const imageWidth = widths * Math.cos(angle) + height * Math.sin(angle);
-  const imageHeght = imageWidth / aspectRatio;
+const rotatedWith = baseWidth * Math.cos(angle) + baseHeight * Math.sin(angle);
+const rotatedHeight =
+  baseWidth * Math.sin(angle) + baseHeight * Math.cos(angle);
+const imageHeight = rotatedWith / aspectRatio;
 
-  const selectionHeight = widths * Math.sin(angle) + height * Math.cos(angle);
+const vh = (imageHeight * scale - rotatedHeight) / 2;
+const vy = vh * Math.cos(angle);
+const vx = vh * Math.sin(angle);
 
-  const hh = (imageWidth * scale - imageWidth) / 2;
-  const hWidth = hh * Math.cos(angle);
-  const hHeight = hh * Math.sin(angle);
-
-  const h = (imageHeght * scale - selectionHeight) / 2;
-  const x = h * Math.sin(angle) + hWidth;
-  const y = h * Math.cos(angle) + hHeight;
-
-  const offY = clamp(translateY, -1 * y, y);
-  const offX = interpolate(offY, [-1 * y, y], [x, -1 * x], Extrapolate.CLAMP);
-
-  return {x: offX, y: offY};
-};
+const hh = (rotatedWith * scale - rotatedWith) / 2;
+const hy = hh * Math.sin(angle);
+const hx = hh * Math.cos(angle);
 
 const Rotation: React.FC<RotationProps> = ({}) => {
-  const translateX = useSharedValue<number>(0);
-  const offsetX = useSharedValue<number>(0);
-
-  const scale = useSharedValue<number>(1);
-  const scaleOffset = useSharedValue<number>(1);
   const translate = useVector(0, 0);
   const offset = useVector(0, 0);
 
-  const a = useDerivedValue<number>(() => {
-    return interpolate(
-      translateX.value,
-      [-distance, 0, distance],
-      [-Math.PI / 4, 0, Math.PI / 4],
-      Extrapolate.CLAMP,
-    );
-  }, [translateX]);
-
-  const pinch = Gesture.Pinch()
-    .onStart(_ => {
-      scaleOffset.value = scale.value;
-    })
-    .onChange(e => {
-      scale.value = scaleOffset.value * e.scale;
-    });
-
-  const imagePan = Gesture.Pan()
-    .onStart(() => {
+  const pan = Gesture.Pan()
+    .onStart(e => {
       offset.x.value = translate.x.value;
       offset.y.value = translate.y.value;
     })
     .onChange(e => {
-      translate.x.value = offset.x.value + e.translationX;
-      translate.y.value = offset.y.value + e.translationY;
-    })
-    .onEnd(() => {
-      const {x, y} = keepWithinBounds(
-        a.value,
-        scale.value,
-        baseWidth,
-        baseHeight,
-        translate.y.value,
-      );
-
-      translate.x.value = withTiming(x, {duration: 150});
-      translate.y.value = withTiming(y, {duration: 150});
+      translate.x.value = e.translationX + offset.x.value;
+      translate.y.value = e.translationY + offset.y.value;
     });
 
-  const pan = Gesture.Pan()
-    .onStart(_ => {
-      offsetX.value = translateX.value;
-    })
-    .onChange(e => {
-      translateX.value = e.translationX + offsetX.value;
-    });
-
-  const imageStyles = useAnimatedStyle(() => {
-    const w =
-      baseWidth * Math.cos(Math.abs(a.value)) +
-      baseHeight * Math.sin(Math.abs(a.value));
-
+  const rStyle = useAnimatedStyle(() => {
     return {
-      width: w,
-      height: w / aspectRatio,
       transform: [
-        {translateX: translate.x.value},
-        {translateY: translate.y.value},
-        {scale: scale.value},
-        {rotate: `${a.value}rad`},
+        {translateX: clamp(translate.x.value, -hh, hh)},
+        {translateY: clamp(translate.y.value, -vh, vh)},
+        {rotate: `${angle}rad`},
+        {scale},
       ],
-    };
-  });
-
-  const sliderStyles = useAnimatedStyle(() => {
-    return {
-      transform: [{translateX: clamp(translateX.value, -distance, distance)}],
     };
   });
 
   return (
     <View style={styles.root}>
       <View style={styles.container}>
-        <GestureDetector gesture={Gesture.Race(pinch, imagePan)}>
+        <GestureDetector gesture={pan}>
           <Animated.Image
+            style={[styles.image, rStyle]}
             source={{uri: image}}
-            resizeMethod={'scale'}
-            resizeMode={'cover'}
-            style={[styles.image, imageStyles]}
           />
         </GestureDetector>
-
         <View style={styles.border} pointerEvents={'none'} />
-      </View>
-      <View style={styles.slider}>
-        <GestureDetector gesture={pan}>
-          <Animated.View style={[styles.ball, sliderStyles]} />
-        </GestureDetector>
+        <View style={styles.surround} pointerEvents={'none'} />
       </View>
     </View>
   );
@@ -172,17 +89,17 @@ const styles = StyleSheet.create({
   },
   image: {
     position: 'absolute',
-    // width: rotatedSelectionWidth,
-    // height: rotatedImageHeight,
-    // transform: [{rotate: `${angle}rad`}],
+    width: rotatedWith,
+    height: imageHeight,
+    // transform: [{rotate: `${angle}rad`}, {scale: scale}],
   },
   surround: {
     position: 'absolute',
-    // width: rotatedSelectionWidth,
-    // height: rotatedSelectionHeight,
-    // transform: [{rotate: `${angle}rad`}],
+    width: rotatedWith,
+    height: rotatedHeight,
     borderWidth: 1,
     borderColor: 'lime',
+    transform: [{rotate: `${angle}rad`}, {translateX: 0}],
   },
   border: {
     width: baseWidth,
@@ -190,6 +107,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'orange',
     position: 'absolute',
+    // transform: [{translateY: 20}, {translateX: -hx}],
   },
   slider: {
     width,

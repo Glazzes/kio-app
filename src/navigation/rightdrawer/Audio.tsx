@@ -11,13 +11,13 @@ import {
 } from '@shopify/react-native-skia';
 import {convertAudioPointsToBarPoints} from '../../audio_player/utils/functions/convertAudioPointsToBarPoints';
 import {createWaveFormPath} from '../../audio_player/utils/functions/createWaveFormPath';
-import forest from '../../home/files/thumnnails/assets/forest.json';
 
 type AudioProps = {
   height: number;
   width: number;
   upperWaveHeight: number;
   lowerWaveHeight: number;
+  samples: number[];
   backgroundColor?: string;
 };
 
@@ -28,6 +28,7 @@ const Audio: React.FC<AudioProps> = ({
   width,
   upperWaveHeight,
   lowerWaveHeight,
+  samples,
   backgroundColor,
 }) => {
   const styles: ViewStyle = useMemo(
@@ -41,10 +42,7 @@ const Audio: React.FC<AudioProps> = ({
   );
 
   const audioPoints = useMemo(() => {
-    return convertAudioPointsToBarPoints(
-      forest.data,
-      Math.max(width, height) / 4,
-    );
+    return convertAudioPointsToBarPoints(samples, Math.max(width, height) / 4);
   }, []);
 
   const upperWaveForm = useMemo(() => {

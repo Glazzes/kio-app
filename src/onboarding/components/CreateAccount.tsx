@@ -118,6 +118,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
             style={styles.textInput}
             placeholder={'Email'}
             onChangeText={onChangeEmail}
+            autoCapitalize={'none'}
           />
         </View>
         {fieldErrors.email && (
@@ -137,6 +138,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
             style={styles.textInput}
             placeholder={'Username'}
             onChangeText={text => onChangeText(text, 'username')}
+            autoCapitalize={'none'}
           />
         </View>
         {fieldErrors.username && (
@@ -156,6 +158,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
           placeholder={'Password'}
           secureTextEntry={isSecure}
           onChangeText={text => onChangeText(text, 'password')}
+          autoCapitalize={'none'}
         />
         <Pressable onPress={toggleIsSecure} hitSlop={40}>
           <Icon

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Dimensions, View} from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './misc/header/AppHeader';
 import {
   FlashList,
@@ -36,8 +36,6 @@ type HomeProps = {
   folderId?: string;
 };
 
-const data: string[] = ['h']; // ['h', 'i', 'a', 'b', 'c', 'd', 'e', 'f'];
-
 function keyExtractor(item: File): string {
   return item.id;
 }
@@ -53,7 +51,6 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   const ref = useRef<typeof AnimatedFlashList>(null);
 
   const [files, setFiles] = useState<File[]>([]);
-
   const scrollY = useSharedValue<number>(0);
 
   const dimensions = useSharedValue<Dimension>({width: 1, height: 1});
@@ -95,7 +92,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           );
 
         case MimeType.AUDIO:
-          return <AudioThumbnail index={info.index} />;
+          return <AudioThumbnail samples={info.item.details.audioSamples} />;
 
         case MimeType.VIDEO:
           return <VideoThumbnail index={info.index} file={info.item} />;
@@ -128,7 +125,6 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   const getUnitAndFiles = async () => {
     try {
       const {data: unit} = await axiosInstance.get('/api/v1/folders/my-unit');
-      console.log(unit);
 
       const {data: page}: {data: Page<File[]>} = await axiosInstance.get(
         `/api/v1/folders/${unit.id}/files`,
@@ -136,7 +132,6 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       );
 
       setFiles(page.content);
-      console.log(page.content);
     } catch (e) {
       console.log(e);
     }
@@ -161,8 +156,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           nestedScrollEnabled={true}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={NoContent}
-          estimatedItemSize={Math.max(1, data.length)}
-          estimatedListSize={{width: windowWidth, height: data.length * 65}}
+          estimatedItemSize={Math.max(1, files.length)}
+          estimatedListSize={{width: windowWidth, height: files.length * 65}}
           contentContainerStyle={styles.content}
           onScroll={onScroll}
         />
