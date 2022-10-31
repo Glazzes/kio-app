@@ -1,6 +1,7 @@
 // File
 export type File = {
   id: string;
+  ownerId: string;
   name: string;
   size: number;
   isFavorite: boolean;
@@ -15,6 +16,31 @@ export type FileDetails = {
   duration: string | null;
   audioSamples: number[] | null;
   pages: string | null;
+};
+
+export type Folder = {
+  id: string;
+  ownerId: string;
+  name: string;
+  summary: FolderSummary;
+};
+
+export type UploadRequest = {
+  to: string;
+  details: {
+    [name: string]: {
+      pages: number | null;
+      duration: string | null;
+      audioSamples: number[] | null;
+      dimensions: [number, number] | null;
+    };
+  };
+};
+
+type FolderSummary = {
+  files: number;
+  folders: number;
+  size: number;
 };
 
 export type Page<T> = {

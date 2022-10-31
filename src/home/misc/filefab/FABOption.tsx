@@ -1,4 +1,4 @@
-import {StyleSheet, Dimensions, Pressable} from 'react-native';
+import {StyleSheet, Dimensions, Pressable, Image} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
@@ -10,6 +10,9 @@ import {
   OptionsModalPresentationStyle,
 } from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
+import notifee from '@notifee/react-native';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {UploadRequest} from '../../../shared/types';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -51,19 +54,75 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     // @ts-ignore
     const result = await pickMultiple({
       allowMultiSelection: true,
-      copyTo: 'cachesDirectory',
     });
 
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: 'Upload files',
-          message:
-            'This process may take a while depending on your internet connection, be patient',
+    await notifee.displayNotification({
+      id: 'upload',
+      title: `Uploading file${result.length > 1 ? 's' : ''}`,
+      body: 'this may take a while',
+      android: {
+        channelId: 'kio',
+        progress: {
+          current: 1,
+          indeterminate: true,
+          max: 100,
         },
       },
     });
+
+    const request: UploadRequest = {
+      to: '6355742c13cfe841481f223e',
+      details: {},
+    };
+
+    const data = new FormData();
+    data.append('files', {
+      name: result[0].name,
+      type: result[0].type,
+      uri: result[0].uri,
+    });
+
+    data.append('request', JSON.stringify(request));
+
+    for (let file of result) {
+      data.append('files', {
+        name: file.name,
+        type: file.type,
+        uri: file.uri,
+      });
+
+      if (file.type?.startsWith('image')) {
+        Image.getSize(file.uri, (w, h) => {
+          request.details[file.name] = {
+            pages: null,
+            duration: null,
+            audioSamples: null,
+            dimensions: [w, h],
+          };
+        });
+      }
+    }
+
+    try {
+      const res = await axiosInstance.post('/api/v1/files', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log(res.data);
+
+      await notifee.displayNotification({
+        id: 'upload',
+        title: 'Files uploded',
+        body: 'Your files have been uploaded successfully',
+        android: {
+          channelId: 'kio',
+        },
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const openShareModal = () => {

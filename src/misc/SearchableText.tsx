@@ -17,9 +17,7 @@ const SearchableText: React.FC<SearchableTextProps> = ({
   const [fragments, setFragments] = useState<string[]>([]);
 
   useEffect(() => {
-    const frags = text
-      .toLocaleLowerCase()
-      .split(searchTerm.toLocaleLowerCase());
+    const frags = text.split(new RegExp(searchTerm, 'i'));
 
     const isFullOfSpaces = frags.every(item => item === '');
     if (isFullOfSpaces) {
@@ -36,7 +34,6 @@ const SearchableText: React.FC<SearchableTextProps> = ({
       }
     }
 
-    console.log(fragments);
     setFragments(newFragments);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

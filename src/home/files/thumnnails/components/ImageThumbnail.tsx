@@ -1,5 +1,5 @@
 import {Dimensions, Image, StyleSheet, View} from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useVector} from 'react-native-redash';
 import Animated, {
   measure,
@@ -18,8 +18,8 @@ import {pinch} from '../../../../utils/animations';
 import {Dimension, File} from '../../../../shared/types';
 import {useSnapshot} from 'valtio';
 import {SIZE} from '../utils/constants';
-import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import {pushToImageDetails} from '../../../../shared/functions/navigation/pushToImageDetails';
+import {host} from '../../../../shared/constants';
 
 type Reflection = {
   dimensions: Animated.SharedValue<Dimension>;
@@ -52,7 +52,9 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   y,
   dimensions,
 }) => {
-  const componentId = useContext(NavigationContext);
+  const uri = `${host}/static/file/${file.id}`;
+
+  const {accessToken} = useSnapshot(authState.tokens);
 
   const [imageDimensions, setImageDimensions] = useState<{
     width: number;
@@ -62,10 +64,8 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
     height: SIZE,
   });
 
-  const snap = useSnapshot(authState);
-
   const setPic = () => {
-    emitter.emit('sp', pic);
+    emitter.emit('sp', uri);
   };
 
   const setEmpty = () => {
@@ -164,7 +164,10 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
           <Animated.Image
             nativeID={`img-${file.id}`}
             style={[styles.image, cc]}
-            source={{uri: pic, headers: {Authorization: snap.accessToken}}}
+            source={{
+              uri: `${host}/static/file/${file.id}`,
+              headers: {Authorization: `Bearer ${accessToken}`},
+            }}
             resizeMode={'cover'}
           />
         </Animated.View>

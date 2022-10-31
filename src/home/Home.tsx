@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Appbar from './misc/header/Appbar';
 import FAB from './misc/filefab/FAB';
-import {Dimension, File, Page} from '../shared/types';
+import {Dimension, File, Folder, Page} from '../shared/types';
 import FileWrapper from './files/thumnnails/components/FileWrapper';
 import {
   ImageThumbnail,
@@ -31,6 +31,7 @@ import {getSimpleMimeType} from '../shared/functions/getMimeType';
 import {MimeType} from '../shared/enum/MimeType';
 import {axiosInstance} from '../shared/requests/axiosInstance';
 import RNBootSplash from 'react-native-bootsplash';
+import {SIZE} from './utils/constants';
 
 type HomeProps = {
   folderId?: string;
@@ -124,7 +125,9 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
 
   const getUnitAndFiles = async () => {
     try {
-      const {data: unit} = await axiosInstance.get('/api/v1/folders/my-unit');
+      const {data: unit}: {data: Folder} = await axiosInstance.get(
+        '/api/v1/folders/my-unit',
+      );
 
       const {data: page}: {data: Page<File[]>} = await axiosInstance.get(
         `/api/v1/folders/${unit.id}/files`,
@@ -156,8 +159,11 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           nestedScrollEnabled={true}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={NoContent}
-          estimatedItemSize={Math.max(1, files.length)}
-          estimatedListSize={{width: windowWidth, height: files.length * 65}}
+          estimatedItemSize={SIZE}
+          estimatedListSize={{
+            width: windowWidth,
+            height: (files.length / 2) * SIZE,
+          }}
           contentContainerStyle={styles.content}
           onScroll={onScroll}
         />

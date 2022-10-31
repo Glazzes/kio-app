@@ -1,9 +1,10 @@
 import axios, {AxiosError, AxiosResponse} from 'axios';
 import authState from '../../store/authStore';
 import {mmkv} from '../../store/mmkv';
+import {host} from '../constants';
 import {TokenResponse} from '../types';
 
-const baseURL = 'http://192.168.42.95:8080';
+const baseURL = host;
 
 export const axiosInstance = axios.create({
   baseURL,
@@ -38,7 +39,9 @@ axiosInstance.interceptors.response.use(
   response => response,
   async (error: AxiosError) => {
     const config = error.config;
+    // @ts-ignore
     if (error.response?.status === 401 && !config.retry) {
+      // @ts-ignore
       config.retry = true;
 
       try {
