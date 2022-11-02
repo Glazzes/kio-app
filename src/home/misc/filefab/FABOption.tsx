@@ -1,9 +1,8 @@
 import {StyleSheet, Dimensions, Pressable, Image} from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import emitter from '../../../utils/emitter';
-import Sound from 'react-native-sound';
 import {pickMultiple} from 'react-native-document-picker';
 import {
   Navigation,
@@ -13,14 +12,14 @@ import {Modals} from '../../../navigation/screens/modals';
 import notifee from '@notifee/react-native';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {UploadRequest} from '../../../shared/types';
+import {UpdateFolderEvent} from '../../types';
+import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
   progress: Animated.SharedValue<number>;
   toggle: () => void;
 };
-
-Sound.setCategory('Playback');
 
 const {width: windowWidth} = Dimensions.get('window');
 const BUTTON_RADIUS = 40;
@@ -29,6 +28,8 @@ const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
+  const componentId = useContext(NavigationContext);
+
   const onPress = async () => {
     toggle();
 
@@ -75,42 +76,39 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       details: {},
     };
 
-    const data = new FormData();
-    data.append('files', {
-      name: result[0].name,
-      type: result[0].type,
-      uri: result[0].uri,
-    });
-
-    data.append('request', JSON.stringify(request));
+    const formData = new FormData();
 
     for (let file of result) {
-      data.append('files', {
+      formData.append('files', {
         name: file.name,
         type: file.type,
         uri: file.uri,
       });
 
+      request.details[file.name] = {
+        pages: null,
+        duration: null,
+        audioSamples: null,
+        dimensions: null,
+      };
+
       if (file.type?.startsWith('image')) {
-        Image.getSize(file.uri, (w, h) => {
-          request.details[file.name] = {
-            pages: null,
-            duration: null,
-            audioSamples: null,
-            dimensions: [w, h],
-          };
+        await Image.getSize(file.uri, (w, h) => {
+          request.details[file.name].dimensions = [w, h];
         });
       }
     }
 
+    formData.append('request', JSON.stringify(request, null, 2));
+
     try {
-      const res = await axiosInstance.post('/api/v1/files', data, {
+      const res = await axiosInstance.post('/api/v1/files', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      console.log(res.data);
+      emitter.emit(`${UpdateFolderEvent.ADD_FILE}-${componentId}`, res.data);
 
       await notifee.displayNotification({
         id: 'upload',

@@ -8,6 +8,7 @@ import ModalWrapper from '../../shared/components/ModalWrapper';
 type GenericModalProps = {
   title: string;
   message: string;
+  action: () => void;
 };
 
 const {width} = Dimensions.get('window');
@@ -18,6 +19,7 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
   componentId,
   title,
   message,
+  action,
 }) => {
   const [selected, setSelected] = useState<boolean>(false);
 
@@ -28,6 +30,11 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
 
   const close = () => {
     Navigation.dismissModal(componentId);
+  };
+
+  const performAction = async () => {
+    await action();
+    close();
   };
 
   return (
@@ -56,7 +63,9 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
             onPress={close}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </Pressable>
-          <Pressable style={[styles.button, styles.confirmButton]}>
+          <Pressable
+            style={[styles.button, styles.confirmButton]}
+            onPress={performAction}>
             <Text style={styles.confirmButtonText}>Confirm</Text>
           </Pressable>
         </View>

@@ -33,7 +33,7 @@ import Pricing from './src/overlays/Pricing';
 import EditModal from './src/misc/EditModal';
 import GenericModal from './src/home/modals/GenericModal';
 import Rotation from './src/misc/Rotation';
-import axios, {AxiosError} from 'axios';
+import axios from 'axios';
 import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';
 
@@ -175,13 +175,14 @@ Navigation.events().registerAppLaunchedListener(async () => {
   }
 
   try {
-    const {data: user} = await axiosInstance.get('/api/v1/users/me');
+    if (authState.user.id === undefined) {
+      const {data: user} = await axiosInstance.get('/api/v1/users/me');
 
-    authState.user = user;
-    authState.tokens = tokens;
+      authState.user = user;
+      authState.tokens = tokens;
 
-    console.log(user);
-    Navigation.setRoot(mainRoot);
+      Navigation.setRoot(mainRoot);
+    }
   } catch (e) {
     Navigation.setRoot(onBoardingRoot);
   }

@@ -39,10 +39,9 @@ import {convertCurrentTimeToTextTime} from '../utils/functions/convertCurrentTim
 import {ReText} from 'react-native-redash';
 import Sound from 'react-native-sound';
 
-import json from '../assets/waves.json';
-
 type WavesProps = {
-  sound: Sound;
+  sound: Sound | undefined;
+  samples: number[];
   translateX: Animated.SharedValue<number>;
   progress: Animated.SharedValue<number>;
   duration: number;
@@ -53,6 +52,7 @@ const {width} = Dimensions.get('window');
 
 const Waves: React.FC<WavesProps> = ({
   sound,
+  samples,
   translateX,
   progress,
   duration,
@@ -61,10 +61,7 @@ const Waves: React.FC<WavesProps> = ({
   const skWidth = useValue(0);
   const offset = useSharedValue<number>(0);
 
-  const audioPoints = useMemo(
-    () => convertAudioPointsToBarPoints(json.data),
-    [],
-  );
+  const audioPoints = useMemo(() => convertAudioPointsToBarPoints(samples), []);
 
   const upperWaveForm = useMemo(() => {
     return createWaveFormPath(audioPoints, 'upper');
@@ -97,20 +94,20 @@ const Waves: React.FC<WavesProps> = ({
   };
 
   const pause = () => {
-    sound.pause();
+    sound?.pause();
   };
 
   const pauseWithCancel = () => {
-    sound.pause();
+    sound?.pause();
     cancelAnimation(translateX);
   };
 
   const resume = () => {
-    sound.setCurrentTime(progress.value * duration);
+    sound?.setCurrentTime(progress.value * duration);
 
     if (isPlaying) {
       animateWave();
-      sound.play();
+      sound?.play();
     }
   };
 

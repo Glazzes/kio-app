@@ -1,6 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {View, StyleSheet, Dimensions, Text, Pressable} from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Text,
+  Pressable,
+  Platform,
+} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Sound from 'react-native-sound';
 import {
@@ -17,6 +24,10 @@ import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import AuidoControls from './Controls';
 import Waves from './Waves';
 import {File} from '../../shared/types';
+import RNFS from 'react-native-fs';
+import {host} from '../../shared/constants';
+import {useSnapshot} from 'valtio';
+import authState from '../../store/authStore';
 
 Sound.setCategory('Playback');
 
@@ -34,6 +45,9 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   componentId,
   file,
 }) => {
+  const {accessToken} = useSnapshot(authState.tokens);
+
+  const [sound, setSound] = useState<Sound>();
   const [duration, setDuration] = useState<number>(0);
   const [loaded, setLoaded] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -50,23 +64,6 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       Extrapolate.CLAMP,
     );
   }, [translateX]);
-
-  const sound = useMemo(() => {
-    return new Sound(require('../assets/Call.mp3'), e => {
-      if (e) {
-        console.log(e);
-      }
-
-      setLoaded(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (loaded) {
-      sound.setNumberOfLoops(0);
-      setDuration(Math.floor(sound.getDuration()));
-    }
-  }, [loaded, sound]);
 
   const toggleFavorite = async () => {
     setIsFavorite(f => !f);
@@ -89,15 +86,17 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   };
 
   const onAudioEnd = () => {
-    translateX.value = width / 2;
-    setIsPlaying(false);
-    sound.stop();
+    if (sound) {
+      translateX.value = width / 2;
+      setIsPlaying(false);
+      sound.stop();
 
-    if (loops !== 0) {
-      sound.play();
-      animateProgressBar();
-      setIsPlaying(true);
-      setLoops(l => (l === 1 ? 0 : -1));
+      if (loops !== 0) {
+        sound.play();
+        animateProgressBar();
+        setIsPlaying(true);
+        setLoops(l => (l === 1 ? 0 : -1));
+      }
     }
   };
 
@@ -106,8 +105,46 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   };
 
   useEffect(() => {
+    const resource = `${host}/static/file/${file.id}`;
+    const toFile =
+      (Platform.OS === 'android' ? 'file://' : '') +
+      RNFS.DownloadDirectoryPath +
+      `/${file.id}-${file.name}`;
+
+    RNFS.downloadFile({
+      fromUrl: resource,
+      toFile,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .promise.then(_ => {
+        const downloadedSound = new Sound(toFile, undefined, e => {
+          if (e) {
+            console.log(e);
+          }
+
+          console.log('loaded');
+          setLoaded(true);
+          setSound(downloadedSound);
+        });
+      })
+      .catch(e => console.log('Error', e));
+  }, []);
+
+  useEffect(() => {
+    if (loaded && sound) {
+      sound.setNumberOfLoops(0);
+      setDuration(Math.floor(sound.getDuration()));
+    }
+  }, [loaded, sound]);
+
+  useEffect(() => {
     return () => {
-      sound.release();
+      if (sound) {
+        sound.stop();
+        sound.release();
+      }
     };
   }, []);
 
@@ -118,7 +155,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
           <Icon name={'ios-arrow-back'} color={'#000'} size={ICON_SIZE} />
         </Pressable>
 
-        <View style={{flexDirection: 'row'}}>
+        <View style={styles.row}>
           <Pressable onPress={toggleFavorite}>
             <Icon
               name={isFavorite ? 'ios-heart' : 'ios-heart-outline'}
@@ -141,6 +178,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       <View style={styles.wavesContainer}>
         <Waves
           sound={sound}
+          samples={file.details.audioSamples!!}
           translateX={translateX}
           progress={progress}
           duration={duration}
@@ -195,6 +233,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  row: {
+    flexDirection: 'row',
   },
   wavesContainer: {
     position: 'absolute',

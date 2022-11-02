@@ -5,41 +5,42 @@ import {
   ImageStyle,
   ImageBackground,
   View,
+  Image,
 } from 'react-native';
 import React, {useMemo} from 'react';
-import {Dimension} from '../../shared/types';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useSnapshot} from 'valtio';
 import authState from '../../store/authStore';
-import {navigationState} from '../../store/navigationStore';
 import {getSimpleMimeType} from '../../shared/functions/getMimeType';
 import {MimeType} from '../../shared/enum/MimeType';
 import Audio from './Audio';
+import {host} from '../../shared/constants';
+import {File} from '../../shared/types';
 
 type DrawerImageThumbnailProps = {
-  dimensions: Dimension;
-  uri: string;
+  file: File;
 };
 
 const {width} = Dimensions.get('window');
 const SIZE = width * 0.75 - 15;
 
-const DrawerImageThumbnail: React.FC<DrawerImageThumbnailProps> = ({
-  dimensions,
-  uri,
-}) => {
+const DrawerImageThumbnail: React.FC<DrawerImageThumbnailProps> = ({file}) => {
   const {accessToken} = useSnapshot(authState.tokens);
-  const {file} = useSnapshot(navigationState);
+
+  const uri = `${host}/static/file/${file.id}`;
 
   const imageStyle: ImageStyle = useMemo(() => {
-    const isWider = dimensions.width > dimensions.height;
-    const aspecRatio = dimensions.width / dimensions.height;
+    const fileWidth = file.details.dimensions?.[0] ?? 1;
+    const fileHeight = file.details.dimensions?.[1] ?? 1.1;
+
+    const isWider = fileWidth > fileHeight;
+    const aspecRatio = fileWidth / fileHeight;
     return {
-      width: isWider ? SIZE : aspecRatio * SIZE,
+      width: isWider ? SIZE : SIZE * aspecRatio,
       height: isWider ? SIZE / aspecRatio : SIZE,
       borderRadius: 5,
     };
-  }, []);
+  }, [file.details.dimensions]);
 
   const renderThumbnail = () => {
     if (!file) {
@@ -47,18 +48,15 @@ const DrawerImageThumbnail: React.FC<DrawerImageThumbnailProps> = ({
     }
 
     const contentType = getSimpleMimeType(file.contentType);
+
     switch (contentType) {
-      case (MimeType.IMAGE, MimeType.VIDEO, MimeType.PDF):
+      case MimeType.IMAGE:
         return (
-          <ImageBackground
-            source={{uri, headers: {Authorization: accessToken}}}
+          <Image
+            source={{uri, headers: {Authorization: `Bearer ${accessToken}`}}}
             style={[imageStyle, styles.image]}
             resizeMode={'cover'}
-            imageStyle={imageStyle}>
-            {file?.contentType === 'video' && (
-              <Icon name={'play'} size={40} color={'#fff'} />
-            )}
-          </ImageBackground>
+          />
         );
       case MimeType.AUDIO:
         return (

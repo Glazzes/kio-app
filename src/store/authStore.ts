@@ -1,6 +1,7 @@
 import {proxy} from 'valtio';
 
 type User = {
+  id: string;
   username: string;
   email: string;
   profilePicture: string;

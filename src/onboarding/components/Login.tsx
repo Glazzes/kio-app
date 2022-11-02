@@ -70,6 +70,17 @@ const Login: NavigationFunctionComponent = ({componentId}) => {
       authState.user = user;
 
       Navigation.setRoot(mainRoot);
+
+      Navigation.showOverlay({
+        component: {
+          name: Screens.TOAST,
+          passProps: {
+            title: 'Logged in',
+            message: "You've logged into your account successfuly",
+            type: Notification.SUCCESS,
+          },
+        },
+      });
     } catch (e) {
       Navigation.showOverlay({
         component: {
@@ -202,6 +213,7 @@ const styles = StyleSheet.create({
     //backgroundColor: 'pink',
   },
   logo: {
+    marginTop: 10,
     width: 100,
     height: 100,
     alignSelf: 'center',

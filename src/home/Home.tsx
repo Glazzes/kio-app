@@ -32,6 +32,8 @@ import {MimeType} from '../shared/enum/MimeType';
 import {axiosInstance} from '../shared/requests/axiosInstance';
 import RNBootSplash from 'react-native-bootsplash';
 import {SIZE} from './utils/constants';
+import emitter from '../utils/emitter';
+import {UpdateFolderEvent} from './types';
 
 type HomeProps = {
   folderId?: string;
@@ -49,7 +51,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   componentId,
   folderId,
 }) => {
-  const ref = useRef<typeof AnimatedFlashList>(null);
+  const ref = useRef<typeof FlashList>(null);
 
   const [files, setFiles] = useState<File[]>([]);
   const scrollY = useSharedValue<number>(0);
@@ -80,9 +82,6 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           return (
             <ImageThumbnail
               file={info.item}
-              pic={
-                'https://images.unsplash.com/photo-1616567214738-22fc0c6332b3?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8c2liZXJpYW4lMjBodXNreXxlbnwwfHwwfHw%3D&w=1000&q=80'
-              }
               dimensions={dimensions}
               translateX={translateX}
               translateY={translateY}
@@ -118,8 +117,20 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   useEffect(() => {
     push({name: '', componentId});
 
+    const addFiles = emitter.addListener(
+      `${UpdateFolderEvent.ADD_FILE}-${componentId}`,
+      (newFiles: File[]) => {
+        console.log('reveived files');
+
+        // @ts-ignore
+        ref.current?.prepareForLayoutAnimationRender();
+        setFiles(f => [...f, ...newFiles]);
+      },
+    );
+
     return () => {
       removeByComponentId(componentId);
+      addFiles.remove();
     };
   }, []);
 

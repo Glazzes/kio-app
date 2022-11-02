@@ -12,7 +12,7 @@ export type File = {
 };
 
 export type FileDetails = {
-  dimensions: string | null;
+  dimensions: number[] | null;
   duration: string | null;
   audioSamples: number[] | null;
   pages: string | null;

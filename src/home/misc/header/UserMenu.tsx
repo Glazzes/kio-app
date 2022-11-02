@@ -18,6 +18,9 @@ import Animated, {
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Screens} from '../../../enums/screens';
+import {mmkv} from '../../../store/mmkv';
+import {onBoardingRoot} from '../../../navigation/roots';
+import {Notification} from '../../../enums/notification';
 
 type UserMenuProps = {
   x: number;
@@ -51,6 +54,23 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
   const onLayout = (e: LayoutChangeEvent) => {
     const {width: w, height: h} = e.nativeEvent.layout;
     setDimensions({width: w, height: h});
+  };
+
+  const logout = () => {
+    mmkv.delete('tokens');
+    Navigation.dismissModal(componentId);
+    Navigation.setRoot(onBoardingRoot);
+
+    Navigation.showOverlay({
+      component: {
+        name: Screens.TOAST,
+        passProps: {
+          title: 'Logged out',
+          message: "You've logged out of your account successfully",
+          type: Notification.SUCCESS,
+        },
+      },
+    });
   };
 
   const close = () => {
@@ -134,10 +154,10 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
           <Text style={styles.buttonText}>Buy storage</Text>
         </Pressable>
 
-        <View style={styles.action}>
+        <Pressable style={styles.action} onPress={logout}>
           <Icon name={'ios-exit-outline'} size={20} color={COLOR} />
           <Text style={styles.actionText}>Log out</Text>
-        </View>
+        </Pressable>
       </Animated.View>
     </Pressable>
   );

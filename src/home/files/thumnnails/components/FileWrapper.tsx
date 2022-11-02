@@ -60,16 +60,12 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
 
   const wrapperMargin: ViewStyle = useMemo(() => {
     return {marginLeft: index % 2 === 0 ? width * 0.05 : 5};
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [index]);
 
   const onPress = () => {
     if (isSelected) {
       setIsSelected(false);
-      emitter.emit(
-        `${SelectAction.UNSELECT_FILE}-${componentId}`,
-        `file-${index}`,
-      );
+      emitter.emit(`${SelectAction.UNSELECT_FILE}-${componentId}`, file.id);
       return;
     }
 
@@ -103,15 +99,9 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
     setIsSelected(swap);
 
     if (swap) {
-      emitter.emit(
-        `${SelectAction.SELECT_FILE}-${componentId}`,
-        `file-${index}`,
-      );
+      emitter.emit(`${SelectAction.SELECT_FILE}-${componentId}`, file.id);
     } else {
-      emitter.emit(
-        `${SelectAction.UNSELECT_FILE}-${componentId}`,
-        `file-${index}`,
-      );
+      emitter.emit(`${SelectAction.UNSELECT_FILE}-${componentId}`, file.id);
     }
   };
 

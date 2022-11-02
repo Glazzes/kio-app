@@ -37,14 +37,14 @@ const {width} = Dimensions.get('window');
 const CANVAS_SIZE = statusBarHeight * 3 + 60;
 
 const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
-  const authenticatedUser = useSnapshot(authState.user);
+  const user = useSnapshot(authState.user);
 
   const componentId = useContext(NavigationContext);
 
-  const [files, setFiles] = useState<string[]>([]);
+  const [selectionIds, setSelection] = useState<string[]>([]);
 
   const clear = () => {
-    setFiles([]);
+    setSelection([]);
     emitter.emit(`unselect-file`);
   };
 
@@ -67,7 +67,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
         name: Modals.GENERIC_DIALOG,
         passProps: {
           title: 'Download selection',
-          message: `${files.length} files will be downloaded, this may take a while`,
+          message: `${selectionIds.length} files will be downloaded, this may take a while`,
         },
       },
     });
@@ -79,7 +79,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
         name: Modals.GENERIC_DIALOG,
         passProps: {
           title: 'Delete selection',
-          message: `${files.length} files will be deleted, this action can not be undone`,
+          message: `${selectionIds.length} files will be deleted, this action can not be undone`,
         },
       },
     });
@@ -102,7 +102,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
   }, scrollY);
 
   useAnimatedReaction(
-    () => files.length,
+    () => selectionIds.length,
     value => {
       translateY.value = withTiming(value > 0 ? -statusBarHeight * 2 : 0);
     },
@@ -111,15 +111,15 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
   useEffect(() => {
     const selectFile = emitter.addListener(
       `${SelectAction.SELECT_FILE}-${componentId}`,
-      (item: string) => {
-        setFiles(f => [...f, item]);
+      (id: string) => {
+        setSelection(f => [...f, id]);
       },
     );
 
     const unselectFile = emitter.addListener(
       `${SelectAction.UNSELECT_FILE}-${componentId}`,
       (id: string) => {
-        setFiles(f => f.filter(file => file !== id));
+        setSelection(f => f.filter(file => file !== id));
       },
     );
 
@@ -171,7 +171,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
               <View style={styles.appbarContent}>
                 <View>
                   <Text style={styles.hi}>Hi,</Text>
-                  <Text style={styles.title}>{authenticatedUser.username}</Text>
+                  <Text style={styles.title}>{user.username}</Text>
                 </View>
                 <UserAvatar />
               </View>
@@ -182,7 +182,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
               <Pressable onPress={clear} hitSlop={20}>
                 <Icon name={'close'} size={23} color={'#000'} />
               </Pressable>
-              <Text style={styles.count}>{files.length}</Text>
+              <Text style={styles.count}>{selectionIds.length}</Text>
             </View>
             <View style={styles.countContainer}>
               <Pressable onPress={copyCutSelection}>
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   icon: {
-    marginLeft: 15,
+    marginLeft: 20,
   },
 });
 

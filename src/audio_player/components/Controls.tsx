@@ -16,7 +16,7 @@ import {Canvas, Circle, LinearGradient, vec} from '@shopify/react-native-skia';
 type Loop = 0 | 1 | -1;
 
 type AuidoControlsProps = {
-  sound: Sound;
+  sound: Sound | undefined;
   loaded: boolean;
   isPlaying: boolean;
   setIsPlaying: (value: React.SetStateAction<boolean>) => void;
@@ -44,13 +44,13 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
 }) => {
   const play = () => {
     setIsPlaying(p => !p);
-    if (sound.isPlaying()) {
+    if (sound?.isPlaying()) {
       sound.pause();
       cancelAnimation(translateX);
       return;
     }
 
-    sound.play();
+    sound?.play();
     animateTimeLine();
   };
 

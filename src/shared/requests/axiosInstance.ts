@@ -8,6 +8,7 @@ const baseURL = host;
 
 export const axiosInstance = axios.create({
   baseURL,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -45,8 +46,6 @@ axiosInstance.interceptors.response.use(
       config.retry = true;
 
       try {
-        console.log('requesting token');
-        console.log(config.url);
         const tokens: TokenResponse = JSON.parse(mmkv.getString('tokens')!!);
         const {data} = await getNewtokenPair(tokens.refreshToken);
 

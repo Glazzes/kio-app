@@ -40,6 +40,7 @@ import {Overlays} from '../shared/enum/Overlays';
 import {getSimpleMimeType} from '../shared/functions/getMimeType';
 import {MimeType} from '../shared/enum/MimeType';
 import {pushToScreen} from '../shared/functions/navigation/pushToScreen';
+import {deleteFiles} from '../shared/requests/functions/deleteFiles';
 
 type FileMenuProps = {
   file: File;
@@ -172,9 +173,6 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
       case 'Details':
         openDetails();
         return;
-      case 'Delete':
-        openDeleteWarning();
-        return;
       case 'Copy link':
         copyLink();
         return;
@@ -183,6 +181,9 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
         return;
       case 'Download':
         download();
+        return;
+      case 'Delete':
+        deleteCurrentFile();
         return;
       default:
         return;
@@ -218,23 +219,14 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   const openDetails = () => {
     const lastFolderScreen = peekLast();
     pushFile(file);
+    Navigation.updateProps(Screens.LEFT_DRAWER, {
+      file,
+    });
+
     Navigation.mergeOptions(lastFolderScreen.componentId, {
       sideMenu: {
         right: {
           visible: true,
-        },
-      },
-    });
-  };
-
-  const openDeleteWarning = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: `Delete "${file.name}"`,
-          message:
-            'Are you sure you want to delete this file? This action can not be undone',
         },
       },
     });
@@ -260,6 +252,52 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
           title: 'Link copied',
           message: 'Link has been copied to your clipboard.',
           type: Notification.INFO,
+        },
+      },
+    });
+  };
+
+  const deleteCurrentFile = () => {
+    dissmiss();
+
+    const deleteThisFile = async () => {
+      try {
+        deleteFiles({
+          from: '6355742c13cfe841481f223e',
+          files: [file.id],
+        });
+        Navigation.showOverlay({
+          component: {
+            name: Screens.TOAST,
+            passProps: {
+              title: 'File deleted',
+              message: 'The file has been successfully deleted',
+              type: Notification.SUCCESS,
+            },
+          },
+        });
+      } catch (e) {
+        Navigation.showOverlay({
+          component: {
+            name: Screens.TOAST,
+            passProps: {
+              title: 'File delete',
+              message: 'Could not delete your file',
+              type: Notification.ERROR,
+            },
+          },
+        });
+      }
+    };
+
+    Navigation.showModal({
+      component: {
+        name: Modals.GENERIC_DIALOG,
+        passProps: {
+          title: `Delete "${file.name}"`,
+          message:
+            'Are you sure you want to delete this file? This action can not be undone',
+          action: deleteThisFile,
         },
       },
     });

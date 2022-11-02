@@ -1,5 +1,5 @@
-import {Dimensions, Image, StyleSheet, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {Dimensions, StyleSheet, View} from 'react-native';
+import React, {useEffect, useRef} from 'react';
 import {useVector} from 'react-native-redash';
 import Animated, {
   measure,
@@ -32,7 +32,6 @@ type Reflection = {
 
 type ImageThumbnailProps = {
   file: File;
-  pic: string;
 };
 
 const {height} = Dimensions.get('window');
@@ -44,7 +43,6 @@ const center = {
 
 const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   file,
-  pic,
   translateX,
   translateY,
   scale,
@@ -55,13 +53,9 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   const uri = `${host}/static/file/${file.id}`;
 
   const {accessToken} = useSnapshot(authState.tokens);
-
-  const [imageDimensions, setImageDimensions] = useState<{
-    width: number;
-    height: number;
-  }>({
-    width: SIZE,
-    height: SIZE,
+  const imageDimensions = useRef<Dimension>({
+    width: file.details.dimensions?.[0] ?? SIZE,
+    height: file.details.dimensions?.[1] ?? SIZE,
   });
 
   const setPic = () => {
@@ -85,7 +79,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
       x.value = pageX;
       y.value = pageY;
 
-      dimensions.value = imageDimensions;
+      dimensions.value = imageDimensions.current;
 
       opacity.value = withTiming(0, {duration: 100}, hasFinished => {
         if (hasFinished) {
@@ -134,15 +128,8 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   }));
 
   useEffect(() => {
-    Image.getSize(pic, (w: number, h: number) => {
-      setImageDimensions({width: w, height: h});
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     const push = emitter.addListener(`push-${file.id}-image`, () => {
-      pushToImageDetails(file, pic, opacity, imageDimensions);
+      pushToImageDetails(file, uri, opacity, imageDimensions.current);
     });
 
     return () => {
@@ -150,7 +137,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imageDimensions]);
+  }, []);
 
   return (
     <View style={styles.root} ref={aref}>

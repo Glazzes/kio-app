@@ -4,6 +4,9 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import Video from 'react-native-video';
 import FileDetailsAppbar from '../misc/FileDetailsAppbar';
 import {File} from '../shared/types';
+import {host} from '../shared/constants';
+import {useSnapshot} from 'valtio';
+import authState from '../store/authStore';
 
 type VideoPlayerProps = {
   thumbnail: string;
@@ -15,12 +18,15 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
   thumbnail,
   file,
 }) => {
+  const uri = `${host}/static/file/${file.id}`;
+  const {accessToken} = useSnapshot(authState.tokens);
+
   const [ready, setReady] = useState<boolean>(false);
 
   return (
     <View style={styles.root}>
       <Video
-        source={require('./assets/gru.mp4')}
+        source={{uri, headers: {Authorization: `Bearer ${accessToken}`}}}
         paused={false}
         controls={true}
         style={[StyleSheet.absoluteFillObject, {backgroundColor: '#000'}]}
@@ -29,6 +35,7 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
         posterResizeMode={'contain'}
         useTextureView={false}
         onReadyForDisplay={() => setReady(true)}
+        pictureInPicture={true}
       />
       <FileDetailsAppbar
         file={file}

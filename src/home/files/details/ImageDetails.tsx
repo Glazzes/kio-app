@@ -21,6 +21,8 @@ import {Dimension, File} from '../../../shared/types';
 import {getMaxImageScale} from '../../../crop_editor/utils/functions/getMaxImageScale';
 import emitter from '../../../utils/emitter';
 import FileDetailsAppbar from '../../../misc/FileDetailsAppbar';
+import {useSnapshot} from 'valtio';
+import authState from '../../../store/authStore';
 
 type ImageDetailsProps = {
   file: File;
@@ -38,8 +40,11 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   dimensions,
   file,
 }) => {
+  const {accessToken} = useSnapshot(authState.tokens);
+
   const imageS: ViewStyle = imageStyles(dimensions);
 
+  const lightenBackground = useSharedValue<boolean>(false);
   const hideOnDrag = useSharedValue<boolean>(true);
 
   const layout = useVector(1, 1);
@@ -63,6 +68,10 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   }, [translate.x.value, translate.y.value, scale.value]);
 
   const backgroundColor = useDerivedValue(() => {
+    if (lightenBackground.value) {
+      return withTiming('transparent', {duration: 150});
+    }
+
     return scale.value === 1
       ? interpolateColor(
           translate.y.value,
@@ -71,7 +80,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
           'RGB',
         )
       : 'rgba(0, 0, 0, 1)';
-  }, [translate.y.value]);
+  }, [translate.y, lightenBackground]);
 
   const dismissModal = () => {
     Navigation.dismissModal(componentId);
@@ -210,19 +219,18 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
     };
   });
 
-  const rootRStyles = useAnimatedStyle(() => ({
-    backgroundColor: backgroundColor.value,
-  }));
+  const rootRStyles = useAnimatedStyle(() => {
+    return {
+      backgroundColor: backgroundColor.value,
+    };
+  });
 
   useEffect(() => {
     const backListener =
       Navigation.events().registerNavigationButtonPressedListener(e => {
         if (e.buttonId === 'RNN.hardwareBackButton') {
-          scale.value = withTiming(1, {duration: 150}, finished => {
-            if (finished) {
-              runOnJS(dismissModal)();
-            }
-          });
+          lightenBackground.value = true;
+          dismissModal();
         }
       });
 
@@ -247,7 +255,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
               layout.y.value = nativeEvent.layout.height;
             }}
             nativeID={`img-${file.id}-dest`}
-            source={{uri}}
+            source={{uri, headers: {Authorization: `Bearer ${accessToken}`}}}
             resizeMethod={'scale'}
             resizeMode={'cover'}
             style={[imageS as any, rStyle]}
