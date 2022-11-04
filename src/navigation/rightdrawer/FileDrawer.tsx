@@ -78,13 +78,25 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
           <Text style={styles.data}>{file.contentType}</Text>
         </View>
       )}
-      {file?.details.dimensions && (
+      {file?.details.dimensions && !file.contentType.endsWith('pdf') && (
         <View style={styles.textContainer}>
           <Text style={styles.item}>Dimensions</Text>
           <Text
             style={
               styles.data
             }>{`${file.details.dimensions[0]}x${file.details.dimensions[1]}`}</Text>
+        </View>
+      )}
+      {file?.details.duration && (
+        <View style={styles.textContainer}>
+          <Text style={styles.item}>Duration</Text>
+          <Text style={styles.data}>{file?.details.duration}</Text>
+        </View>
+      )}
+      {file?.details.pages && (
+        <View style={styles.textContainer}>
+          <Text style={styles.item}>Pages</Text>
+          <Text style={styles.data}>{file?.details.pages}</Text>
         </View>
       )}
       <View style={styles.textContainer}>

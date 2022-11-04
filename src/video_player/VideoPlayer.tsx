@@ -7,6 +7,8 @@ import {File} from '../shared/types';
 import {host} from '../shared/constants';
 import {useSnapshot} from 'valtio';
 import authState from '../store/authStore';
+import {displayToast} from '../shared/navigation/displayToast';
+import {Notification} from '../enums/notification';
 
 type VideoPlayerProps = {
   thumbnail: string;
@@ -23,19 +25,28 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
 
   const [ready, setReady] = useState<boolean>(false);
 
+  const onError = (e: any) => {
+    console.log(e);
+    displayToast(
+      'Load error',
+      'This video could not be loaded, try again later',
+      Notification.ERROR,
+    );
+  };
+
   return (
     <View style={styles.root}>
       <Video
         source={{uri, headers: {Authorization: `Bearer ${accessToken}`}}}
         paused={false}
         controls={true}
-        style={[StyleSheet.absoluteFillObject, {backgroundColor: '#000'}]}
+        style={[StyleSheet.absoluteFillObject, styles.black]}
         resizeMode={'contain'}
         poster={thumbnail}
         posterResizeMode={'contain'}
         useTextureView={false}
         onReadyForDisplay={() => setReady(true)}
-        pictureInPicture={true}
+        onError={onError}
       />
       <FileDetailsAppbar
         file={file}
@@ -62,6 +73,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#000 ',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  black: {
+    backgroundColor: '#000',
   },
 });
 

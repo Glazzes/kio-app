@@ -38,6 +38,7 @@ import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';
 
 import authState from './src/store/authStore';
+import {host} from './src/shared/constants';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -158,15 +159,11 @@ Navigation.events().registerAppLaunchedListener(async () => {
 
   const tokens = JSON.parse(tokenString);
   try {
-    await axios.post(
-      'http://192.168.42.232:8080/api/v1/auth/introspect',
-      undefined,
-      {
-        params: {
-          refresh_token: tokens.refreshToken,
-        },
+    await axios.post(`${host}/api/v1/auth/introspect`, undefined, {
+      params: {
+        refresh_token: tokens.refreshToken,
       },
-    );
+    });
   } catch (e) {
     if (e.response.status === 404) {
       Navigation.setRoot(onBoardingRoot);

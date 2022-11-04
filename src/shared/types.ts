@@ -29,10 +29,9 @@ export type UploadRequest = {
   to: string;
   details: {
     [name: string]: {
-      pages: number | null;
-      duration: string | null;
-      audioSamples: number[] | null;
       dimensions: [number, number] | null;
+      duration: number | null;
+      thumbnailName: string | null;
     };
   };
 };

@@ -8365,6 +8365,11 @@ react-native-navigation@^7.30.0-alpha:
     react-lifecycles-compat "2.0.0"
     tslib "1.9.3"
 
+react-native-pdf-thumbnail@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/react-native-pdf-thumbnail/-/react-native-pdf-thumbnail-1.2.0.tgz#8143e3a922f4a6f9ef490af9b3bd2c97d632b112"
+  integrity sha512-B6NQtdl5PlIshOvUQDo9pzrFTQDwYIEpeHH5TKMCjXySvYvnC5s7+0w55Tlo745ZB46umwGD1app2THDIdtugg==
+
 react-native-pdf@^6.6.2:
   version "6.6.2"
   resolved "https://registry.yarnpkg.com/react-native-pdf/-/react-native-pdf-6.6.2.tgz#a119aa3fd908c2c0a92102a78562530a35b9154b"
@@ -10325,8 +10330,3 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
-
-zustand@^3.7.2:
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/zustand/-/zustand-3.7.2.tgz#7b44c4f4a5bfd7a8296a3957b13e1c346f42514d"
-  integrity sha512-PIJDIZKtokhof+9+60cpockVOq05sJzHCriyvaLBmEJixseQ1a5Kdov6fWZfWOu5SK9c+FhH1jU0tntLxRJYMA==

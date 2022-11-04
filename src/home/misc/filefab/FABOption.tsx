@@ -10,10 +10,13 @@ import {
 } from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
 import notifee from '@notifee/react-native';
-import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {UploadRequest} from '../../../shared/types';
-import {UpdateFolderEvent} from '../../types';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
+import {getThumbnailAsync} from 'expo-video-thumbnails';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {UpdateFolderEvent} from '../../types';
+import PdfThumbnail from 'react-native-pdf-thumbnail';
+import Sound from 'react-native-sound';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -55,20 +58,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     // @ts-ignore
     const result = await pickMultiple({
       allowMultiSelection: true,
-    });
-
-    await notifee.displayNotification({
-      id: 'upload',
-      title: `Uploading file${result.length > 1 ? 's' : ''}`,
-      body: 'this may take a while',
-      android: {
-        channelId: 'kio',
-        progress: {
-          current: 1,
-          indeterminate: true,
-          max: 100,
-        },
-      },
+      copyTo: 'cachesDirectory', // in order to get duration it's necesary
     });
 
     const request: UploadRequest = {
@@ -86,10 +76,9 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       });
 
       request.details[file.name] = {
-        pages: null,
-        duration: null,
-        audioSamples: null,
+        thumbnailName: null,
         dimensions: null,
+        duration: null,
       };
 
       if (file.type?.startsWith('image')) {
@@ -97,9 +86,64 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
           request.details[file.name].dimensions = [w, h];
         });
       }
+
+      if (file.type?.startsWith('video') || file.type?.startsWith('audio')) {
+        const sound = new Sound(file.fileCopyUri, undefined, e => {
+          if (e) {
+            console.log(e);
+          }
+
+          console.log(sound.getDuration());
+        });
+
+        request.details[file.name].duration = Math.floor(sound.getDuration());
+      }
+
+      if (file.type?.endsWith('pdf')) {
+        const {uri, width, height} = await PdfThumbnail.generate(
+          file.fileCopyUri!!,
+          0,
+        );
+        formData.append('thumbnails', {
+          uri,
+          name: file.name,
+          type: 'image/jpeg',
+        });
+
+        request.details[file.name].dimensions = [width, height];
+      }
+
+      if (file.type?.startsWith('video')) {
+        const {uri, width, height} = await getThumbnailAsync(file.uri, {
+          time: 5000,
+          quality: 1,
+        });
+
+        formData.append('thumbnails', {
+          uri,
+          name: file.name,
+          type: 'image/jpeg',
+        });
+
+        request.details[file.name].dimensions = [width, height];
+      }
     }
 
-    formData.append('request', JSON.stringify(request, null, 2));
+    formData.append('request', JSON.stringify(request));
+
+    await notifee.displayNotification({
+      id: 'upload',
+      title: `Uploading file${result.length > 1 ? 's' : ''}`,
+      body: 'this may take a while',
+      android: {
+        channelId: 'kio',
+        progress: {
+          current: 1,
+          indeterminate: true,
+          max: 100,
+        },
+      },
+    });
 
     try {
       const res = await axiosInstance.post('/api/v1/files', formData, {

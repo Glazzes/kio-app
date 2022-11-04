@@ -1,13 +1,15 @@
 import {Image, StyleSheet, View} from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
 import {SIZE} from '../utils/constants';
 import emitter from '../../../../utils/emitter';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import {File} from '../../../../shared/types';
+import {host} from '../../../../shared/constants';
+import {useSnapshot} from 'valtio';
+import authState from '../../../../store/authStore';
 
 type VideoThumnailProps = {
   file: File;
@@ -15,31 +17,16 @@ type VideoThumnailProps = {
 };
 
 const VideoThumnail: React.FC<VideoThumnailProps> = ({index, file}) => {
+  const {accessToken} = useSnapshot(authState.tokens);
+  const thumbnailUri = `${host}/static/file/${file.id}/thumbnail`;
   const componentId = useContext(NavigationContext);
-  const [poster, setPoster] = useState<string>('');
-
-  const getPoster = async () => {
-    try {
-      const {uri} = await getThumbnailAsync(
-        'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        {
-          time: 1000,
-          quality: 1,
-        },
-      );
-
-      setPoster(uri);
-    } catch (e) {
-      console.warn(e);
-    }
-  };
 
   const pushToPlayer = () => {
     Navigation.push(componentId, {
       component: {
         name: Screens.VIDEO_PLAYER,
         passProps: {
-          thumbnail: poster,
+          thumbnail: thumbnailUri,
           index,
           isVideo: true,
           file,
@@ -47,10 +34,6 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({index, file}) => {
       },
     });
   };
-
-  useEffect(() => {
-    getPoster();
-  }, []);
 
   useEffect(() => {
     const push = emitter.addListener(`push-${index}`, () => {
@@ -67,7 +50,10 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({index, file}) => {
     <View style={styles.root}>
       <Image
         nativeID={`video-${index}`}
-        source={{uri: poster}}
+        source={{
+          uri: thumbnailUri,
+          headers: {Authorization: `Bearer ${accessToken}`},
+        }}
         resizeMode={'cover'}
         style={styles.video}
       />

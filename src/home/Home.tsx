@@ -98,9 +98,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           return <VideoThumbnail index={info.index} file={info.item} />;
 
         case MimeType.PDF:
-          return (
-            <PdfThumnail thumbnail="https://images.manning.com/book/9/9a102d1-8e4d-4f20-a095-c60ca54fc5e6/Nickoloff-Docker-2ed-RGB.jpg" />
-          );
+          return <PdfThumnail file={info.item} />;
 
         default:
           return <GenericThumbnail mimeType="image" />;
@@ -123,8 +121,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
         console.log('reveived files');
 
         // @ts-ignore
-        ref.current?.prepareForLayoutAnimationRender();
-        setFiles(f => [...f, ...newFiles]);
+        // ref.current?.prepareForLayoutAnimationRender();
+        setFiles(f => [...newFiles, ...f]);
       },
     );
 
