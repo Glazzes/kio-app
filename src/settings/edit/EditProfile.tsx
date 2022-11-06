@@ -19,7 +19,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Screens} from '../../enums/screens';
 import {Asset} from 'expo-media-library';
-import {push, removeByComponentId} from '../../store/navigationStore';
+import {
+  pushNavigationScreen,
+  removeByComponentId,
+} from '../../store/navigationStore';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -108,7 +111,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       });
     });
 
-    push({name: 'Edit.Profile', componentId});
+    pushNavigationScreen({name: 'Edit.Profile', componentId});
 
     return () => {
       listener.remove();

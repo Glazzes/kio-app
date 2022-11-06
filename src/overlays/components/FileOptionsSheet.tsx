@@ -27,22 +27,22 @@ import Animated, {
   scrollTo,
   useAnimatedRef,
 } from 'react-native-reanimated';
-import {peekLast, pushFile} from '../store/navigationStore';
+import {peekLastNavigationScreen, pushFile} from '../../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {clamp} from '../shared/functions/clamp';
+import {clamp} from '../../shared/functions/clamp';
 import {snapPoint} from 'react-native-redash';
-import emitter from '../utils/emitter';
-import {Modals} from '../navigation/screens/modals';
-import {Screens} from '../enums/screens';
-import {Notification} from '../enums/notification';
-import {File} from '../shared/types';
-import {Overlays} from '../shared/enum/Overlays';
-import {getSimpleMimeType} from '../shared/functions/getMimeType';
-import {MimeType} from '../shared/enum/MimeType';
-import {pushToScreen} from '../shared/functions/navigation/pushToScreen';
-import {deleteFiles} from '../shared/requests/functions/deleteFiles';
+import emitter from '../../utils/emitter';
+import {Modals} from '../../navigation/screens/modals';
+import {Screens} from '../../enums/screens';
+import {Notification} from '../../enums/notification';
+import {File} from '../../shared/types';
+import {Overlays} from '../../shared/enum/Overlays';
+import {getSimpleMimeType} from '../../shared/functions/getMimeType';
+import {MimeType} from '../../shared/enum/MimeType';
+import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
+import {deleteFiles} from '../../shared/requests/functions/deleteFiles';
 
-type FileMenuProps = {
+type FileOptionSheetProps = {
   file: File;
 };
 
@@ -121,7 +121,7 @@ function sectionSeparator() {
   return <View style={{height: 15}} />;
 }
 
-const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
+const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   componentId,
   file,
 }) => {
@@ -191,7 +191,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   };
 
   const open = () => {
-    const {componentId: lastComponentId} = peekLast();
+    const {componentId: lastComponentId} = peekLastNavigationScreen();
     const mimeType = getSimpleMimeType(file.contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
@@ -217,7 +217,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   };
 
   const openDetails = () => {
-    const lastFolderScreen = peekLast();
+    const lastFolderScreen = peekLastNavigationScreen();
     pushFile(file);
     Navigation.updateProps(Screens.LEFT_DRAWER, {
       file,
@@ -431,7 +431,7 @@ const FileMenu: NavigationFunctionComponent<FileMenuProps> = ({
   );
 };
 
-FileMenu.options = {
+FileOptionSheet.options = {
   statusBar: {
     visible: false,
   },
@@ -519,4 +519,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FileMenu;
+export default FileOptionSheet;

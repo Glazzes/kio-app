@@ -1,12 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  Dimensions,
-} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, Dimensions} from 'react-native';
 import React, {useEffect} from 'react';
 import {
   Navigation,
@@ -16,10 +9,12 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DrawerImageThumbnail from './DrawerImageThumbnail';
 import {useSnapshot} from 'valtio';
-import {popFile} from '../../store/navigationStore';
+import {navigationState, popFile} from '../../store/navigationStore';
 import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
 import authState from '../../store/authStore';
 import {File} from '../../shared/types';
+import {convertCurrentTimeToTextTime} from '../../audio_player/utils/functions/convertCurrentTimeToTextTime';
+import Avatar from '../../misc/Avatar';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -41,6 +36,7 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
   file,
 }) => {
   const user = useSnapshot(authState.user);
+  const folders = useSnapshot(navigationState.folders);
 
   useEffect(() => {
     const listener: NavigationComponentListener = {
@@ -90,7 +86,9 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
       {file?.details.duration && (
         <View style={styles.textContainer}>
           <Text style={styles.item}>Duration</Text>
-          <Text style={styles.data}>{file?.details.duration}</Text>
+          <Text style={styles.data}>
+            {convertCurrentTimeToTextTime(file?.details.duration ?? 0)}
+          </Text>
         </View>
       )}
       {file?.details.pages && (
@@ -118,19 +116,24 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
             name={'folder'}
             size={35}
             color={'#354259'}
-            style={{marginRight: 10}}
+            style={styles.margin}
           />
-          <CollapsableText text="Pictures" />
+          <CollapsableText
+            text={
+              folders[folders.length - 1]
+                ? folders[folders.length - 1].name
+                : 'Unknown'
+            }
+          />
         </View>
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Owner</Text>
         <View style={styles.ownerContainer}>
-          <Image
-            source={{uri: 'file:///storage/sdcard0/Descargas/glaceon.jpg'}}
-            style={styles.avatar}
+          <Avatar username={user.username} size={35} />
+          <CollapsableText
+            text={file?.ownerId === user.id ? 'You' : user.username}
           />
-          <CollapsableText text={user.username} />
         </View>
       </View>
     </ScrollView>
@@ -157,7 +160,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontFamily: 'UberBold',
-    // fontWeight: 'bold',
     color: '#354259',
     marginBottom: 10,
   },
@@ -193,6 +195,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  margin: {
+    marginRight: 10,
   },
   avatar: {
     height: 35,

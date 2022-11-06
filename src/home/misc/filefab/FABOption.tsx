@@ -4,17 +4,14 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import emitter from '../../../utils/emitter';
 import {pickMultiple} from 'react-native-document-picker';
-import {
-  Navigation,
-  OptionsModalPresentationStyle,
-} from 'react-native-navigation';
+import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
 import notifee from '@notifee/react-native';
 import {UploadRequest} from '../../../shared/types';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {UpdateFolderEvent} from '../../types';
+import {UpdateFolderEvent} from '../../utils/types';
 import PdfThumbnail from 'react-native-pdf-thumbnail';
 import Sound from 'react-native-sound';
 
@@ -72,7 +69,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       formData.append('files', {
         name: file.name,
         type: file.type,
-        uri: file.uri,
+        uri: file.fileCopyUri!!,
       });
 
       request.details[file.name] = {
@@ -82,7 +79,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       };
 
       if (file.type?.startsWith('image')) {
-        await Image.getSize(file.uri, (w, h) => {
+        await Image.getSize(file.fileCopyUri!!, (w, h) => {
           request.details[file.name].dimensions = [w, h];
         });
       }
@@ -93,10 +90,9 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
             console.log(e);
           }
 
-          console.log(sound.getDuration());
+          request.details[file.name].duration = Math.floor(sound.getDuration());
+          sound.release();
         });
-
-        request.details[file.name].duration = Math.floor(sound.getDuration());
       }
 
       if (file.type?.endsWith('pdf')) {
@@ -179,12 +175,8 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     Navigation.showModal({
       component: {
         name: Modals.CREATE_FOLDER_MODAL,
-        options: {
-          layout: {
-            backgroundColor: 'transparent',
-          },
-          modalPresentationStyle:
-            OptionsModalPresentationStyle.overCurrentContext,
+        passProps: {
+          folderId: '6355742c13cfe841481f223e',
         },
       },
     });

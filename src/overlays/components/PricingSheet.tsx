@@ -18,11 +18,11 @@ import Animated, {
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Screens} from '../enums/screens';
-import {Notification} from '../enums/notification';
-import {clamp} from '../shared/functions/clamp';
+import {Screens} from '../../enums/screens';
+import {Notification} from '../../enums/notification';
+import {clamp} from '../../shared/functions/clamp';
 
-type PricingProps = {};
+type PricingSheetProps = {};
 
 type Plan = {
   name: string;
@@ -54,7 +54,9 @@ const plans: Plan[] = [
   },
 ];
 
-const Pricing: NavigationFunctionComponent<PricingProps> = ({componentId}) => {
+const PricingSheet: NavigationFunctionComponent<PricingSheetProps> = ({
+  componentId,
+}) => {
   const [sheetHeight, setsheetHeight] = useState<number>(0);
   const [plan, setPlan] = useState<'Basic' | 'Pro' | 'Premium'>('Basic');
 
@@ -137,7 +139,7 @@ const Pricing: NavigationFunctionComponent<PricingProps> = ({componentId}) => {
           {plans.map((p, index) => {
             return (
               <Pressable
-                onPress={() => setPlan(p.name)}
+                onPress={() => setPlan(p.name as any)}
                 style={[
                   styles.plan,
                   plan === p.name ? styles.activePlan : styles.inactivePlan,
@@ -295,4 +297,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Pricing;
+export default PricingSheet;

@@ -12,8 +12,8 @@ export type File = {
 };
 
 export type FileDetails = {
-  dimensions: number[] | null;
-  duration: string | null;
+  dimensions: [number, number] | null;
+  duration: number | null;
   audioSamples: number[] | null;
   pages: string | null;
 };
@@ -22,6 +22,8 @@ export type Folder = {
   id: string;
   ownerId: string;
   name: string;
+  createdAt: string;
+  lastModified: string;
   summary: FolderSummary;
 };
 

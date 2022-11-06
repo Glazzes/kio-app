@@ -1,40 +1,41 @@
 import {View, Dimensions, StyleSheet} from 'react-native';
-import {FlashList} from '@shopify/flash-list';
+import {FlashList, ListRenderItemInfo} from '@shopify/flash-list';
 import Folder from './Folder';
 import React, {useEffect, useRef, useState} from 'react';
 import emitter from '../../utils/emitter';
-import {TypingEvent} from '../types';
+import {TypingEvent} from '../utils/types';
 import FolderSkeleton from '../../misc/skeleton/FolderSkeleton';
+import {Folder as FolderType} from '../../shared/types';
 
-type FolderListProps = {};
+type FolderListProps = {
+  folders: FolderType[];
+};
 
 const {width} = Dimensions.get('window');
 const SIZE = width * 0.75;
 const HEIGHT = 180;
 
-const data: number[] = new Array(5).fill(0);
-
-function keyExtractor(_: number, index: number) {
+function keyExtractor(_: FolderType, index: number) {
   return `folder-${index}`;
 }
 
-function renderItem() {
-  return <Folder />;
+function renderItem(info: ListRenderItemInfo<FolderType>) {
+  return <Folder folder={info.item} />;
 }
 
 function seperatorComponent() {
   return <View style={styles.separator} />;
 }
 
-const FolderList: React.FC<FolderListProps> = ({}) => {
-  const ref = useRef<FlashList<number>>();
+const FolderList: React.FC<FolderListProps> = ({folders}) => {
+  const ref = useRef<FlashList<FolderType>>();
 
   const [showSkeletons, setShowSkeletons] = useState<boolean>(false);
 
   useEffect(() => {
     const beginTyping = emitter.addListener(
       TypingEvent.IS_TYPING,
-      (text: string) => {
+      (_: string) => {
         if (!showSkeletons) {
           setShowSkeletons(true);
         }
@@ -61,15 +62,18 @@ const FolderList: React.FC<FolderListProps> = ({}) => {
         </View>
       ) : (
         <FlashList
-          ref={ref}
+          ref={ref as any}
           horizontal={true}
           showsHorizontalScrollIndicator={false}
-          data={data}
+          data={folders}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           estimatedItemSize={HEIGHT}
           contentContainerStyle={styles.content}
-          estimatedListSize={{height: HEIGHT, width: SIZE * (data.length / 2)}}
+          estimatedListSize={{
+            height: HEIGHT,
+            width: SIZE * (folders.length / 2),
+          }}
           ItemSeparatorComponent={seperatorComponent}
         />
       )}

@@ -13,14 +13,17 @@ import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../navigation/screens/modals';
 import {NavigationContext} from '../../navigation/NavigationContextProvider';
 import {Screens} from '../../enums/screens';
+import {Folder as FolderType} from '../../shared/types';
 
-type FolderProps = {};
+type FolderProps = {
+  folder: FolderType;
+};
 
 const {width} = Dimensions.get('window');
 const WIDTH = width * 0.75;
 const HEIGHT = 150;
 
-const Folder: React.FC<FolderProps> = ({}) => {
+const Folder: React.FC<FolderProps> = ({folder}) => {
   const componentId = useContext(NavigationContext);
 
   const pushFolder = () => {
@@ -72,24 +75,30 @@ const Folder: React.FC<FolderProps> = ({}) => {
           style={styles.folderName}
           ellipsizeMode={'tail'}
           numberOfLines={2}>
-          My Developments
+          {folder.name}
         </Text>
         <Pressable hitSlop={20} onPress={onPress}>
           <Icon color={'#fff'} name={'dots-vertical'} size={25} />
         </Pressable>
       </View>
 
-      <View style={styles.itemContainer}>
-        <Text style={styles.itemSubtitle}>
-          <Text style={styles.itemText}>20</Text> folders and{' '}
-        </Text>
-        <Text style={styles.itemSubtitle}>
-          <Text style={styles.itemText}>50</Text> files
-        </Text>
-      </View>
+      {folder.summary.files === 0 && folder.summary.folders === 0 ? (
+        <View style={styles.itemContainer}>
+          <Text style={styles.itemSubtitle}>Currently empty</Text>
+        </View>
+      ) : (
+        <View style={styles.itemContainer}>
+          <Text style={styles.itemSubtitle}>
+            <Text style={styles.itemText}>20</Text> folders and{' '}
+          </Text>
+          <Text style={styles.itemSubtitle}>
+            <Text style={styles.itemText}>50</Text> files
+          </Text>
+        </View>
+      )}
       <View style={styles.created}>
         <Text style={styles.itemSubtitle}>
-          Created: <Text style={styles.itemText}>20th October, 2022</Text>
+          Created: <Text style={styles.itemText}>{folder.createdAt}</Text>
         </Text>
       </View>
     </Pressable>

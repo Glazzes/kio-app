@@ -38,7 +38,6 @@ const DrawerImageThumbnail: React.FC<DrawerImageThumbnailProps> = ({file}) => {
     return {
       width: isWider ? SIZE : SIZE * aspecRatio,
       height: isWider ? SIZE / aspecRatio : SIZE,
-      borderRadius: 5,
     };
   }, [file.details.dimensions]);
 
@@ -53,6 +52,7 @@ const DrawerImageThumbnail: React.FC<DrawerImageThumbnailProps> = ({file}) => {
         <ImageBackground
           source={{uri, headers: {Authorization: `Bearer ${accessToken}`}}}
           style={[imageStyle, styles.image]}
+          imageStyle={styles.image}
           resizeMode={'cover'}>
           {file.contentType.startsWith('video') && (
             <Icon name="play" size={50} color={'#fff'} />
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
   image: {
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 5,
   },
 });
 

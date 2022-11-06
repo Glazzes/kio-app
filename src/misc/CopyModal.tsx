@@ -19,6 +19,13 @@ import {Screens} from '../enums/screens';
 import {Event} from '../enums/events';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ModalWrapper from '../shared/components/ModalWrapper';
+import {
+  clearSelection,
+  fileSelectionState,
+  toggleSelectionLock,
+} from '../store/fileSelection';
+import {useSnapshot} from 'valtio';
+import {navigationState} from '../store/navigationStore';
 
 type CopyModalProps = {};
 
@@ -27,6 +34,8 @@ const {width} = Dimensions.get('window');
 const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   componentId,
 }) => {
+  const navigation = useSnapshot(navigationState);
+  const selection = useSnapshot(fileSelectionState);
   const [dimensions, setdimensions] = useState({width: 1, height: 1});
 
   const onLayout = ({
@@ -43,6 +52,9 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   };
 
   const dissmisSelection = () => {
+    clearSelection();
+    toggleSelectionLock();
+
     translateY.value = withTiming(100, undefined, finished => {
       if (finished) {
         runOnJS(dissmis)();
@@ -93,25 +105,30 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
 
   return (
     <Animated.View style={[styles.root, rStyle]} onLayout={onLayout}>
-      <ModalWrapper>
-        <View>
-          <Text style={styles.title}>Paste here</Text>
-          <Text style={styles.subtitle}>3 files</Text>
-        </View>
-        <View style={styles.row}>
-          <Pressable onPress={dissmisSelection}>
+      <ModalWrapper witdh={width * 0.9}>
+        <View style={[styles.row, {justifyContent: 'space-between'}]}>
+          <View>
+            <Text style={styles.title}>
+              Paste in{' '}
+              {`"${navigation.folders[navigation.folders.length - 1].name}"`}
+            </Text>
+            <Text style={styles.subtitle}>{selection.files.length} files</Text>
+          </View>
+          <View style={styles.row}>
+            <Pressable onPress={dissmisSelection}>
+              <Icon
+                name={'ios-close-circle-outline'}
+                size={30}
+                color={'#C5C8D7'}
+                style={styles.icon}
+              />
+            </Pressable>
             <Icon
-              name={'ios-close-circle-outline'}
+              name={'ios-checkmark-circle-outline'}
               size={30}
-              color={'#C5C8D7'}
-              style={styles.icon}
+              color={'#3366ff'}
             />
-          </Pressable>
-          <Icon
-            name={'ios-checkmark-circle-outline'}
-            size={30}
-            color={'#3366ff'}
-          />
+          </View>
         </View>
       </ModalWrapper>
     </Animated.View>
@@ -130,9 +147,6 @@ CopyModal.options = {
 const styles = StyleSheet.create({
   root: {
     width: width * 0.9,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
     position: 'absolute',
     bottom: width * 0.05,
     marginHorizontal: width * 0.05,

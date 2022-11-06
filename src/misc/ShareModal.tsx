@@ -21,16 +21,6 @@ type ShareModalProps = {};
 const {width} = Dimensions.get('window');
 const WIDTH = width * 0.85;
 
-/*
-const photos = [
-  'https://randomuser.me/api/portraits/women/10.jpg',
-  'https://randomuser.me/api/portraits/women/21.jpg',
-  'https://randomuser.me/api/portraits/women/10.jpg',
-  'https://randomuser.me/api/portraits/men/81.jpg',
-  'https://randomuser.me/api/portraits/men/68.jpg',
-];
-*/
-
 function renderItem(info: ListRenderItemInfo<string>) {
   return <Contributor index={info.index} imageUrl={info.item} name={'glaze'} />;
 }
@@ -90,7 +80,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
 
   return (
     <View style={styles.root}>
-      <ModalWrapper style={styles.modal}>
+      <ModalWrapper style={styles.modal} witdh={width * 0.85}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Share file</Text>
         </View>

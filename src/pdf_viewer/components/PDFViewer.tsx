@@ -9,8 +9,13 @@ import {PdfEvent} from '../enums';
 import {convertTableContentsIntoIndexes} from '../utils/functions/convertTableContentsIntoIndexes';
 import PageIndicator from './PageIndicator';
 import {useSnapshot} from 'valtio';
+import {File} from '../../shared/types';
+import {host} from '../../shared/constants';
+import authState from '../../store/authStore';
 
-type PDFViewerProps = {};
+type PDFViewerProps = {
+  file: File;
+};
 
 const {width, height} = Dimensions.get('window');
 
@@ -20,7 +25,10 @@ function onPageChanged(pageNumber: number) {
 
 const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
   componentId,
+  file,
 }) => {
+  const {accessToken} = useSnapshot(authState.tokens);
+
   const pdf = useSnapshot(pdfState);
   const ref = useRef<Pdf>();
 
@@ -59,10 +67,13 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
   return (
     <View style={styles.root}>
       <Pdf
-        ref={ref}
+        ref={ref as any}
         style={styles.pdf}
         source={{
-          uri: 'https://raw.githubusercontent.com/divyesh008/eBooks/main/Clean%20Coder.pdf',
+          uri: `${host}/static/file/${file.id}`,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }}
         trustAllCerts={false}
         renderActivityIndicator={() => <PdfProgressIndicator />}

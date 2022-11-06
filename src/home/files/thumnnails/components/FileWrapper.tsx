@@ -19,16 +19,21 @@ import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import {Modals} from '../../../../navigation/screens/modals';
 import emitter from '../../../../utils/emitter';
-import {SelectAction} from '../../../utils/enums';
 import {getSimpleMimeType} from '../../../../shared/functions/getMimeType';
 import {MimeType} from '../../../../shared/enum/MimeType';
 import {pushToScreen} from '../../../../shared/functions/navigation/pushToScreen';
 import {Screens} from '../../../../enums/screens';
-import {TypingEvent} from '../../../types';
+import {TypingEvent} from '../../../utils/types';
 import {convertBytesToRedableUnit} from '../../../../shared/functions/convertBytesToRedableUnit';
 import FileSkeleton from './FileSkeleton';
 import {File} from '../../../../shared/types';
 import SearchableText from '../../../../misc/SearchableText';
+import {
+  addFileToSelection,
+  fileSelectionState,
+  removeFileFromSelection,
+} from '../../../../store/fileSelection';
+import {useSnapshot} from 'valtio';
 
 type FileWrapperProps = {
   index: number;
@@ -40,6 +45,8 @@ const {width} = Dimensions.get('window');
 const SIZE = (width * 0.9 - 10) / 2;
 
 const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
+  const selection = useSnapshot(fileSelectionState);
+
   const searchTerm = useRef<string>('');
   const componentId = useContext(NavigationContext);
 
@@ -65,7 +72,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   const onPress = () => {
     if (isSelected) {
       setIsSelected(false);
-      emitter.emit(`${SelectAction.UNSELECT_FILE}-${componentId}`, file.id);
+      removeFileFromSelection(file.id);
       return;
     }
 
@@ -94,14 +101,18 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   };
 
   const onLongPressSelect = async () => {
+    if (selection.locked) {
+      return;
+    }
+
     await impactAsync(ImpactFeedbackStyle.Medium);
     const swap = !isSelected;
     setIsSelected(swap);
 
     if (swap) {
-      emitter.emit(`${SelectAction.SELECT_FILE}-${componentId}`, file.id);
+      addFileToSelection(file);
     } else {
-      emitter.emit(`${SelectAction.UNSELECT_FILE}-${componentId}`, file.id);
+      removeFileFromSelection(file.id);
     }
   };
 
@@ -118,9 +129,12 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       setShowSkeleton(false);
     });
 
-    const unselect = emitter.addListener('unselect-file', () => {
-      setIsSelected(false);
-    });
+    const unselect = emitter.addListener(
+      `clear-selection-${componentId}`,
+      () => {
+        setIsSelected(false);
+      },
+    );
 
     const favoriteFile = emitter.addListener(`favorite-${file.id}`, () => {
       setIsFavorite(s => !s);

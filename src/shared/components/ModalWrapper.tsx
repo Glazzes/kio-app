@@ -15,6 +15,7 @@ import Animated, {
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 
 type ModalWrapperProps = {
+  witdh?: number;
   style?: ViewStyle;
 };
 
@@ -22,7 +23,11 @@ const {width} = Dimensions.get('window');
 const MODAL_WIDTH = width * 0.75;
 const SPACING = 10;
 
-const ModalWrapper: React.FC<ModalWrapperProps> = ({children, style}) => {
+const ModalWrapper: React.FC<ModalWrapperProps> = ({
+  children,
+  style,
+  witdh: modalWidth,
+}) => {
   const [dimensions, setDimensions] = useState({width: 0, height: 0});
 
   const canvasStyles: ViewStyle = useMemo(
@@ -64,7 +69,13 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({children, style}) => {
   }, []);
 
   return (
-    <Animated.View style={[style ?? styles.modal, rStyle]} onLayout={onLayout}>
+    <Animated.View
+      style={[
+        style ?? styles.modal,
+        rStyle,
+        {width: modalWidth ?? MODAL_WIDTH},
+      ]}
+      onLayout={onLayout}>
       {dimensions.width !== 0 && dimensions.height !== 1 && (
         <Canvas style={canvasStyles}>
           <RoundedRect

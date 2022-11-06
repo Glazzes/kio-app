@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Appbar from './misc/header/Appbar';
 import FAB from './misc/filefab/FAB';
-import {Dimension, File, Folder, Page} from '../shared/types';
+import {Dimension, File, Folder} from '../shared/types';
 import FileWrapper from './files/thumnnails/components/FileWrapper';
 import {
   ImageThumbnail,
@@ -22,21 +22,23 @@ import {
   VideoThumbnail,
 } from './files/thumnnails';
 import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
-import {push, removeByComponentId} from '../store/navigationStore';
+import {removeByComponentId} from '../store/navigationStore';
 import PdfThumnail from './files/thumnnails/components/PdfThumnail';
 import {NavigationContextProvider} from '../navigation';
 import NoContent from './misc/NoContent';
 import GenericThumbnail from './files/thumnnails/components/GenericThumbnail';
 import {getSimpleMimeType} from '../shared/functions/getMimeType';
 import {MimeType} from '../shared/enum/MimeType';
-import {axiosInstance} from '../shared/requests/axiosInstance';
 import RNBootSplash from 'react-native-bootsplash';
 import {SIZE} from './utils/constants';
 import emitter from '../utils/emitter';
-import {UpdateFolderEvent} from './types';
+import {UpdateFolderEvent} from './utils/types';
+import {getFolder} from './utils/functions/getFolder';
+import {getFolderFiles} from './utils/functions/getFolderFiles';
+import {getFolderSubFolders} from './utils/functions/getFolderSubFolders';
 
 type HomeProps = {
-  folderId?: string;
+  folder?: Folder;
 };
 
 function keyExtractor(item: File): string {
@@ -49,11 +51,14 @@ const AnimatedFlashList =
 
 const Home: NavigationFunctionComponent<HomeProps> = ({
   componentId,
-  folderId,
+  folder: currentFolder,
 }) => {
   const ref = useRef<typeof FlashList>(null);
 
+  const [folder, setFolder] = useState<Folder | undefined>(currentFolder);
+  const [subFolders, setSubFolders] = useState<Folder[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+
   const scrollY = useSharedValue<number>(0);
 
   const dimensions = useSharedValue<Dimension>({width: 1, height: 1});
@@ -64,8 +69,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   const y = useSharedValue<number>(-windowHeight);
 
   const renderHeader = useCallback(() => {
-    return <AppHeader />;
-  }, []);
+    return <AppHeader folders={subFolders} />;
+  }, [subFolders]);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: e => {
@@ -113,13 +118,9 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   }, []);
 
   useEffect(() => {
-    push({name: '', componentId});
-
     const addFiles = emitter.addListener(
       `${UpdateFolderEvent.ADD_FILE}-${componentId}`,
       (newFiles: File[]) => {
-        console.log('reveived files');
-
         // @ts-ignore
         // ref.current?.prepareForLayoutAnimationRender();
         setFiles(f => [...newFiles, ...f]);
@@ -132,34 +133,27 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     };
   }, []);
 
-  const getUnitAndFiles = async () => {
-    try {
-      const {data: unit}: {data: Folder} = await axiosInstance.get(
-        '/api/v1/folders/my-unit',
-      );
-
-      const {data: page}: {data: Page<File[]>} = await axiosInstance.get(
-        `/api/v1/folders/${unit.id}/files`,
-        {params: {page: 0}},
-      );
-
-      setFiles(page.content);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   useEffect(() => {
-    getUnitAndFiles();
+    if (folder == null) {
+      getFolder(componentId, folder, f => setFolder(f));
+    }
+
     RNBootSplash.hide({fade: true});
   }, []);
+
+  useEffect(() => {
+    if (folder) {
+      getFolderFiles(folder, page => setFiles(page.content));
+      getFolderSubFolders(folder, 0, page => setSubFolders(page.content));
+    }
+  }, [folder]);
 
   return (
     <NavigationContextProvider componentId={componentId}>
       <View style={styles.root}>
-        <Appbar scrollY={scrollY} folderId={folderId} />
+        <Appbar scrollY={scrollY} folderId={folder?.id} />
 
-        <AnimatedFlashList
+        <Animated.FlatList
           ref={ref as any}
           data={files}
           keyExtractor={keyExtractor}

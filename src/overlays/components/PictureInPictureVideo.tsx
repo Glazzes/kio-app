@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useMemo, useRef} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Video from 'react-native-video';
 import {
@@ -10,19 +10,22 @@ import {
   ViewStyle,
   View,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {peekLast} from '../store/navigationStore';
-import {Screens} from '../enums/screens';
-import {File} from '../shared/types';
+import {peekLastNavigationScreen} from '../../store/navigationStore';
+import {Screens} from '../../enums/screens';
+import {File} from '../../shared/types';
+import {staticFileUrl} from '../../shared/requests/contants';
+import {useSnapshot} from 'valtio';
+import authState from '../../store/authStore';
 
 type PictureInPictureVideoProps = {
-  uri: string;
   file: File;
 };
 
 const {width, height} = Dimensions.get('window');
-const BASE_WIDTH = 200;
+const SIZE = 250;
 const ICON_SIZE = 20;
 
 /*
@@ -32,13 +35,18 @@ to not longer work, so in order to drag the video around it's necesary to use an
 const PictureInPictureVideo: NavigationFunctionComponent<
   PictureInPictureVideoProps
 > = ({componentId, file}) => {
+  const uri = staticFileUrl(file.id);
+  const {accessToken} = useSnapshot(authState.tokens);
+
+  const [ready, setReady] = useState<boolean>(false);
+
   const videoRef = useRef<Video>(null);
   const translate = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
   const scale = useRef(new Animated.Value(1)).current;
   const hasFinished = useRef(false);
 
   const goFullScreen = () => {
-    const lastFolderScreen = peekLast();
+    const lastFolderScreen = peekLastNavigationScreen();
     Navigation.dismissOverlay(componentId);
 
     Navigation.push(lastFolderScreen.componentId, {
@@ -81,25 +89,40 @@ const PictureInPictureVideo: NavigationFunctionComponent<
   });
 
   const viewStyle: ViewStyle = useMemo(() => {
-    const derivedHeight = BASE_WIDTH * (720 / 1280);
+    const videoWidth = file.details.dimensions?.[0] ?? SIZE;
+    const videoHeight = file.details.dimensions?.[1] ?? SIZE;
+
+    const aspectRatio = videoWidth / videoHeight;
+    const isWider = videoWidth > videoHeight;
+
+    const finalWidth = isWider ? SIZE : SIZE * aspectRatio;
+    const finalHeight = isWider ? SIZE / aspectRatio : SIZE;
+
     return {
-      width: BASE_WIDTH,
-      height: BASE_WIDTH * (720 / 1280),
+      width: finalWidth,
+      height: finalHeight,
       backgroundColor: '#f3f3f3',
       position: 'absolute',
-      left: (width - BASE_WIDTH) / 2,
-      top: (height - derivedHeight) / 2,
-      borderRadius: 5,
       overflow: 'hidden',
-      padding: 5,
+      left: (width - finalWidth) / 2,
+      top: (height - finalHeight) / 2,
+      borderRadius: 5,
     };
   }, []);
 
   useEffect(() => {
     translate.addListener(({x, y}) => {
-      const derivedHeight = BASE_WIDTH * (720 / 1280);
-      const horizontalThreshold = BASE_WIDTH / 2 + (width - BASE_WIDTH) / 2;
-      const verticalThreshold = (height - derivedHeight / 2) / 2;
+      const videoWidth = file.details.dimensions?.[0] ?? SIZE;
+      const videoHeight = file.details.dimensions?.[1] ?? SIZE;
+
+      const aspectRatio = videoWidth / videoHeight;
+      const isWider = videoWidth > videoHeight;
+
+      const finalWidth = isWider ? SIZE : SIZE * aspectRatio;
+      const finalHeight = isWider ? SIZE / aspectRatio : SIZE;
+
+      const horizontalThreshold = finalWidth / 2 + (width - finalWidth) / 2;
+      const verticalThreshold = (height - finalHeight / 2) / 2;
 
       if (
         (x <= -horizontalThreshold || x >= horizontalThreshold) &&
@@ -144,15 +167,27 @@ const PictureInPictureVideo: NavigationFunctionComponent<
       {...panResponder.panHandlers}>
       <Video
         ref={videoRef}
-        source={require('./assets/gru.mp4')}
-        style={styles.video}
+        source={{uri, headers: {Authorization: `Bearer ${accessToken}`}}}
+        style={{
+          width: viewStyle.width,
+          height: viewStyle.height,
+          margin: 0,
+          padding: 0,
+        }}
         controls={false}
         paused={false}
         resizeMode={'contain'}
         repeat={true}
         useTextureView={false}
         maxBitRate={1000000}
+        onReadyForDisplay={() => setReady(true)}
+        onError={e => console.log(e)}
       />
+      {!ready && (
+        <View style={styles.placeholder}>
+          <ActivityIndicator size={'large'} color={'#3366ff'} />
+        </View>
+      )}
       <View style={styles.options}>
         <Pressable
           hitSlop={20}
@@ -180,14 +215,16 @@ PictureInPictureVideo.options = {
 };
 
 const styles = StyleSheet.create({
-  video: {
-    width: BASE_WIDTH,
-    height: Math.ceil(BASE_WIDTH * (720 / 1280)),
-    position: 'absolute',
-    top: 0,
-    left: 0,
+  placeholder: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   options: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
     alignSelf: 'flex-end',
     flexDirection: 'row',
     justifyContent: 'space-between',

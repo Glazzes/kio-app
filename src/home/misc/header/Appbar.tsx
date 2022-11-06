@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext} from 'react';
 import {Navigation} from 'react-native-navigation';
 import SearchBar from './SearchBar';
 import {
@@ -21,10 +21,20 @@ import emitter from '../../../utils/emitter';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 import UserAvatar from './UserAvatar';
-import {SelectAction} from '../../utils/enums';
 import {Modals} from '../../../navigation/screens/modals';
 import {useSnapshot} from 'valtio';
 import authState from '../../../store/authStore';
+import {FileDeleteRequest} from '../../../shared/requests/types';
+import {
+  clearSelection,
+  fileSelectionState,
+  toggleSelectionLock,
+} from '../../../store/fileSelection';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {host} from '../../../shared/constants';
+import {displayToast} from '../../../shared/navigation/displayToast';
+import {Notification} from '../../../enums/notification';
+import {navigationState} from '../../../store/navigationStore';
 
 type AppbarProps = {
   folderId?: string;
@@ -36,16 +46,19 @@ const {width} = Dimensions.get('window');
 
 const CANVAS_SIZE = statusBarHeight * 3 + 60;
 
-const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
+const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   const user = useSnapshot(authState.user);
+  const navigation = useSnapshot(navigationState);
+  const selection = useSnapshot(fileSelectionState);
+
+  const contentCount = selection.locked
+    ? 0
+    : selection.files.length + selection.folders.length;
 
   const componentId = useContext(NavigationContext);
 
-  const [selectionIds, setSelection] = useState<string[]>([]);
-
   const clear = () => {
-    setSelection([]);
-    emitter.emit(`unselect-file`);
+    emitter.emit(`clear-selection-${componentId}`);
   };
 
   const goBack = () => {
@@ -54,6 +67,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
 
   const copyCutSelection = () => {
     clear();
+    toggleSelectionLock();
     Navigation.showOverlay({
       component: {
         name: 'Copy',
@@ -67,22 +81,32 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
         name: Modals.GENERIC_DIALOG,
         passProps: {
           title: 'Download selection',
-          message: `${selectionIds.length} files will be downloaded, this may take a while`,
+          message: `${contentCount} files will be downloaded, this may take a while`,
         },
       },
     });
   };
 
-  const deleteSelection = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: 'Delete selection',
-          message: `${selectionIds.length} files will be deleted, this action can not be undone`,
-        },
-      },
-    });
+  const deleteSelection = async () => {
+    const deleteRequest: FileDeleteRequest = {
+      from: '6355742c13cfe841481f223e',
+      files: selection.files.map(f => f.id),
+    };
+
+    try {
+      await axiosInstance.delete(`${host}/api/v1/files`, {
+        data: deleteRequest,
+      });
+
+      clear();
+      clearSelection();
+    } catch (e) {
+      displayToast(
+        'Delete file error',
+        `Could not delete ${contentCount} files`,
+        Notification.ERROR,
+      );
+    }
   };
 
   const opacity = useValue(0);
@@ -102,39 +126,11 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
   }, scrollY);
 
   useAnimatedReaction(
-    () => selectionIds.length,
+    () => contentCount,
     value => {
       translateY.value = withTiming(value > 0 ? -statusBarHeight * 2 : 0);
     },
   );
-
-  useEffect(() => {
-    const selectFile = emitter.addListener(
-      `${SelectAction.SELECT_FILE}-${componentId}`,
-      (id: string) => {
-        setSelection(f => [...f, id]);
-      },
-    );
-
-    const unselectFile = emitter.addListener(
-      `${SelectAction.UNSELECT_FILE}-${componentId}`,
-      (id: string) => {
-        setSelection(f => f.filter(file => file !== id));
-      },
-    );
-
-    const clearSelection = emitter.addListener(
-      `${SelectAction.UNSELECT_ALL}-${componentId}`,
-      clear,
-    );
-
-    return () => {
-      selectFile.remove();
-      unselectFile.remove();
-      clearSelection.remove();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <Animated.View style={styles.root}>
@@ -154,7 +150,15 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
       <View style={styles.appbarContainer}>
         <Animated.View style={rStyle}>
           <View style={styles.appbar}>
-            {folderId ? (
+            {navigation.folders.length <= 1 ? (
+              <View style={styles.appbarContent}>
+                <View>
+                  <Text style={styles.hi}>Hi,</Text>
+                  <Text style={styles.title}>{user.username}</Text>
+                </View>
+                <UserAvatar />
+              </View>
+            ) : (
               <View style={styles.appbarContent}>
                 <Pressable hitSlop={20} onPress={goBack}>
                   <Icon name={'ios-arrow-back'} color={'#000'} size={22} />
@@ -167,14 +171,6 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
                 </View>
                 <UserAvatar />
               </View>
-            ) : (
-              <View style={styles.appbarContent}>
-                <View>
-                  <Text style={styles.hi}>Hi,</Text>
-                  <Text style={styles.title}>{user.username}</Text>
-                </View>
-                <UserAvatar />
-              </View>
             )}
           </View>
           <View style={styles.appbar}>
@@ -182,7 +178,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
               <Pressable onPress={clear} hitSlop={20}>
                 <Icon name={'close'} size={23} color={'#000'} />
               </Pressable>
-              <Text style={styles.count}>{selectionIds.length}</Text>
+              <Text style={styles.count}>{contentCount}</Text>
             </View>
             <View style={styles.countContainer}>
               <Pressable onPress={copyCutSelection}>
@@ -196,7 +192,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
 
               <Pressable onPress={copyCutSelection}>
                 <Icon
-                  name={'ios-cut'}
+                  name={'ios-cut-outline'}
                   size={23}
                   color={'#000'}
                   style={styles.icon}
@@ -205,7 +201,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY, folderId}) => {
 
               <Pressable onPress={downloadSelection}>
                 <Icon
-                  name={'ios-cloud-download'}
+                  name={'ios-cloud-download-outline'}
                   size={23}
                   color={'#000'}
                   style={styles.icon}

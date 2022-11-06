@@ -156,6 +156,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
               headers: {Authorization: `Bearer ${accessToken}`},
             }}
             resizeMode={'cover'}
+            onError={e => console.log('Error', e)}
           />
         </Animated.View>
       </GestureDetector>

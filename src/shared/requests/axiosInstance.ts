@@ -6,9 +6,8 @@ import {TokenResponse} from '../types';
 
 const baseURL = host;
 
-export const axiosInstance = axios.create({
+const axiosInstance = axios.create({
   baseURL,
-  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -65,3 +64,5 @@ axiosInstance.interceptors.response.use(
     }
   },
 );
+
+export {axiosInstance};

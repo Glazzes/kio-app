@@ -3,6 +3,7 @@ import {File} from '../shared/types';
 
 type NavigationScreen = {
   name: string;
+  folderId: string;
   componentId: string;
 };
 
@@ -14,15 +15,22 @@ type State = {
 export const navigationState = proxy<State>({folders: [], file: null});
 
 // actions
-export function push(screen: NavigationScreen) {
+export function pushNavigationScreen(screen: NavigationScreen) {
   navigationState.folders.push(screen);
+  console.log('added');
 }
 
-export function peekLast(): NavigationScreen {
+export function removeNavigationScreenById(id: string) {
+  navigationState.folders = navigationState.folders.filter(
+    f => f.folderId !== id,
+  );
+}
+
+export function peekLastNavigationScreen(): NavigationScreen {
   return navigationState.folders[navigationState.folders.length - 1];
 }
 
-export function removeLast() {
+export function removeLastNavigationScreen() {
   navigationState.folders.pop();
 }
 

@@ -1,4 +1,4 @@
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, ActivityIndicator} from 'react-native';
 import React, {useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import Video from 'react-native-video';
@@ -48,6 +48,11 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
         onReadyForDisplay={() => setReady(true)}
         onError={onError}
       />
+      {!ready && (
+        <View style={styles.placeholder}>
+          <ActivityIndicator size={'large'} color={'#3366ff'} />
+        </View>
+      )}
       <FileDetailsAppbar
         file={file}
         parentComponentId={componentId}
@@ -76,6 +81,12 @@ const styles = StyleSheet.create({
   },
   black: {
     backgroundColor: '#000',
+  },
+  placeholder: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

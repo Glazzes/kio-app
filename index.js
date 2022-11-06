@@ -14,10 +14,8 @@ import {AudioPlayer} from './src/audio_player';
 import VideoPlayer from './src/video_player/VideoPlayer';
 import {CropEditor} from './src/crop_editor';
 import {Overlays} from './src/shared/enum/Overlays';
-import {PictureInPictureVideo} from './src/overlays';
 import {Drawers} from './src/navigation/screens/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
-import FileMenu from './src/overlays/FileMenu';
 import {Modals} from './src/navigation/screens/modals';
 import {Login, CreateAccount, GetStarted} from './src/onboarding';
 import UserMenu from './src/home/misc/header/UserMenu';
@@ -29,16 +27,19 @@ import ShareModal from './src/misc/ShareModal';
 import ProgressIndicator from './src/misc/ProgressIndicator';
 import emitter from './src/utils/emitter';
 import CopyModal from './src/misc/CopyModal';
-import Pricing from './src/overlays/Pricing';
 import EditModal from './src/misc/EditModal';
 import GenericModal from './src/home/modals/GenericModal';
 import Rotation from './src/misc/Rotation';
 import axios from 'axios';
 import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';
-
 import authState from './src/store/authStore';
 import {host} from './src/shared/constants';
+import {
+  FileOptionsSheet,
+  PictureInPictureVideo,
+  PricingSheet,
+} from './src/overlays';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -125,7 +126,7 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent(Modals.FILE_MENU, () =>
-  gestureHandlerRootHOC(FileMenu),
+  gestureHandlerRootHOC(FileOptionsSheet),
 );
 
 Navigation.registerComponent('SM', () => ShareModal);
@@ -145,7 +146,7 @@ Navigation.registerComponent('UserMenu', () => UserMenu);
 
 Navigation.registerComponent('Copy', () => CopyModal);
 
-Navigation.registerComponent('PS', () => gestureHandlerRootHOC(Pricing));
+Navigation.registerComponent('PS', () => gestureHandlerRootHOC(PricingSheet));
 
 Navigation.registerComponent('M', () => EditModal);
 

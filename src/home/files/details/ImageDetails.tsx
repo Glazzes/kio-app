@@ -126,8 +126,8 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
         return;
       }
 
-      translate.x.value = withDecay({velocity: velocityX});
-      translate.y.value = withDecay({velocity: velocityY});
+      translate.x.value = withDecay({velocity: velocityX, deceleration: 0.95});
+      translate.y.value = withDecay({velocity: velocityY, deceleration: 0.95});
     });
 
   const pinchGesture = Gesture.Pinch()

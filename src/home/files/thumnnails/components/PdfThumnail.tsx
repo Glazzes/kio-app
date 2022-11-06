@@ -20,7 +20,7 @@ const PdfThumnail: React.FC<PdfThumnailProps> = ({file}) => {
 
   const imageStyles: ImageStyle = useMemo(
     () => ({
-      borderRadius: 3,
+      borderRadius: 5,
       width: THUMBNAIL_WIDTH,
       height: THUMBNAIL_WIDTH / (dimensions.width / dimensions.height),
     }),

@@ -4,14 +4,17 @@ import Contributors from '../../../misc/Contributors';
 import FolderList from '../../folders/FolderList';
 import FileHeader from '../../../misc/FileHeader';
 import BreadCrumbs from '../../../misc/BreadCrumbs';
+import {Folder} from '../../../shared/types';
 
-type AppHeaderProps = {};
+type AppHeaderProps = {
+  folders: Folder[];
+};
 
-export default function AppHeader({}: AppHeaderProps) {
+export default function AppHeader({folders}: AppHeaderProps) {
   return (
     <View style={styles.root}>
       <BreadCrumbs />
-      <FolderList />
+      <FolderList folders={folders} />
       <Contributors />
       <FileHeader title={'Files'} itemLength={8} />
     </View>

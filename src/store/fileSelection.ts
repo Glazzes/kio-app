@@ -8,7 +8,7 @@ type State = {
   folders: string[];
 };
 
-export const fileSelectionStore = proxy<State>({
+export const fileSelectionState = proxy<State>({
   locked: false,
   destination: '',
   files: [],
@@ -16,19 +16,22 @@ export const fileSelectionStore = proxy<State>({
 });
 
 export const addFileToSelection = (file: File) => {
-  fileSelectionStore.files.push(file);
+  fileSelectionState.files.push(file);
 };
 
 export const removeFileFromSelection = (id: string) => {
-  fileSelectionStore.files = fileSelectionStore.files.filter(
-    file => file.id === id,
-  );
+  fileSelectionState.files = fileSelectionState.files.filter(f => f.id !== id);
 };
 
 export const setSelectionDestination = (destination: string) => {
-  fileSelectionStore.destination = destination;
+  fileSelectionState.destination = destination;
 };
 
 export const toggleSelectionLock = () => {
-  fileSelectionStore.locked = !fileSelectionStore.locked;
+  fileSelectionState.locked = !fileSelectionState.locked;
+};
+
+export const clearSelection = () => {
+  fileSelectionState.files = [];
+  fileSelectionState.folders = [];
 };
