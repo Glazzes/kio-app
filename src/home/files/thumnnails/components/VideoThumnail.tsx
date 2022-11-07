@@ -19,7 +19,7 @@ type VideoThumnailProps = {
 const VideoThumnail: React.FC<VideoThumnailProps> = ({index, file}) => {
   const {accessToken} = useSnapshot(authState.tokens);
   const thumbnailUri = `${host}/static/file/${file.id}/thumbnail`;
-  const componentId = useContext(NavigationContext);
+  const {componentId} = useContext(NavigationContext);
 
   const pushToPlayer = () => {
     Navigation.push(componentId, {

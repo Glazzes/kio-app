@@ -19,6 +19,7 @@ const GenericThumbnail: React.FC<GenericThumbnailProps> = ({mimeType}) => {
     }
 
     return icon;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

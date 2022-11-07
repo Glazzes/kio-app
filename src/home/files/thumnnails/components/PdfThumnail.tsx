@@ -1,9 +1,9 @@
 import {Dimensions, StyleSheet, Image, ImageStyle, View} from 'react-native';
 import React, {useEffect, useMemo, useState} from 'react';
 import {File} from '../../../../shared/types';
-import {host} from '../../../../shared/constants';
 import {useSnapshot} from 'valtio';
 import authState from '../../../../store/authStore';
+import {staticFileThumbnail} from '../../../../shared/requests/contants';
 
 type PdfThumnailProps = {
   file: File;
@@ -14,7 +14,7 @@ const SIZE = (width * 0.9 - 10) / 2;
 const THUMBNAIL_WIDTH = SIZE * 0.85;
 
 const PdfThumnail: React.FC<PdfThumnailProps> = ({file}) => {
-  const thumbnail = `${host}/static/file/${file.id}/thumbnail`;
+  const thumbnail = staticFileThumbnail(file.id);
   const {accessToken} = useSnapshot(authState.tokens);
   const [dimensions, setDimensions] = useState({width: 1, height: 1});
 

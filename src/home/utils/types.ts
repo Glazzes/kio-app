@@ -4,10 +4,10 @@ export enum TypingEvent {
 }
 
 export enum UpdateFolderEvent {
-  ADD_FILE = 'Add.File',
-  REMOVE_FILE = 'Remove.File',
+  ADD_FILES = 'Add.File',
+  REMOVE_FILES = 'Remove.File',
   ADD_FOLDER = 'Add.Folder',
-  REMOVE_FOLDER = 'Remove.Folder',
+  REMOVE_FOLDERS = 'Remove.Folder',
 }
 
 export enum HomeEvents {

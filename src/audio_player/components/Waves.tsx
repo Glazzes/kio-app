@@ -260,9 +260,9 @@ const styles = StyleSheet.create({
   },
   control: {
     width,
-    height: UPPER_BAR_HEIGHT + 20,
+    height: UPPER_BAR_HEIGHT + 30,
     position: 'absolute',
-    top: -20,
+    top: -30,
     alignItems: 'center',
   },
   lineContainer: {
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   line: {
     width: 3,
-    height: UPPER_BAR_HEIGHT + 20,
+    height: UPPER_BAR_HEIGHT + 30,
     marginHorizontal: 5,
   },
 });

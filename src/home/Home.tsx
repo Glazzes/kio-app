@@ -22,7 +22,6 @@ import {
   VideoThumbnail,
 } from './files/thumnnails';
 import AudioThumbnail from './files/thumnnails/components/AudioThumbnail';
-import {removeByComponentId} from '../store/navigationStore';
 import PdfThumnail from './files/thumnnails/components/PdfThumnail';
 import {NavigationContextProvider} from '../navigation';
 import NoContent from './misc/NoContent';
@@ -36,6 +35,10 @@ import {UpdateFolderEvent} from './utils/types';
 import {getFolder} from './utils/functions/getFolder';
 import {getFolderFiles} from './utils/functions/getFolderFiles';
 import {getFolderSubFolders} from './utils/functions/getFolderSubFolders';
+import {
+  pushNavigationScreen,
+  removeByComponentId,
+} from '../store/navigationStore';
 
 type HomeProps = {
   folder?: Folder;
@@ -119,37 +122,52 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
 
   useEffect(() => {
     const addFiles = emitter.addListener(
-      `${UpdateFolderEvent.ADD_FILE}-${componentId}`,
+      `${UpdateFolderEvent.ADD_FILES}-${folder?.id}`,
       (newFiles: File[]) => {
-        // @ts-ignore
-        // ref.current?.prepareForLayoutAnimationRender();
         setFiles(f => [...newFiles, ...f]);
       },
     );
 
+    const removeFiles = emitter.addListener(
+      `${UpdateFolderEvent.REMOVE_FILES}-${folder?.id}`,
+      (ids: string[]) => {
+        setFiles(filess => {
+          return filess.filter(f => !ids.includes(f.id));
+        });
+      },
+    );
+
     return () => {
-      removeByComponentId(componentId);
       addFiles.remove();
+      removeFiles.remove();
     };
-  }, []);
+  }, [folder]);
 
   useEffect(() => {
     if (folder == null) {
-      getFolder(componentId, folder, f => setFolder(f));
+      getFolder(componentId, folder, unit => setFolder(unit));
     }
 
     RNBootSplash.hide({fade: true});
+    return () => {
+      removeByComponentId(componentId);
+    };
   }, []);
 
   useEffect(() => {
     if (folder) {
       getFolderFiles(folder, page => setFiles(page.content));
       getFolderSubFolders(folder, 0, page => setSubFolders(page.content));
+      pushNavigationScreen({
+        componentId,
+        name: folder.name,
+        folderId: folder.id,
+      });
     }
   }, [folder]);
 
   return (
-    <NavigationContextProvider componentId={componentId}>
+    <NavigationContextProvider componentId={componentId} folder={folder}>
       <View style={styles.root}>
         <Appbar scrollY={scrollY} folderId={folder?.id} />
 

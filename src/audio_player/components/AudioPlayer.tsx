@@ -25,9 +25,9 @@ import AuidoControls from './Controls';
 import Waves from './Waves';
 import {File} from '../../shared/types';
 import RNFS from 'react-native-fs';
-import {host} from '../../shared/constants';
 import {useSnapshot} from 'valtio';
 import authState from '../../store/authStore';
+import {staticFileUrl} from '../../shared/requests/contants';
 
 Sound.setCategory('Playback');
 
@@ -105,10 +105,10 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   };
 
   useEffect(() => {
-    const resource = `${host}/static/file/${file.id}`;
+    const resource = staticFileUrl(file.id);
     const toFile =
       (Platform.OS === 'android' ? 'file://' : '') +
-      RNFS.DownloadDirectoryPath +
+      RNFS.CachesDirectoryPath +
       `/${file.id}-${file.name}`;
 
     RNFS.downloadFile({
@@ -124,12 +124,15 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
             console.log(e);
           }
 
-          console.log('loaded');
           setLoaded(true);
           setSound(downloadedSound);
         });
       })
       .catch(e => console.log('Error', e));
+
+    return () => {
+      RNFS.unlink(toFile).then(() => console.log('music cache deleted'));
+    };
   }, []);
 
   useEffect(() => {
@@ -146,7 +149,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
         sound.release();
       }
     };
-  }, []);
+  }, [sound]);
 
   return (
     <View style={styles.root}>
@@ -186,6 +189,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
         />
 
         <AuidoControls
+          file={file}
           sound={sound}
           loaded={loaded}
           isPlaying={isPlaying}

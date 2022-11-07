@@ -1,11 +1,12 @@
 import {View, Dimensions, StyleSheet} from 'react-native';
 import {FlashList, ListRenderItemInfo} from '@shopify/flash-list';
 import Folder from './Folder';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import emitter from '../../utils/emitter';
 import {TypingEvent} from '../utils/types';
 import FolderSkeleton from '../../misc/skeleton/FolderSkeleton';
 import {Folder as FolderType} from '../../shared/types';
+import {NavigationContext} from '../../navigation/NavigationContextProvider';
 
 type FolderListProps = {
   folders: FolderType[];
@@ -30,6 +31,7 @@ function seperatorComponent() {
 const FolderList: React.FC<FolderListProps> = ({folders}) => {
   const ref = useRef<FlashList<FolderType>>();
 
+  const {folder} = useContext(NavigationContext);
   const [showSkeletons, setShowSkeletons] = useState<boolean>(false);
 
   useEffect(() => {
@@ -61,21 +63,26 @@ const FolderList: React.FC<FolderListProps> = ({folders}) => {
           <FolderSkeleton />
         </View>
       ) : (
-        <FlashList
-          ref={ref as any}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-          data={folders}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          estimatedItemSize={HEIGHT}
-          contentContainerStyle={styles.content}
-          estimatedListSize={{
-            height: HEIGHT,
-            width: SIZE * (folders.length / 2),
-          }}
-          ItemSeparatorComponent={seperatorComponent}
-        />
+        <View>
+          {(folder?.summary.folders ?? 0) > 0 && (
+            <FlashList
+              ref={ref as any}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              data={folders}
+              renderItem={renderItem}
+              keyExtractor={keyExtractor}
+              estimatedItemSize={HEIGHT}
+              contentContainerStyle={styles.content}
+              ListEmptyComponent={() => <View />}
+              estimatedListSize={{
+                height: HEIGHT,
+                width: SIZE * (folders.length / 2),
+              }}
+              ItemSeparatorComponent={seperatorComponent}
+            />
+          )}
+        </View>
       )}
     </View>
   );

@@ -1,4 +1,4 @@
-import {StyleSheet, Dimensions, Pressable, Image} from 'react-native';
+import {StyleSheet, Dimensions, Pressable} from 'react-native';
 import React, {useContext} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
@@ -7,13 +7,11 @@ import {pickMultiple} from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
 import notifee from '@notifee/react-native';
-import {UploadRequest} from '../../../shared/types';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
-import {getThumbnailAsync} from 'expo-video-thumbnails';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {UpdateFolderEvent} from '../../utils/types';
-import PdfThumbnail from 'react-native-pdf-thumbnail';
-import Sound from 'react-native-sound';
+import {uploadAudioFile} from '../../utils/functions/uploadAudioFile';
+import {getFileFormData} from '../../utils/functions/getFileFormData';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -28,7 +26,7 @@ const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
-  const componentId = useContext(NavigationContext);
+  const {componentId, folder} = useContext(NavigationContext);
 
   const onPress = async () => {
     toggle();
@@ -55,77 +53,20 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     // @ts-ignore
     const result = await pickMultiple({
       allowMultiSelection: true,
-      copyTo: 'cachesDirectory', // in order to get duration it's necesary
+      copyTo: 'cachesDirectory',
     });
 
-    const request: UploadRequest = {
-      to: '6355742c13cfe841481f223e',
-      details: {},
-    };
+    const nonAudioFiles = result.filter(r => !r.type?.startsWith('audio'));
+    const audioFiles = result.filter(r => r.type?.startsWith('audio'));
 
-    const formData = new FormData();
+    audioFiles.forEach(audioFile =>
+      uploadAudioFile('6355742c13cfe841481f223e', componentId, audioFile),
+    );
 
-    for (let file of result) {
-      formData.append('files', {
-        name: file.name,
-        type: file.type,
-        uri: file.fileCopyUri!!,
-      });
-
-      request.details[file.name] = {
-        thumbnailName: null,
-        dimensions: null,
-        duration: null,
-      };
-
-      if (file.type?.startsWith('image')) {
-        await Image.getSize(file.fileCopyUri!!, (w, h) => {
-          request.details[file.name].dimensions = [w, h];
-        });
-      }
-
-      if (file.type?.startsWith('video') || file.type?.startsWith('audio')) {
-        const sound = new Sound(file.fileCopyUri, undefined, e => {
-          if (e) {
-            console.log(e);
-          }
-
-          request.details[file.name].duration = Math.floor(sound.getDuration());
-          sound.release();
-        });
-      }
-
-      if (file.type?.endsWith('pdf')) {
-        const {uri, width, height} = await PdfThumbnail.generate(
-          file.fileCopyUri!!,
-          0,
-        );
-        formData.append('thumbnails', {
-          uri,
-          name: file.name,
-          type: 'image/jpeg',
-        });
-
-        request.details[file.name].dimensions = [width, height];
-      }
-
-      if (file.type?.startsWith('video')) {
-        const {uri, width, height} = await getThumbnailAsync(file.uri, {
-          time: 5000,
-          quality: 1,
-        });
-
-        formData.append('thumbnails', {
-          uri,
-          name: file.name,
-          type: 'image/jpeg',
-        });
-
-        request.details[file.name].dimensions = [width, height];
-      }
-    }
-
-    formData.append('request', JSON.stringify(request));
+    const formData = await getFileFormData(
+      '6355742c13cfe841481f223e',
+      nonAudioFiles,
+    );
 
     await notifee.displayNotification({
       id: 'upload',
@@ -142,22 +83,24 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     });
 
     try {
-      const res = await axiosInstance.post('/api/v1/files', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      if (nonAudioFiles.length > 0) {
+        const res = await axiosInstance.post('/api/v1/files', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-      emitter.emit(`${UpdateFolderEvent.ADD_FILE}-${componentId}`, res.data);
+        emitter.emit(`${UpdateFolderEvent.ADD_FILES}-${folder?.id}`, res.data);
 
-      await notifee.displayNotification({
-        id: 'upload',
-        title: 'Files uploded',
-        body: 'Your files have been uploaded successfully',
-        android: {
-          channelId: 'kio',
-        },
-      });
+        await notifee.displayNotification({
+          id: 'upload',
+          title: 'Files uploded',
+          body: 'Your files have been uploaded successfully',
+          android: {
+            channelId: 'kio',
+          },
+        });
+      }
     } catch (e) {
       console.log(e);
     }

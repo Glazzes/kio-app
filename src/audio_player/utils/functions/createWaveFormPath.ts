@@ -21,15 +21,12 @@ export function createWaveFormPath(
   for (let i = 0; i < barPoints.length; i++) {
     if (type === 'upper') {
       path.moveTo(x * i, currentBarHeight);
-      path.lineTo(
-        x * i,
-        currentBarHeight - currentBarHeight * barPoints[i] + 10,
-      );
+      path.lineTo(x * i, currentBarHeight - currentBarHeight * barPoints[i]);
     }
 
     if (type === 'lower') {
       path.moveTo(x * i, y);
-      path.lineTo(x * i, y + LOWER_BAR_HEIGHT * barPoints[i] - 10);
+      path.lineTo(x * i, y + LOWER_BAR_HEIGHT * barPoints[i]);
     }
   }
 

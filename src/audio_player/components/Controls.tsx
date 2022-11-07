@@ -12,10 +12,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Action from './Action';
 import {Canvas, Circle, LinearGradient, vec} from '@shopify/react-native-skia';
+import {downloadFile} from '../../shared/requests/functions/downloadFile';
+import {File} from '../../shared/types';
 
 type Loop = 0 | 1 | -1;
 
 type AuidoControlsProps = {
+  file: File;
   sound: Sound | undefined;
   loaded: boolean;
   isPlaying: boolean;
@@ -33,6 +36,7 @@ const BUTTON_SIZE = width * 0.2;
 const PADDING = 20;
 
 const AuidoControls: React.FC<AuidoControlsProps> = ({
+  file,
   sound,
   loaded,
   isPlaying,
@@ -71,7 +75,11 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
 
   return (
     <View style={styles.controls}>
-      <Action icon={'download'} color={'#e3e5eb'} callback={() => {}} />
+      <Action
+        icon={'download'}
+        color={'#e3e5eb'}
+        callback={() => downloadFile(file)}
+      />
       <Action icon={'step-backward'} callback={() => {}} />
 
       <View style={styles.playButton}>

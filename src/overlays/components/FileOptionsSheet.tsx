@@ -41,8 +41,10 @@ import {getSimpleMimeType} from '../../shared/functions/getMimeType';
 import {MimeType} from '../../shared/enum/MimeType';
 import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
 import {deleteFiles} from '../../shared/requests/functions/deleteFiles';
+import {UpdateFolderEvent} from '../../home/utils/types';
 
 type FileOptionSheetProps = {
+  parentFolderId: string;
   file: File;
 };
 
@@ -123,6 +125,7 @@ function sectionSeparator() {
 
 const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   componentId,
+  parentFolderId,
   file,
 }) => {
   const aRef = useAnimatedRef<SectionList>();
@@ -183,7 +186,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
         download();
         return;
       case 'Delete':
-        deleteCurrentFile();
+        openDeleteModal();
         return;
       default:
         return;
@@ -257,39 +260,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
     });
   };
 
-  const deleteCurrentFile = () => {
-    dissmiss();
-
-    const deleteThisFile = async () => {
-      try {
-        deleteFiles({
-          from: '6355742c13cfe841481f223e',
-          files: [file.id],
-        });
-        Navigation.showOverlay({
-          component: {
-            name: Screens.TOAST,
-            passProps: {
-              title: 'File deleted',
-              message: 'The file has been successfully deleted',
-              type: Notification.SUCCESS,
-            },
-          },
-        });
-      } catch (e) {
-        Navigation.showOverlay({
-          component: {
-            name: Screens.TOAST,
-            passProps: {
-              title: 'File delete',
-              message: 'Could not delete your file',
-              type: Notification.ERROR,
-            },
-          },
-        });
-      }
-    };
-
+  const openDeleteModal = () => {
     Navigation.showModal({
       component: {
         name: Modals.GENERIC_DIALOG,
@@ -297,10 +268,47 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
           title: `Delete "${file.name}"`,
           message:
             'Are you sure you want to delete this file? This action can not be undone',
-          action: deleteThisFile,
+          action: deleteCurrentFile,
         },
       },
     });
+  };
+
+  const deleteCurrentFile = () => {
+    dissmiss();
+
+    try {
+      deleteFiles({
+        from: '6355742c13cfe841481f223e',
+        files: [file.id],
+      });
+
+      emitter.emit(`${UpdateFolderEvent.REMOVE_FILES}-${parentFolderId}`, [
+        file.id,
+      ]);
+
+      Navigation.showOverlay({
+        component: {
+          name: Screens.TOAST,
+          passProps: {
+            title: 'File deleted',
+            message: 'The file has been successfully deleted',
+            type: Notification.SUCCESS,
+          },
+        },
+      });
+    } catch (e) {
+      Navigation.showOverlay({
+        component: {
+          name: Screens.TOAST,
+          passProps: {
+            title: 'File delete',
+            message: 'Could not delete your file',
+            type: Notification.ERROR,
+          },
+        },
+      });
+    }
   };
 
   const dissmiss = () => {
@@ -419,7 +427,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
             ref={aRef}
             sections={sections}
             renderItem={renderItem}
-            renderSectionHeader={renderSectionHeader}
+            renderSectionHeader={renderSectionHeader as any}
             SectionSeparatorComponent={sectionSeparator}
             style={styles.content}
             scrollEnabled={false}

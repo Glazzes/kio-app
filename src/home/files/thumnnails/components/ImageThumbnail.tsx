@@ -20,6 +20,7 @@ import {useSnapshot} from 'valtio';
 import {SIZE} from '../utils/constants';
 import {pushToImageDetails} from '../../../../shared/functions/navigation/pushToImageDetails';
 import {host} from '../../../../shared/constants';
+import {staticFileUrl} from '../../../../shared/requests/contants';
 
 type Reflection = {
   dimensions: Animated.SharedValue<Dimension>;
@@ -50,7 +51,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   y,
   dimensions,
 }) => {
-  const uri = `${host}/static/file/${file.id}`;
+  const uri = staticFileUrl(file.id);
 
   const {accessToken} = useSnapshot(authState.tokens);
   const imageDimensions = useRef<Dimension>({

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, View} from 'react-native';
-import React, {useContext, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {
   BlurMask,
   Canvas,
@@ -12,17 +12,14 @@ import {convertAudioPointsToBarPoints} from '../../../../audio_player/utils/func
 import {createWaveFormPath} from '../../../../audio_player/utils/functions/createWaveFormPath';
 import {STROKE_WIDTH} from '../../../../audio_player/utils/constants';
 import {SIZE} from '../utils/constants';
-import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 
 type AudioThumbnailProps = {
   samples: number[] | null;
 };
 
 const AudioThumbnail: React.FC<AudioThumbnailProps> = ({samples}) => {
-  const componentId = useContext(NavigationContext);
-
   const audioPoints = useMemo(() => {
-    return convertAudioPointsToBarPoints(samples!!);
+    return convertAudioPointsToBarPoints(samples!!, SIZE / 4);
   }, []);
 
   const upperWaveForm = useMemo(() => {

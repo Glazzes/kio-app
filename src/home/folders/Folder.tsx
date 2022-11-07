@@ -24,14 +24,14 @@ const WIDTH = width * 0.75;
 const HEIGHT = 150;
 
 const Folder: React.FC<FolderProps> = ({folder}) => {
-  const componentId = useContext(NavigationContext);
+  const {componentId} = useContext(NavigationContext);
 
   const pushFolder = () => {
     Navigation.push(componentId, {
       component: {
         name: Screens.MY_UNIT,
         passProps: {
-          folderId: 'id',
+          folder,
         },
       },
     });

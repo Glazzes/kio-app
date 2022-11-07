@@ -48,25 +48,28 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   const selection = useSnapshot(fileSelectionState);
 
   const searchTerm = useRef<string>('');
-  const componentId = useContext(NavigationContext);
+  const {componentId, folder} = useContext(NavigationContext);
 
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
   const openMenu = async () => {
-    Navigation.showOverlay({
-      component: {
-        name: Modals.FILE_MENU,
-        passProps: {
-          file,
+    if (folder) {
+      Navigation.showOverlay({
+        component: {
+          name: Modals.FILE_MENU,
+          passProps: {
+            file,
+            parentFolderId: folder.id,
+          },
         },
-      },
-    });
+      });
+    }
   };
 
   const wrapperMargin: ViewStyle = useMemo(() => {
-    return {marginLeft: index % 2 === 0 ? width * 0.05 : 5};
+    return {marginLeft: index % 2 === 0 ? width * 0.05 : 10};
   }, [index]);
 
   const onPress = () => {
@@ -129,25 +132,30 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       setShowSkeleton(false);
     });
 
-    const unselect = emitter.addListener(
-      `clear-selection-${componentId}`,
-      () => {
-        setIsSelected(false);
-      },
-    );
-
     const favoriteFile = emitter.addListener(`favorite-${file.id}`, () => {
       setIsFavorite(s => !s);
     });
 
     return () => {
-      unselect.remove();
       onTyping.remove();
       onEndTyping.remove();
       favoriteFile.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const unselect = emitter.addListener(
+      `clear-selection-${folder?.id}`,
+      () => {
+        setIsSelected(false);
+      },
+    );
+
+    return () => {
+      unselect.remove();
+    };
+  }, [folder]);
 
   if (showSkeleton) {
     return (
@@ -158,7 +166,9 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   }
 
   return (
-    <View style={[styles.root, wrapperMargin]}>
+    <Animated.View
+      style={[styles.root, wrapperMargin]}
+      exiting={FadeOut.duration(300)}>
       <Pressable onPress={onPress} onLongPress={onLongPressSelect}>
         {children}
         {isFavorite && (
@@ -209,7 +219,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
           />
         </Pressable>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
 import SearchBar from './SearchBar';
 import {
@@ -31,10 +31,14 @@ import {
   toggleSelectionLock,
 } from '../../../store/fileSelection';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {host} from '../../../shared/constants';
 import {displayToast} from '../../../shared/navigation/displayToast';
 import {Notification} from '../../../enums/notification';
-import {navigationState} from '../../../store/navigationStore';
+import {
+  navigationState,
+  removeByComponentId,
+} from '../../../store/navigationStore';
+import {apiFilesUrl} from '../../../shared/requests/contants';
+import {UpdateFolderEvent} from '../../utils/types';
 
 type AppbarProps = {
   folderId?: string;
@@ -50,15 +54,16 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   const user = useSnapshot(authState.user);
   const navigation = useSnapshot(navigationState);
   const selection = useSnapshot(fileSelectionState);
+  const [folderCount] = useState<number>(navigation.folders.length);
 
   const contentCount = selection.locked
     ? 0
     : selection.files.length + selection.folders.length;
 
-  const componentId = useContext(NavigationContext);
+  const {componentId, folder} = useContext(NavigationContext);
 
   const clear = () => {
-    emitter.emit(`clear-selection-${componentId}`);
+    emitter.emit(`clear-selection-${folder?.id}`);
   };
 
   const goBack = () => {
@@ -87,19 +92,43 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
     });
   };
 
+  const openDeleteSelectionModal = () => {
+    Navigation.showModal({
+      component: {
+        name: Modals.GENERIC_DIALOG,
+        passProps: {
+          title: 'Delte selection',
+          message:
+            'Are you sure you want to delete these files? This action can not be undone',
+          action: deleteSelection,
+        },
+      },
+    });
+  };
+
   const deleteSelection = async () => {
     const deleteRequest: FileDeleteRequest = {
-      from: '6355742c13cfe841481f223e',
+      from: folder?.id!!,
       files: selection.files.map(f => f.id),
     };
 
     try {
-      await axiosInstance.delete(`${host}/api/v1/files`, {
+      await axiosInstance.delete(apiFilesUrl, {
         data: deleteRequest,
       });
 
+      emitter.emit(
+        `${UpdateFolderEvent.REMOVE_FILES}-${folder?.id}`,
+        selection.files.map(f => f.id),
+      );
+
       clear();
       clearSelection();
+      displayToast(
+        'Files deletes',
+        `${contentCount} file${contentCount > 1 ? 's' : ''} have been deleted`,
+        Notification.SUCCESS,
+      );
     } catch (e) {
       displayToast(
         'Delete file error',
@@ -132,6 +161,10 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
     },
   );
 
+  useEffect(() => {
+    console.log(navigation.folders);
+  });
+
   return (
     <Animated.View style={styles.root}>
       <Canvas style={styles.canvas}>
@@ -150,7 +183,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
       <View style={styles.appbarContainer}>
         <Animated.View style={rStyle}>
           <View style={styles.appbar}>
-            {navigation.folders.length <= 1 ? (
+            {folderCount <= 1 ? (
               <View style={styles.appbarContent}>
                 <View>
                   <Text style={styles.hi}>Hi,</Text>
@@ -165,9 +198,25 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                 </Pressable>
                 <View>
                   <Text style={[styles.title, {textAlign: 'center'}]}>
-                    Music
+                    {folder?.name}
                   </Text>
-                  <Text style={styles.subTitle}>20 files, 2 folders</Text>
+                  {(folder?.summary.files ?? 0) +
+                    (folder?.summary.folders ?? 0) ===
+                  0 ? (
+                    <Text style={styles.subTitle}>Currently empty</Text>
+                  ) : (
+                    <Text style={styles.subTitle}>
+                      {folder?.summary.files && (
+                        <Text>{folder.summary.files} files</Text>
+                      )}
+                      {folder?.summary.folders && (
+                        <Text>
+                          {', '}
+                          {folder.summary.folders} folders{' '}
+                        </Text>
+                      )}
+                    </Text>
+                  )}
                 </View>
                 <UserAvatar />
               </View>
@@ -208,7 +257,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                 />
               </Pressable>
 
-              <Pressable onPress={deleteSelection}>
+              <Pressable onPress={openDeleteSelectionModal}>
                 <Icon
                   name={'ios-trash-outline'}
                   size={23}
