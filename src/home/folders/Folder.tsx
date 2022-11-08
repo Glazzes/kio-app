@@ -1,5 +1,5 @@
 import {View, Text, Dimensions, StyleSheet, Pressable} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import React, {useContext} from 'react';
 import {
   BlurMask,
@@ -14,6 +14,7 @@ import {Modals} from '../../navigation/screens/modals';
 import {NavigationContext} from '../../navigation/NavigationContextProvider';
 import {Screens} from '../../enums/screens';
 import {Folder as FolderType} from '../../shared/types';
+import {downloadFolder} from '../../shared/requests/functions/downloadFolder';
 
 type FolderProps = {
   folder: FolderType;
@@ -27,6 +28,9 @@ const Folder: React.FC<FolderProps> = ({folder}) => {
   const {componentId} = useContext(NavigationContext);
 
   const pushFolder = () => {
+    downloadFolder(folder);
+    return;
+
     Navigation.push(componentId, {
       component: {
         name: Screens.MY_UNIT,
@@ -66,7 +70,7 @@ const Folder: React.FC<FolderProps> = ({folder}) => {
       </Canvas>
 
       <View style={styles.decorationContainer}>
-        <Icon name="folder" color={'#fff'} size={40} />
+        <Icon name="ios-folder-open" color={'#fff'} size={40} />
         <AvatarGroup photos={[]} />
       </View>
 
@@ -78,7 +82,7 @@ const Folder: React.FC<FolderProps> = ({folder}) => {
           {folder.name}
         </Text>
         <Pressable hitSlop={20} onPress={onPress}>
-          <Icon color={'#fff'} name={'dots-vertical'} size={25} />
+          <Icon color={'#fff'} name={'ellipsis-vertical'} size={22} />
         </Pressable>
       </View>
 
@@ -88,12 +92,20 @@ const Folder: React.FC<FolderProps> = ({folder}) => {
         </View>
       ) : (
         <View style={styles.itemContainer}>
-          <Text style={styles.itemSubtitle}>
-            <Text style={styles.itemText}>20</Text> folders and{' '}
-          </Text>
-          <Text style={styles.itemSubtitle}>
-            <Text style={styles.itemText}>50</Text> files
-          </Text>
+          {folder.summary.folders > 0 && (
+            <Text style={styles.itemSubtitle}>
+              <Text style={styles.itemText}>{folder.summary.folders}</Text>{' '}
+              folders and{' '}
+            </Text>
+          )}
+          {folder.summary.files > 0 && (
+            <Text style={styles.itemSubtitle}>
+              <Text style={styles.itemSubtitle}>
+                <Text style={styles.itemText}>{folder.summary.files} </Text>
+                file{folder.summary.files > 1 ? 's' : ''}
+              </Text>
+            </Text>
+          )}
         </View>
       )}
       <View style={styles.created}>

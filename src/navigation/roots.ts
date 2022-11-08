@@ -48,8 +48,8 @@ const mainRoot: LayoutRoot = {
       },
       right: {
         component: {
-          id: Screens.LEFT_DRAWER,
-          name: Screens.LEFT_DRAWER,
+          id: Screens.FILE_DRAWER,
+          name: Screens.FILE_DRAWER,
           options: {
             statusBar: {
               visible: false,

@@ -50,7 +50,7 @@ const actions: FabAction[] = [
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FAB: React.FC<FABProps> = () => {
-  const componentId = useContext(NavigationContext);
+  const {componentId} = useContext(NavigationContext);
 
   const [blockBackInteraction, setBlockBackInteraction] =
     useState<boolean>(false);

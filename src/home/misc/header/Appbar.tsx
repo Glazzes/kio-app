@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useRef} from 'react';
 import {Navigation} from 'react-native-navigation';
 import SearchBar from './SearchBar';
 import {
@@ -33,15 +33,11 @@ import {
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {displayToast} from '../../../shared/navigation/displayToast';
 import {Notification} from '../../../enums/notification';
-import {
-  navigationState,
-  removeByComponentId,
-} from '../../../store/navigationStore';
 import {apiFilesUrl} from '../../../shared/requests/contants';
 import {UpdateFolderEvent} from '../../utils/types';
+import {downloadFiles} from '../../../shared/requests/functions/downloafFiles';
 
 type AppbarProps = {
-  folderId?: string;
   scrollY: Animated.SharedValue<number>;
 };
 
@@ -52,15 +48,19 @@ const CANVAS_SIZE = statusBarHeight * 3 + 60;
 
 const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   const user = useSnapshot(authState.user);
-  const navigation = useSnapshot(navigationState);
   const selection = useSnapshot(fileSelectionState);
-  const [folderCount] = useState<number>(navigation.folders.length);
+
+  const {componentId, folder} = useContext(NavigationContext);
+  const isRoot = useRef<boolean>(folder === undefined);
 
   const contentCount = selection.locked
     ? 0
     : selection.files.length + selection.folders.length;
 
-  const {componentId, folder} = useContext(NavigationContext);
+  const sendEventAndClearSelection = () => {
+    clear();
+    clearSelection();
+  };
 
   const clear = () => {
     emitter.emit(`clear-selection-${folder?.id}`);
@@ -80,13 +80,18 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
     });
   };
 
-  const downloadSelection = () => {
+  const openDownloadSelectionModal = () => {
     Navigation.showModal({
       component: {
         name: Modals.GENERIC_DIALOG,
         passProps: {
           title: 'Download selection',
           message: `${contentCount} files will be downloaded, this may take a while`,
+          action: () => {
+            downloadFiles(selection.files);
+            clearSelection();
+            clear();
+          },
         },
       },
     });
@@ -161,10 +166,6 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
     },
   );
 
-  useEffect(() => {
-    console.log(navigation.folders);
-  });
-
   return (
     <Animated.View style={styles.root}>
       <Canvas style={styles.canvas}>
@@ -183,7 +184,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
       <View style={styles.appbarContainer}>
         <Animated.View style={rStyle}>
           <View style={styles.appbar}>
-            {folderCount <= 1 ? (
+            {isRoot.current ? (
               <View style={styles.appbarContent}>
                 <View>
                   <Text style={styles.hi}>Hi,</Text>
@@ -196,7 +197,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                 <Pressable hitSlop={20} onPress={goBack}>
                   <Icon name={'ios-arrow-back'} color={'#000'} size={22} />
                 </Pressable>
-                <View>
+                <View style={styles.center}>
                   <Text style={[styles.title, {textAlign: 'center'}]}>
                     {folder?.name}
                   </Text>
@@ -206,10 +207,11 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                     <Text style={styles.subTitle}>Currently empty</Text>
                   ) : (
                     <Text style={styles.subTitle}>
-                      {folder?.summary.files && (
+                      {folder?.summary.files > 0 && (
                         <Text>{folder.summary.files} files</Text>
                       )}
-                      {folder?.summary.folders && (
+
+                      {folder?.summary.folders > 0 && (
                         <Text>
                           {', '}
                           {folder.summary.folders} folders{' '}
@@ -224,7 +226,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
           </View>
           <View style={styles.appbar}>
             <View style={styles.countContainer}>
-              <Pressable onPress={clear} hitSlop={20}>
+              <Pressable onPress={sendEventAndClearSelection} hitSlop={20}>
                 <Icon name={'close'} size={23} color={'#000'} />
               </Pressable>
               <Text style={styles.count}>{contentCount}</Text>
@@ -248,7 +250,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                 />
               </Pressable>
 
-              <Pressable onPress={downloadSelection}>
+              <Pressable onPress={openDownloadSelectionModal}>
                 <Icon
                   name={'ios-cloud-download-outline'}
                   size={23}
@@ -329,6 +331,9 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginLeft: 20,
+  },
+  center: {
+    alignItems: 'center',
   },
 });
 

@@ -10,9 +10,11 @@ export const downloadFile = (file: File) => {
   const uri = staticFileUrl(file.id);
   const toFile =
     (Platform.OS === 'android' ? 'file://' : '') +
-    RNFS.CachesDirectoryPath +
+    RNFS.DownloadDirectoryPath +
     '/' +
     file.name;
+
+  console.log(RNFS.DownloadDirectoryPath);
 
   RNFS.downloadFile({
     fromUrl: uri,

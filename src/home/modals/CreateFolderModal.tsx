@@ -21,6 +21,9 @@ import {Notification} from '../../enums/notification';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
 import {displayToast} from '../../shared/navigation/displayToast';
 import ModalWrapper from '../../shared/components/ModalWrapper';
+import {newFolderUrl} from '../../shared/requests/contants';
+import emitter from '../../utils/emitter';
+import {addFolderEventName} from '../../shared/constants';
 
 type CreateFolderModalProps = {
   parentComponentId?: string;
@@ -39,9 +42,6 @@ const CreateFolderModal: NavigationFunctionComponent<
 
   const [folderName, setFolderName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [selected, setSelected] = useState<boolean>(false);
-
-  const toggle = () => setSelected(s => !s);
 
   const clear = () => {
     if (!loading) {
@@ -54,25 +54,21 @@ const CreateFolderModal: NavigationFunctionComponent<
     setFolderName(text);
   };
 
-  const focus = () => {
-    ref.current?.focus();
-  };
-
   const create = async () => {
     setLoading(true);
 
     try {
-      const {data} = await axiosInstance.post(
-        `/api/v1/folders/${folderId}`,
-        undefined,
-        {
-          params: {
-            name: folderName,
-          },
-        },
-      );
+      const uri = newFolderUrl(folderId);
 
-      console.log(data);
+      const {data} = await axiosInstance.post(uri, undefined, {
+        params: {
+          name: folderName,
+        },
+      });
+
+      const eventName = addFolderEventName(folderId);
+      emitter.emit(eventName, data);
+
       Navigation.dismissModal(componentId);
       displayToast(
         'Folder created',
@@ -111,7 +107,7 @@ const CreateFolderModal: NavigationFunctionComponent<
             style={styles.input}
             placeholder={'Folder name'}
             keyboardType={'default'}
-            onFocus={toggle}
+            autoFocus={true}
             onChangeText={onChangeText}
           />
           {folderName.length > 0 && (

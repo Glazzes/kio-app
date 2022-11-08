@@ -40,6 +40,7 @@ import {
   PictureInPictureVideo,
   PricingSheet,
 } from './src/overlays';
+import {clearSelection} from './src/store/fileSelection';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -138,7 +139,7 @@ Navigation.registerComponent(
   () => ProgressIndicator,
 );
 
-Navigation.registerComponent(Screens.LEFT_DRAWER, () => FileDrawer);
+Navigation.registerComponent(Screens.FILE_DRAWER, () => FileDrawer);
 
 Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericModal);
 
@@ -190,6 +191,8 @@ Navigation.events().registerAppLaunchedListener(async () => {
 Navigation.events().registerComponentWillAppearListener(e => {
   if (e.componentName === Screens.MY_UNIT) {
     emitter.emit('show');
+    clearSelection();
+
     return;
   }
 

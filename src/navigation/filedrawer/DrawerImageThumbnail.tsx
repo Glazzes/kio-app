@@ -62,17 +62,23 @@ const DrawerImageThumbnail: React.FC<DrawerImageThumbnailProps> = ({file}) => {
     }
 
     if (file.contentType.startsWith('audio')) {
-      <Audio
-        backgroundColor={'#fff'}
-        height={SIZE - 20}
-        width={SIZE - 20}
-        upperWaveHeight={SIZE * 0.75}
-        lowerWaveHeight={SIZE * 0.755}
-        samples={file.details.audioSamples!! as number[]}
-      />;
+      return (
+        <Audio
+          backgroundColor={'#fff'}
+          height={SIZE - 20}
+          width={SIZE - 20}
+          upperWaveHeight={SIZE * 0.75}
+          lowerWaveHeight={SIZE * 0.755}
+          samples={file.details.audioSamples!! as number[]}
+        />
+      );
     }
 
-    return <View />;
+    return (
+      <View style={styles.preview}>
+        <Icon name={'ios-document'} color={'#3366ff'} size={100} />
+      </View>
+    );
   };
 
   return <View style={styles.preview}>{renderThumbnail()}</View>;

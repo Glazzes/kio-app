@@ -1,28 +1,32 @@
 import {proxy} from 'valtio';
-import {File} from '../shared/types';
+import {Folder} from '../shared/types';
 
 type NavigationScreen = {
-  name: string;
-  folderId: string;
   componentId: string;
+  folder: Folder;
 };
 
 type State = {
-  file: File | null;
   folders: NavigationScreen[];
 };
 
-export const navigationState = proxy<State>({folders: [], file: null});
+export const navigationState = proxy<State>({folders: []});
 
 // actions
 export function pushNavigationScreen(screen: NavigationScreen) {
-  navigationState.folders.push(screen);
-  console.log('added');
+  const isAlreadyPresent = navigationState.folders.some(
+    s => s.folder.id === screen.folder.id,
+  );
+
+  if (!isAlreadyPresent) {
+    navigationState.folders.push(screen);
+    console.log('added', screen);
+  }
 }
 
-export function removeNavigationScreenById(id: string) {
+export function removeNavigationScreenByFolderId(id: string) {
   navigationState.folders = navigationState.folders.filter(
-    f => f.folderId !== id,
+    s => s.folder.id !== id,
   );
 }
 
@@ -37,7 +41,7 @@ export function removeLastNavigationScreen() {
 export function findLastByName(name: string): string {
   let componentId: string | null = null;
   for (let s of navigationState.folders) {
-    if (s.name === name) {
+    if (s.folder.name === name) {
       componentId = s.componentId;
     }
   }
@@ -63,13 +67,4 @@ export function takeUntil(componentId: string) {
       return;
     }
   }
-}
-
-// files
-export function pushFile(file: File) {
-  navigationState.file = file;
-}
-
-export function popFile() {
-  navigationState.file = null;
 }

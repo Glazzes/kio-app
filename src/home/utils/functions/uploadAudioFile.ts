@@ -9,18 +9,19 @@ import emitter from '../../../utils/emitter';
 import {UpdateFolderEvent} from '../types';
 
 export const uploadAudioFile = (
-  to: string,
-  componentId: string,
+  folderId: string,
   pick: DocumentPickerResponse,
 ) => {
   const type = pick.type ?? 'audio/mpeg';
   const mimeType = type.slice(type.lastIndexOf('/') + 1, type.length);
   const extension = mimeType === 'mpeg' ? 'mp3' : mimeType;
-  const name = `${pick.name}.${extension}`;
+  const name = pick.name.includes('.')
+    ? pick.name
+    : `${pick.name}.${extension}`;
 
   const formData = new FormData();
   const request: UploadRequest = {
-    to,
+    to: folderId,
     details: {
       [name]: {
         dimensions: null,
@@ -41,6 +42,7 @@ export const uploadAudioFile = (
       console.log('upload', error);
     }
 
+    console.log('here');
     request.details[name].duration = sound.getDuration();
     formData.append('request', JSON.stringify(request));
 
@@ -51,7 +53,8 @@ export const uploadAudioFile = (
         },
       });
 
-      emitter.emit(`${UpdateFolderEvent.ADD_FILES}-${componentId}`, data);
+      emitter.emit(`${UpdateFolderEvent.ADD_FILES}-${folderId}`, data);
+      console.log(data);
     } catch (e) {
       displayToast(
         'Upload error',

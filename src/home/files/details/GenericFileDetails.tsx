@@ -5,6 +5,7 @@ import {Modals} from '../../../navigation/screens/modals';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {File} from '../../../shared/types';
 import {convertBytesToRedableUnit} from '../../../shared/functions/convertBytesToRedableUnit';
+import {downloadFile} from '../../../shared/requests/functions/downloadFile';
 
 type GenericFileDetailsProps = {
   file: File;
@@ -28,6 +29,10 @@ const GenericFileDetails: NavigationFunctionComponent<
     });
   };
 
+  const download = () => {
+    downloadFile(file);
+  };
+
   return (
     <View style={styles.root}>
       <View style={styles.appbar}>
@@ -49,7 +54,7 @@ const GenericFileDetails: NavigationFunctionComponent<
           This file format is not supported for visualization, read about it{' '}
           <Text style={styles.link}>here</Text>
         </Text>
-        <Pressable style={styles.button}>
+        <Pressable style={styles.button} onPress={download}>
           <Text style={styles.buttonText}>Download</Text>
         </Pressable>
       </View>

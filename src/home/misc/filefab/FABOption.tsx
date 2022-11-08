@@ -26,7 +26,7 @@ const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
-  const {componentId, folder} = useContext(NavigationContext);
+  const {folder} = useContext(NavigationContext);
 
   const onPress = async () => {
     toggle();
@@ -56,17 +56,12 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       copyTo: 'cachesDirectory',
     });
 
-    const nonAudioFiles = result.filter(r => !r.type?.startsWith('audio'));
+    const files = result.filter(r => !r.type?.startsWith('audio'));
     const audioFiles = result.filter(r => r.type?.startsWith('audio'));
 
-    audioFiles.forEach(audioFile =>
-      uploadAudioFile('6355742c13cfe841481f223e', componentId, audioFile),
-    );
+    audioFiles.forEach(audioFile => uploadAudioFile(folder?.id!!, audioFile));
 
-    const formData = await getFileFormData(
-      '6355742c13cfe841481f223e',
-      nonAudioFiles,
-    );
+    const formData = await getFileFormData(folder?.id!!, files);
 
     await notifee.displayNotification({
       id: 'upload',
@@ -83,7 +78,8 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     });
 
     try {
-      if (nonAudioFiles.length > 0) {
+      if (files.length > 0) {
+        console.log('uploading normal', audioFiles.length);
         const res = await axiosInstance.post('/api/v1/files', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -119,7 +115,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       component: {
         name: Modals.CREATE_FOLDER_MODAL,
         passProps: {
-          folderId: '6355742c13cfe841481f223e',
+          folderId: folder?.id!!,
         },
       },
     });

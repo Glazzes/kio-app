@@ -281,4 +281,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FileWrapper;
+export default React.memo(FileWrapper);

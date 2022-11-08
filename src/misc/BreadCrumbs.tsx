@@ -1,22 +1,24 @@
-import {View, Text, ScrollView, StyleSheet, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useSnapshot} from 'valtio';
+import {navigationState} from '../store/navigationStore';
+import {Navigation} from 'react-native-navigation';
 
 type BreadCrumbsProps = {};
 
 const {width} = Dimensions.get('window');
-const folders = [
-  'HomeHomeHomeHomeHomeHomeHomeHomeHomeHome',
-  'Images',
-  'Space',
-  'Astronaut',
-  'Home',
-  'Images',
-  'Space',
-  'Astronaut',
-];
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = ({}) => {
+  const snap = useSnapshot(navigationState);
+
   return (
     <View>
       <ScrollView
@@ -24,19 +26,24 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = ({}) => {
         horizontal={true}
         style={styles.scrollview}
         contentContainerStyle={styles.content}>
-        {folders.map((folder, index) => {
+        {snap.folders.map((screen, index) => {
           return (
-            <View key={`${folder}-${index}`} style={styles.container}>
+            <Pressable
+              onPress={() => {
+                Navigation.popTo(screen.componentId);
+              }}
+              key={`${screen.folder.id}-${index}`}
+              style={styles.container}>
               <Text
                 style={styles.text}
                 numberOfLines={1}
                 ellipsizeMode={'tail'}>
-                {folder}
+                {screen.folder.name}
               </Text>
-              {index !== folders.length - 1 && (
+              {index !== snap.folders.length - 1 && (
                 <Icon name={'chevron-right'} color={'#354259'} size={20} />
               )}
-            </View>
+            </Pressable>
           );
         })}
       </ScrollView>
@@ -60,7 +67,8 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: 'UberBold',
-    fontSize: 12,
+    // color: '#000',
+    fontSize: 13,
     maxWidth: 100,
   },
 });

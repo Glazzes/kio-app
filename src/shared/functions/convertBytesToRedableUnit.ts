@@ -3,7 +3,7 @@ const unitNames = ['Gb', 'Mb', 'Kb', 'b'];
 
 export function convertBytesToRedableUnit(bytes: number): string {
   if (bytes < 1) {
-    throw Error('File sizes must be greater than equals 1');
+    return 'N/A';
   }
 
   let flag = true;

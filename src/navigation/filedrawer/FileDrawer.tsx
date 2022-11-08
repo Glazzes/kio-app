@@ -1,20 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {View, Text, StyleSheet, ScrollView, Dimensions} from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Navigation,
   NavigationComponentListener,
   NavigationFunctionComponent,
 } from 'react-native-navigation';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import DrawerImageThumbnail from './DrawerImageThumbnail';
 import {useSnapshot} from 'valtio';
-import {navigationState, popFile} from '../../store/navigationStore';
+import {navigationState} from '../../store/navigationStore';
 import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
 import authState from '../../store/authStore';
 import {File} from '../../shared/types';
 import {convertCurrentTimeToTextTime} from '../../audio_player/utils/functions/convertCurrentTimeToTextTime';
 import Avatar from '../../misc/Avatar';
+import {Screens} from '../../enums/screens';
+import {axiosInstance} from '../../shared/requests/axiosInstance';
+import {folderSizeUrl} from '../../shared/requests/contants';
+import {mmkv} from '../../store/mmkv';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -36,12 +40,15 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
   file,
 }) => {
   const user = useSnapshot(authState.user);
-  const folders = useSnapshot(navigationState.folders);
+  const {folders} = useSnapshot(navigationState);
+  const last = folders[folders.length - 1];
+
+  const [folderSize, setFolderSize] = useState<number>(1);
 
   useEffect(() => {
     const listener: NavigationComponentListener = {
       componentDidDisappear: _ => {
-        popFile();
+        Navigation.updateProps(Screens.FILE_DRAWER, {file: undefined});
       },
     };
 
@@ -55,17 +62,41 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (last) {
+      const size = mmkv.getNumber(last.folder.id);
+      if (size) {
+        setFolderSize(size);
+        return;
+      }
+
+      const uri = folderSizeUrl(last.folder.id);
+      axiosInstance.get<number>(uri).then(({data}) => {
+        setFolderSize(data);
+        mmkv.set(last.folder.id, data);
+      });
+    }
+  }, [last]);
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <Text style={styles.name}>{file ? file.name : 'Last folder name'}</Text>
+      <Text style={styles.name}>{file ? file.name : last?.folder.name}</Text>
       <View style={styles.previewContainer}>
-        {file && <DrawerImageThumbnail file={file} />}
+        {file ? (
+          <DrawerImageThumbnail file={file} />
+        ) : (
+          <View style={styles.previewContainer}>
+            <Icon name={'ios-folder-open'} color={'#3366ff'} size={100} />
+          </View>
+        )}
       </View>
       <Text style={styles.title}>Properties</Text>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Size</Text>
         <Text style={styles.data}>
-          {file ? convertBytesToRedableUnit(file.size) : '1MB'}
+          {file
+            ? convertBytesToRedableUnit(file.size)
+            : convertBytesToRedableUnit(folderSize)}
         </Text>
       </View>
       {file && (
@@ -99,11 +130,15 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
       )}
       <View style={styles.textContainer}>
         <Text style={styles.item}>Created</Text>
-        <Text style={styles.data}>{file?.createdAt}</Text>
+        <Text style={styles.data}>
+          {file ? file?.createdAt : last?.folder.createdAt}
+        </Text>
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Modified</Text>
-        <Text style={styles.data}>{file?.lastModified}</Text>
+        <Text style={styles.data}>
+          {file ? file?.lastModified : last?.folder.lastModified}
+        </Text>
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Visibility</Text>
@@ -113,16 +148,16 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
         <Text style={styles.item}>Location</Text>
         <View style={styles.ownerContainer}>
           <Icon
-            name={'folder'}
+            name={'ios-folder-open'}
             size={35}
             color={'#354259'}
             style={styles.margin}
           />
           <CollapsableText
             text={
-              folders[folders.length - 1]
-                ? folders[folders.length - 1].name
-                : 'Unknown'
+              folders[folders.length - 2]
+                ? folders[folders.length - 2].folder.name
+                : 'Root folder'
             }
           />
         </View>

@@ -27,7 +27,7 @@ import Animated, {
   scrollTo,
   useAnimatedRef,
 } from 'react-native-reanimated';
-import {peekLastNavigationScreen, pushFile} from '../../store/navigationStore';
+import {peekLastNavigationScreen} from '../../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {clamp} from '../../shared/functions/clamp';
 import {snapPoint} from 'react-native-redash';
@@ -221,10 +221,8 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
 
   const openDetails = () => {
     const lastFolderScreen = peekLastNavigationScreen();
-    pushFile(file);
-    Navigation.updateProps(Screens.LEFT_DRAWER, {
-      file,
-    });
+
+    Navigation.updateProps(Screens.FILE_DRAWER, {file});
 
     Navigation.mergeOptions(lastFolderScreen.componentId, {
       sideMenu: {

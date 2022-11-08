@@ -12,7 +12,7 @@ export enum Screens {
   EDITOR = 'Editor',
 
   // Miscelaneous
-  LEFT_DRAWER = 'Left drawer',
+  FILE_DRAWER = 'File.Drawer',
   TOAST = 'Toast',
 
   // Details

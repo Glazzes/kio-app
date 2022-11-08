@@ -114,6 +114,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     };
 
     return (
+      // @ts-ignore
       <FileWrapper index={info.index} file={info.item}>
         {defineComponent()}
       </FileWrapper>
@@ -137,15 +138,27 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       },
     );
 
+    const addFolder = emitter.addListener(
+      `${UpdateFolderEvent.ADD_FOLDER}-${folder?.id}`,
+      (newfolder: Folder) => setSubFolders(sfs => [newfolder, ...sfs]),
+    );
+
     return () => {
       addFiles.remove();
+      addFolder.remove();
       removeFiles.remove();
     };
   }, [folder]);
 
   useEffect(() => {
-    if (folder == null) {
-      getFolder(componentId, folder, unit => setFolder(unit));
+    if (folder === undefined) {
+      getFolder(componentId, folder, unit => {
+        setFolder(unit);
+        pushNavigationScreen({
+          componentId,
+          folder: unit,
+        });
+      });
     }
 
     RNBootSplash.hide({fade: true});
@@ -155,21 +168,25 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   }, []);
 
   useEffect(() => {
+    if (folder !== undefined) {
+      pushNavigationScreen({
+        componentId,
+        folder,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     if (folder) {
       getFolderFiles(folder, page => setFiles(page.content));
       getFolderSubFolders(folder, 0, page => setSubFolders(page.content));
-      pushNavigationScreen({
-        componentId,
-        name: folder.name,
-        folderId: folder.id,
-      });
     }
   }, [folder]);
 
   return (
     <NavigationContextProvider componentId={componentId} folder={folder}>
       <View style={styles.root}>
-        <Appbar scrollY={scrollY} folderId={folder?.id} />
+        <Appbar scrollY={scrollY} />
 
         <Animated.FlatList
           ref={ref as any}

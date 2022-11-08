@@ -21,6 +21,7 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
   message,
   action,
 }) => {
+  const [disabled, setDisabled] = useState<boolean>(false);
   const [selected, setSelected] = useState<boolean>(false);
 
   const toggleSelected = async () => {
@@ -33,8 +34,14 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
   };
 
   const performAction = async () => {
-    await action();
-    close();
+    setDisabled(true);
+    try {
+      await action();
+      close();
+    } catch (e) {
+    } finally {
+      setDisabled(false);
+    }
   };
 
   return (
@@ -64,9 +71,17 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </Pressable>
           <Pressable
-            style={[styles.button, styles.confirmButton]}
+            style={[
+              styles.button,
+              disabled ? styles.cancelButton : styles.confirmButton,
+            ]}
             onPress={performAction}>
-            <Text style={styles.confirmButtonText}>Confirm</Text>
+            <Text
+              style={
+                disabled ? styles.cancelButtonText : styles.confirmButtonText
+              }>
+              Confirm
+            </Text>
           </Pressable>
         </View>
       </ModalWrapper>
