@@ -10,6 +10,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import React, {useEffect, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
 import emitter from '../../utils/emitter';
+import {Screens} from '../../enums/screens';
 
 type UserInfoProps = {
   parentComponentId: string;
@@ -21,10 +22,10 @@ const IMAGE_SIZE = 70;
 const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
   const [newPic, setNewPic] = useState<string | undefined>(undefined);
 
-  const editProfile = () => {
+  const pushToEditProfile = () => {
     Navigation.push(parentComponentId, {
       component: {
-        name: 'Edit',
+        name: Screens.EDIT_PROFILE,
       },
     });
   };
@@ -62,7 +63,7 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
           </Text>
         </View>
       </View>
-      <Pressable onPress={editProfile} hitSlop={30}>
+      <Pressable onPress={pushToEditProfile} hitSlop={30}>
         <Icon name={'pencil'} size={20} color={'#000'} />
       </Pressable>
     </View>

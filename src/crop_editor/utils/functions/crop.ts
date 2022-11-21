@@ -2,15 +2,20 @@ import {Extrapolate, interpolate} from 'react-native-reanimated';
 import {Dimension, Point} from '../../../shared/types';
 import {CropPoint, Resize} from '../../types';
 
-const crop = (
-  layout: Dimension,
-  realDimensions: Dimension,
-  position: Point,
-  scale: number,
-  angle: number,
-  radius: number,
-  outputSize: number,
-): CropPoint => {
+type CropOptions = {
+  layout: Dimension;
+  imageDimensions: Dimension;
+  position: Point;
+  angle: number;
+  scale: number;
+  radius: number;
+  cropSize: number;
+};
+
+const crop = (options: CropOptions): CropPoint => {
+  const {layout, imageDimensions, position, angle, scale, radius, cropSize} =
+    options;
+
   const offsetX = (layout.width * scale - radius * 2) / 2;
   const offsetY = (layout.height * scale - radius * 2) / 2;
 
@@ -36,12 +41,12 @@ const crop = (
     Extrapolate.CLAMP,
   );
 
-  const actualDimensions = {...realDimensions};
+  const actualDimensions = {...imageDimensions};
 
   // if the angle sits over the y axis dimensions are flipped
   if (angle % Math.PI === Math.PI / 2) {
-    actualDimensions.width = realDimensions.height;
-    actualDimensions.height = realDimensions.width;
+    actualDimensions.width = imageDimensions.height;
+    actualDimensions.height = imageDimensions.width;
   }
 
   // images are cropped based on their real dimensions and their current position
@@ -56,11 +61,11 @@ const crop = (
   dividing the desired output size by the smaller dimension gives a value from 0 to 1 that
   can be used to resize the image by multiplyng it to the real image dimensions
   */
-  const resizeFactor = outputSize / size;
+  const resizeFactor = cropSize / size;
 
   const resizedDimensions: Resize = {
-    width: Math.ceil(realDimensions.width * resizeFactor),
-    height: Math.ceil(realDimensions.height * resizeFactor),
+    width: Math.ceil(imageDimensions.width * resizeFactor),
+    height: Math.ceil(imageDimensions.height * resizeFactor),
   };
 
   return {

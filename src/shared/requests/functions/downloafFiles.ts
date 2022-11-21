@@ -3,7 +3,7 @@ import RNFS from 'react-native-fs';
 import {staticFileUrl} from '../contants';
 import {Platform} from 'react-native';
 import {displayToast} from '../../navigation/displayToast';
-import {Notification} from '../../../enums/notification';
+import {NotificationType} from '../../../enums/notification';
 
 export const downloadFiles = async (files: File[]) => {
   try {
@@ -25,12 +25,12 @@ export const downloadFiles = async (files: File[]) => {
         ? 'All selected files have been saved to your downloads folder'
         : 'Your file has been downloaded successfuly';
 
-    displayToast('Files downloaded', successMessage, Notification.SUCCESS);
+    displayToast('Files downloaded', successMessage, NotificationType.SUCCESS);
   } catch (e) {
     const errorMessage = `An error ocurred while downloading your ${
       files.length > 1 ? 'selection' : 'file'
     }`;
 
-    displayToast('Download error', errorMessage, Notification.ERROR);
+    displayToast('Download error', errorMessage, NotificationType.ERROR);
   }
 };

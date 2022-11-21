@@ -16,6 +16,9 @@ import {
   useComputedValue,
 } from '@shopify/react-native-skia';
 import {Navigation} from 'react-native-navigation';
+import {Modals} from '../../navigation/screens/modals';
+import {axiosInstance} from '../../shared/requests/axiosInstance';
+import {apiUnitUrl} from '../../shared/requests/contants';
 
 type UnitInfoProps = {};
 
@@ -52,23 +55,24 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
     return `${Math.floor(end.current * 100)}%`;
   }, [end]);
 
-  const animateWheel = () => {
+  const animateArc = () => {
     runTiming(end, {from: 0, to: 0.58}, {duration: 2000});
   };
 
   const showPricingSheet = () => {
     Navigation.showModal({
       component: {
-        name: 'PS',
+        name: Modals.PRICING,
       },
     });
   };
 
   useEffect(() => {
     if (uberBold) {
-      fetch('https://jsonplaceholder.typicode.com/comments')
-        .then(animateWheel)
-        .catch(() => console.log('eror'));
+      axiosInstance.get(apiUnitUrl).then(({data}) => {
+        console.log(data);
+        animateArc();
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uberBold]);

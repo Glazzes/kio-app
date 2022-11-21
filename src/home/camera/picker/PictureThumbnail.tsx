@@ -3,7 +3,7 @@ import React from 'react';
 import Animated, {Keyframe, useAnimatedStyle} from 'react-native-reanimated';
 import FastImage from 'react-native-fast-image';
 
-type CameraThumnailProps = {
+type PictureThumnailProps = {
   uri: string;
   opacity: Animated.SharedValue<number>;
 };
@@ -22,7 +22,7 @@ const entering = new Keyframe({
   },
 });
 
-const CameraThumbnail: React.FC<CameraThumnailProps> = ({uri, opacity}) => {
+const PictureThumbnail: React.FC<PictureThumnailProps> = ({uri, opacity}) => {
   const rStyle = useAnimatedStyle(() => {
     return {opacity: opacity.value};
   });
@@ -53,4 +53,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(CameraThumbnail);
+export default React.memo(PictureThumbnail);

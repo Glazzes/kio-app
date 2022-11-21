@@ -1,4 +1,17 @@
 // File
+export enum FileVisibility {
+  OWNER,
+  RESTRICTED,
+  PUBLIC,
+}
+
+type FileDetails = {
+  dimensions: [number, number] | null;
+  duration: number | null;
+  audioSamples: number[] | null;
+  pages: string | null;
+};
+
 export type File = {
   id: string;
   ownerId: string;
@@ -8,22 +21,18 @@ export type File = {
   contentType: string;
   createdAt: string;
   lastModified: string;
+  visibility: FileVisibility;
   details: FileDetails;
-};
-
-export type FileDetails = {
-  dimensions: [number, number] | null;
-  duration: number | null;
-  audioSamples: number[] | null;
-  pages: string | null;
 };
 
 export type Folder = {
   id: string;
   ownerId: string;
   name: string;
+  isFavorite: boolean;
   createdAt: string;
   lastModified: string;
+  visibility: FileVisibility;
   summary: FolderSummary;
 };
 
@@ -57,6 +66,13 @@ export type FileMetadata = {
   duration: number | undefined;
   pages: number | undefined;
   thumbnail: number | undefined; // pdf only, does not apply to videos
+};
+
+//request
+export type CopyRequest = {
+  from: string;
+  to: string;
+  items: string[];
 };
 
 // miscelaneous

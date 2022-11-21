@@ -26,9 +26,9 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {ScrollView} from 'react-native-gesture-handler';
-import {Notification} from '../../enums/notification';
-import {withKeyboard} from '../../utils/hoc';
+import {NotificationType} from '../../enums/notification';
 import {Modals} from '../../navigation/screens/modals';
+import {Folder} from '../../shared/types';
 
 type EditProfileProps = {};
 
@@ -72,7 +72,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
         passProps: {
           title: 'Saved changes',
           message: 'Your account has been updated successfully',
-          type: Notification.SUCCESS,
+          type: NotificationType.SUCCESS,
         },
       },
     });
@@ -111,7 +111,10 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       });
     });
 
-    pushNavigationScreen({name: 'Edit.Profile', componentId});
+    pushNavigationScreen({
+      componentId,
+      folder: {id: Screens.EDIT_PROFILE, name: Screens.EDIT_PROFILE} as Folder,
+    });
 
     return () => {
       listener.remove();

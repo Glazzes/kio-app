@@ -1,13 +1,26 @@
-import {Dimensions, Pressable, StyleSheet} from 'react-native';
+import {Dimensions, Pressable, StyleSheet, View} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
+import {useSnapshot} from 'valtio';
+
+import {displayToast} from '../../shared/navigation/displayToast';
+import {NotificationType} from '../../enums/notification';
+import {
+  clearPictureSelection,
+  pictureSelectionState,
+  removeSelectedPicturesFromTaken,
+} from '../../store/photoStore';
+import {uploadPictures} from './utils/functions/uploadPictures';
+import emitter from '../../utils/emitter';
+import {PicturePickerEvent} from './utils/enums';
+import {UpdateFolderEvent} from '../utils/types';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../navigation/screens/modals';
 
 type UploadPhotoFABProps = {
+  folderId: string;
   componentId: string;
-  selectedPhotos: string[];
   scale?: Animated.SharedValue<number>;
 };
 
@@ -16,39 +29,73 @@ const SIZE = 50;
 const {width} = Dimensions.get('window');
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({
-  componentId,
-  selectedPhotos,
-}) => {
-  const upload = async () => {
+const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({folderId}) => {
+  const selectedPictures = useSnapshot(pictureSelectionState.selectedPictures);
+  const selectedPicturesUris = Object.keys(selectedPictures);
+  const selectedPicturesCount = selectedPicturesUris.length;
+
+  const openUploadDialog = () => {
     Navigation.showModal({
       component: {
         name: Modals.GENERIC_DIALOG,
         passProps: {
-          title: 'Upload photos',
+          title: 'Picture upload',
           message:
-            'All photos that have been not selected will be lost, this action can not be undone',
+            'All pictures that have not been selected will be present until you close the app',
+          action: upload,
         },
       },
     });
   };
 
+  const upload = async () => {
+    try {
+      const {data} = await uploadPictures(folderId);
+
+      removeSelectedPicturesFromTaken(selectedPicturesUris);
+      clearPictureSelection();
+
+      emitter.emit(PicturePickerEvent.REMOVE_PICTURES, selectedPicturesUris);
+      emitter.emit(`${UpdateFolderEvent.ADD_FILES}-${folderId}`, data);
+
+      displayToast(
+        'Pictures uploaded',
+        `Upload ${selectedPicturesUris.length} pictures successfuly`,
+        NotificationType.SUCCESS,
+      );
+    } catch (e) {
+      displayToast(
+        'Upload error',
+        'Your pictures could have not been uploaded, try again later',
+        NotificationType.ERROR,
+      );
+    }
+  };
+
   return (
-    <AnimatedPressable
-      style={styles.fab}
-      onPress={upload}
-      entering={ZoomIn.duration(300)}
-      exiting={ZoomOut.duration(300)}>
-      <Icon name="ios-cloud-upload" color={'#fff'} size={25} />
-    </AnimatedPressable>
+    <View style={styles.container}>
+      {selectedPicturesCount > 0 && (
+        <AnimatedPressable
+          style={styles.fab}
+          onPress={openUploadDialog}
+          entering={ZoomIn.duration(300)}
+          exiting={ZoomOut.duration(300)}>
+          <Icon name="ios-cloud-upload" color={'#fff'} size={25} />
+        </AnimatedPressable>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  fab: {
+  container: {
     position: 'absolute',
     bottom: width * 0.05,
     right: width * 0.05,
+    width: SIZE,
+    height: SIZE,
+  },
+  fab: {
     width: SIZE,
     height: SIZE,
     borderRadius: SIZE / 2,

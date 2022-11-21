@@ -10,7 +10,7 @@ const IMAGE_SIZE = 40;
 
 const UserAvatar = () => {
   const state = useSnapshot(authState);
-  const componentId = useContext(NavigationContext);
+  const {componentId} = useContext(NavigationContext);
   const ref = useRef<View>(null);
 
   const openUserMenu = () => {

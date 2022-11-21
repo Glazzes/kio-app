@@ -14,25 +14,34 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../utils/emitter';
-import {Screens} from '../enums/screens';
-import {Event} from '../enums/events';
+import emitter from '../../../utils/emitter';
+import {Screens} from '../../../enums/screens';
+import {Event} from '../../../enums/events';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ModalWrapper from '../shared/components/ModalWrapper';
+import ModalWrapper from './ModalWrapper';
 import {
   clearSelection,
   fileSelectionState,
   toggleSelectionLock,
-} from '../store/fileSelection';
+} from '../../../store/fileSelection';
 import {useSnapshot} from 'valtio';
-import {navigationState} from '../store/navigationStore';
+import {
+  navigationState,
+  peekLastNavigationScreen,
+} from '../../../store/navigationStore';
+import {CopyType} from '../../../shared/enums';
+import {CopyRequest, Folder} from '../../../shared/types';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
 
-type CopyModalProps = {};
+type CopyModalProps = {
+  copyType: CopyType;
+};
 
 const {width} = Dimensions.get('window');
 
 const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   componentId,
+  copyType,
 }) => {
   const navigation = useSnapshot(navigationState);
   const selection = useSnapshot(fileSelectionState);
@@ -60,6 +69,32 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
         runOnJS(dissmis)();
       }
     });
+  };
+
+  const performSelection = async () => {
+    const lastFolder = peekLastNavigationScreen().folder;
+
+    const items = selection.folders.map(f => f.id);
+    const folderCopyRequest: CopyRequest = {
+      from: selection.source!!,
+      to: lastFolder.id,
+      items,
+    };
+
+    try {
+      // const tokens = JSON.parse(mmkv.getString('tokens')!!).accessToken;
+
+      const {data} = await axiosInstance.put<Folder[]>(
+        '/api/v1/cc/folders/copy',
+        folderCopyRequest,
+      );
+
+      console.log(data);
+    } catch (e) {
+      console.log(e.response.data);
+    }
+
+    console.log('amongos');
   };
 
   const translateY = useSharedValue<number>(100);
@@ -106,13 +141,22 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   return (
     <Animated.View style={[styles.root, rStyle]} onLayout={onLayout}>
       <ModalWrapper witdh={width * 0.9}>
-        <View style={[styles.row, {justifyContent: 'space-between'}]}>
+        <View style={[styles.row, styles.spacer]}>
           <View>
             <Text style={styles.title}>
-              Paste in{' '}
-              {`"${navigation.folders[navigation.folders.length - 1].name}"`}
+              {copyType === CopyType.CUT ? 'Cut' : 'Paste'} items in{' '}
+              {`"${
+                navigation.folders[navigation.folders.length - 1].folder.name
+              }"`}
             </Text>
-            <Text style={styles.subtitle}>{selection.files.length} files</Text>
+            <Text style={styles.subtitle}>
+              {selection.folders.length > 0 && (
+                <Text>{selection.folders.length} folders</Text>
+              )}
+              {selection.files.length > 0 && (
+                <Text> and {selection.files.length} files</Text>
+              )}
+            </Text>
           </View>
           <View style={styles.row}>
             <Pressable onPress={dissmisSelection}>
@@ -123,11 +167,13 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
                 style={styles.icon}
               />
             </Pressable>
-            <Icon
-              name={'ios-checkmark-circle-outline'}
-              size={30}
-              color={'#3366ff'}
-            />
+            <Pressable onPress={performSelection}>
+              <Icon
+                name={'ios-checkmark-circle-outline'}
+                size={30}
+                color={'#3366ff'}
+              />
+            </Pressable>
           </View>
         </View>
       </ModalWrapper>
@@ -153,6 +199,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  spacer: {
+    justifyContent: 'space-between',
   },
   row: {
     flexDirection: 'row',

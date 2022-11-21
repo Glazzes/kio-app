@@ -1,6 +1,6 @@
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import Sound from 'react-native-sound';
-import {Notification} from '../../../enums/notification';
+import {NotificationType} from '../../../enums/notification';
 import {apiFilesUrl} from '../../../shared/constants';
 import {displayToast} from '../../../shared/navigation/displayToast';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
@@ -59,7 +59,7 @@ export const uploadAudioFile = (
       displayToast(
         'Upload error',
         `An error happended while uploading ${pick.name}`,
-        Notification.ERROR,
+        NotificationType.ERROR,
       );
     } finally {
       sound.release();

@@ -12,7 +12,7 @@ import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {Screens} from '../../enums/screens';
-import {Notification} from '../../enums/notification';
+import {NotificationType} from '../../enums/notification';
 import {OnBoardingScreens} from '../screens';
 import {mmkv} from '../../store/mmkv';
 import axios from 'axios';
@@ -77,7 +77,7 @@ const Login: NavigationFunctionComponent = ({componentId}) => {
           passProps: {
             title: 'Logged in',
             message: "You've logged into your account successfuly",
-            type: Notification.SUCCESS,
+            type: NotificationType.SUCCESS,
           },
         },
       });
@@ -89,7 +89,7 @@ const Login: NavigationFunctionComponent = ({componentId}) => {
             title: 'Failed Login',
             message:
               'You provided invalid credentials, invalid username or password',
-            type: Notification.ERROR,
+            type: NotificationType.ERROR,
           },
         },
       });

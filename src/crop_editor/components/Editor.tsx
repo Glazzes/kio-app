@@ -22,6 +22,7 @@ import {findLastByName} from '../../store/navigationStore';
 import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';
 import {Canvas, Skia, Path} from '@shopify/react-native-skia';
+import {Screens} from '../../enums/screens';
 
 type CropEditorProps = {
   uri: string;
@@ -229,15 +230,15 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
       });
     }
 
-    const {originX, originY, resize} = crop(
-      {width: layout.x.value, height: layout.y.value},
-      {width: imageWidth, height: imageHeight},
-      {x: translate.x.value, y: translate.y.value},
-      scale.value,
-      rotateImage.value,
-      R,
-      CROP_SIZE,
-    );
+    const {originX, originY, resize} = crop({
+      layout: {width: layout.x.value, height: layout.y.value},
+      imageDimensions: {width: imageWidth, height: imageHeight},
+      position: {x: translate.x.value, y: translate.y.value},
+      angle: rotateImage.value,
+      scale: scale.value,
+      radius: R,
+      cropSize: CROP_SIZE,
+    });
 
     const {uri} = await manipulateAsync(
       imagePath,
@@ -262,7 +263,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   };
 
   function popToEditProfile() {
-    const editProfile = findLastByName('Edit.Profile');
+    const editProfile = findLastByName(Screens.EDIT_PROFILE);
     if (editProfile) {
       Navigation.popTo(editProfile);
     }

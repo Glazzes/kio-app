@@ -9,35 +9,22 @@ import {
 import React, {useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Point} from '../shared/types';
-import ModalWrapper from '../shared/components/ModalWrapper';
+import {Point} from '../../../shared/types';
+import ModalWrapper from './ModalWrapper';
 
 type EditModalProps = {};
-
-type Visibility = {
-  name: string;
-  message: string;
-};
 
 const {width} = Dimensions.get('window');
 
 const HEIGHT = 40;
 const WIDTH = width * 0.75;
 
-const visibilites: Visibility[] = [
-  {
-    name: 'Owner',
-    message: 'Only you can see this folder and its inner contents',
-  },
-  {
-    name: 'Restricted',
-    message: 'Oly you and co-owners can see this folder and its inner contents',
-  },
-  {
-    name: 'Public',
-    message: 'Everyone can see this folder and its inner contents',
-  },
-];
+const visibilityInfo = {
+  Owner: 'Only you can see this file/folder and its inner contents',
+  Restricted:
+    'Only you and co-owners can see this file/folder and its inner contents',
+  Public: 'Everyone can see this file/folder and its inner contents',
+};
 
 const EditModal: NavigationFunctionComponent<EditModalProps> = ({
   componentId,
@@ -71,9 +58,7 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
         </View>
         <View>
           <Text style={styles.subtitle}>Visibility</Text>
-          <Text style={styles.details}>
-            Only you and co-owners can see this folder and its inner contents
-          </Text>
+          <Text style={styles.details}>{visibilityInfo[visibility]}</Text>
           <View style={styles.dropdownContainer}>
             <Pressable
               ref={ref as any}
@@ -97,16 +82,17 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
       </ModalWrapper>
       {showDropdown && (
         <View style={[styles.dropwdown, {top: position.y, left: position.x}]}>
-          {visibilites.map((v, index) => {
+          {Object.keys(visibilityInfo).map((v, index) => {
             return (
               <Pressable
                 onPress={() => {
                   setShowDropdown(false);
-                  setVisibility(v.name);
+                  // @ts-ignore
+                  setVisibility(v);
                 }}
                 style={styles.dropdownSection}
-                key={`${v.name}-${index}`}>
-                <Text style={styles.visibility}>{v.name}</Text>
+                key={`${v}-${index}`}>
+                <Text style={styles.visibility}>{v}</Text>
               </Pressable>
             );
           })}

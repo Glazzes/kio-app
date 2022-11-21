@@ -20,7 +20,8 @@ import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Screens} from '../../../enums/screens';
 import {mmkv} from '../../../store/mmkv';
 import {onBoardingRoot} from '../../../navigation/roots';
-import {Notification} from '../../../enums/notification';
+import {NotificationType} from '../../../enums/notification';
+import {Modals} from '../../../navigation/screens/modals';
 
 type UserMenuProps = {
   x: number;
@@ -67,7 +68,7 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
         passProps: {
           title: 'Logged out',
           message: "You've logged out of your account successfully",
-          type: Notification.SUCCESS,
+          type: NotificationType.SUCCESS,
         },
       },
     });
@@ -81,7 +82,7 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
     Navigation.dismissModal(componentId);
     Navigation.showModal({
       component: {
-        name: 'PS',
+        name: Modals.PRICING,
       },
     });
   };

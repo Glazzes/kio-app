@@ -19,6 +19,7 @@ import {Screens} from '../../enums/screens';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
 import {folderSizeUrl} from '../../shared/requests/contants';
 import {mmkv} from '../../store/mmkv';
+import emitter from '../../utils/emitter';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -49,6 +50,10 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
     const listener: NavigationComponentListener = {
       componentDidDisappear: _ => {
         Navigation.updateProps(Screens.FILE_DRAWER, {file: undefined});
+        emitter.emit('show');
+      },
+      componentWillAppear: _ => {
+        emitter.emit('hide');
       },
     };
 
@@ -80,7 +85,9 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <Text style={styles.name}>{file ? file.name : last?.folder.name}</Text>
+      <Text style={styles.name} numberOfLines={2} ellipsizeMode={'tail'}>
+        {file ? file.name : last?.folder.name}
+      </Text>
       <View style={styles.previewContainer}>
         {file ? (
           <DrawerImageThumbnail file={file} />
@@ -155,8 +162,8 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
           />
           <CollapsableText
             text={
-              folders[folders.length - 2]
-                ? folders[folders.length - 2].folder.name
+              folders[folders.length - 1]
+                ? folders[folders.length - 1].folder.name
                 : 'Root folder'
             }
           />

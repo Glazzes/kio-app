@@ -1,14 +1,65 @@
-import create from 'zustand';
+import {proxy} from 'valtio';
+import {Dimension} from '../shared/types';
 
-type Store = {
-  photos: {[id: string]: string};
-  mutate: (newStr: string) => void;
+export type Picture = {
+  name: string;
+  width: number;
+  height: number;
 };
 
-const usePhotoStore = create<Store>(set => ({
-  photos: {},
-  mutate: (photo: string) =>
-    set(state => ({...state, photos: {[photo]: photo, ...state.photos}})),
-}));
+type Selection = {
+  [uri: string]: Picture;
+};
 
-export default usePhotoStore;
+type State = {
+  takenPictures: Selection;
+  selectedPictures: Selection;
+};
+
+export const pictureSelectionState = proxy<State>({
+  takenPictures: {},
+  selectedPictures: {},
+});
+
+// Taken
+export const addTakenPicture = (uri: string, picture: Picture) => {
+  pictureSelectionState.takenPictures[uri] = picture;
+};
+
+export const getTakenPicturesUris = () => {
+  return Object.keys(pictureSelectionState.takenPictures);
+};
+
+export const updateTakenPictureDimensions = (
+  uri: string,
+  dimensions: Dimension,
+) => {
+  pictureSelectionState.takenPictures[uri].width = dimensions.width;
+  pictureSelectionState.takenPictures[uri].height = dimensions.height;
+};
+
+export const removeSelectedPicturesFromTakenPictures = (uris: string[]) => {
+  for (let uri of uris) {
+    delete pictureSelectionState.takenPictures[uri];
+  }
+};
+
+// Selected
+export const addPicturetoSelection = (uri: string) => {
+  const pictureCopy = {...pictureSelectionState.takenPictures[uri]};
+  pictureSelectionState.selectedPictures[uri] = pictureCopy;
+};
+
+export const removePictureFromSelection = (uri: string) => {
+  delete pictureSelectionState.selectedPictures[uri];
+};
+
+export const removeSelectedPicturesFromTaken = (uris: string[]) => {
+  for (let uri of uris) {
+    delete pictureSelectionState.takenPictures[uri];
+  }
+};
+
+export const clearPictureSelection = () => {
+  pictureSelectionState.selectedPictures = {};
+};

@@ -32,10 +32,11 @@ import {
 } from '../../../store/fileSelection';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {displayToast} from '../../../shared/navigation/displayToast';
-import {Notification} from '../../../enums/notification';
+import {NotificationType} from '../../../enums/notification';
 import {apiFilesUrl} from '../../../shared/requests/contants';
 import {UpdateFolderEvent} from '../../utils/types';
 import {downloadFiles} from '../../../shared/requests/functions/downloafFiles';
+import {CopyType} from '../../../shared/enums';
 
 type AppbarProps = {
   scrollY: Animated.SharedValue<number>;
@@ -70,12 +71,15 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
     Navigation.pop(componentId);
   };
 
-  const copyCutSelection = () => {
+  const copyCutSelection = (type: CopyType) => {
     clear();
     toggleSelectionLock();
     Navigation.showOverlay({
       component: {
-        name: 'Copy',
+        name: Modals.COPY,
+        passProps: {
+          copyType: type,
+        },
       },
     });
   };
@@ -88,6 +92,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
           title: 'Download selection',
           message: `${contentCount} files will be downloaded, this may take a while`,
           action: () => {
+            // @ts-ignore
             downloadFiles(selection.files);
             clearSelection();
             clear();
@@ -132,13 +137,13 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
       displayToast(
         'Files deletes',
         `${contentCount} file${contentCount > 1 ? 's' : ''} have been deleted`,
-        Notification.SUCCESS,
+        NotificationType.SUCCESS,
       );
     } catch (e) {
       displayToast(
         'Delete file error',
         `Could not delete ${contentCount} files`,
-        Notification.ERROR,
+        NotificationType.ERROR,
       );
     }
   };
@@ -207,14 +212,14 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                     <Text style={styles.subTitle}>Currently empty</Text>
                   ) : (
                     <Text style={styles.subTitle}>
-                      {folder?.summary.files > 0 && (
-                        <Text>{folder.summary.files} files</Text>
+                      {(folder?.summary.files ?? 0) > 0 && (
+                        <Text>{folder?.summary.files} files</Text>
                       )}
 
-                      {folder?.summary.folders > 0 && (
+                      {(folder?.summary.folders ?? 0) > 0 && (
                         <Text>
                           {', '}
-                          {folder.summary.folders} folders{' '}
+                          {folder?.summary.folders} folders{' '}
                         </Text>
                       )}
                     </Text>
@@ -232,7 +237,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
               <Text style={styles.count}>{contentCount}</Text>
             </View>
             <View style={styles.countContainer}>
-              <Pressable onPress={copyCutSelection}>
+              <Pressable onPress={() => copyCutSelection(CopyType.COPY)}>
                 <Icon
                   name={'ios-copy-outline'}
                   size={23}
@@ -241,7 +246,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                 />
               </Pressable>
 
-              <Pressable onPress={copyCutSelection}>
+              <Pressable onPress={() => copyCutSelection(CopyType.CUT)}>
                 <Icon
                   name={'ios-cut-outline'}
                   size={23}

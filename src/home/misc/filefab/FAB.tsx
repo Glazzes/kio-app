@@ -13,10 +13,8 @@ import {Folder} from '../../../utils/types';
 import FABOption from './FABOption';
 import emitter from '../../../utils/emitter';
 import {Event} from '../../../enums/events';
-import {Navigation} from 'react-native-navigation';
-import {Screens} from '../../../enums/screens';
 import AppCamera from '../../camera/AppCamera';
-import {FabAction, FabActionIcon} from './types';
+import {FabAction} from './types';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 import {SelectAction} from '../../utils/enums';
 
@@ -86,30 +84,17 @@ const FAB: React.FC<FABProps> = () => {
   };
 
   useEffect(() => {
-    const optionPress = emitter.addListener(
-      'press',
-      async (type: FabActionIcon) => {
-        if (type === 'camera') {
-          await Navigation.push(componentId, {
-            component: {
-              name: Screens.CAMERA,
-            },
-          });
-        }
-      },
-    );
-
     const moveUp = emitter.addListener(Event.FAB_MOVE_UP, (ty: number) => {
-      translateY.value = withTiming(-ty, {duration: 200});
+      translateY.value = withTiming(-ty, {duration: 150});
     });
 
     const moveDown = emitter.addListener(Event.FAB_MOVE_DOWN, () => {
       translateY.value = withTiming(0);
     });
+
     return () => {
       moveUp.remove();
       moveDown.remove();
-      optionPress.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

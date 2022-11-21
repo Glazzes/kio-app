@@ -7,7 +7,7 @@ import Notifications from './src/notifications/Notifications';
 import {Settings} from './src/settings';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
-import {Home, Camera, CreateFolderModal} from './src/home';
+import {Home, Camera} from './src/home';
 import {Toast} from './src/misc';
 import EditProfile from './src/settings/edit/EditProfile';
 import {AudioPlayer} from './src/audio_player';
@@ -18,18 +18,20 @@ import {Drawers} from './src/navigation/screens/drawers';
 import {PdfContentTable, PdfViewer} from './src/pdf_viewer';
 import {Modals} from './src/navigation/screens/modals';
 import {Login, CreateAccount, GetStarted} from './src/onboarding';
+import {
+  ShareModal,
+  CopyModal,
+  CreateFolderModal,
+  EditModal,
+  GenericDialogModal,
+} from './src/home/modals';
 import UserMenu from './src/home/misc/header/UserMenu';
 import {FileDrawer} from './src/navigation';
 import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
 import GenericFileDetails from './src/home/files/details/GenericFileDetails';
-import ShareModal from './src/misc/ShareModal';
 import ProgressIndicator from './src/misc/ProgressIndicator';
 import emitter from './src/utils/emitter';
-import CopyModal from './src/misc/CopyModal';
-import EditModal from './src/misc/EditModal';
-import GenericModal from './src/home/modals/GenericModal';
-import Rotation from './src/misc/Rotation';
 import axios from 'axios';
 import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';
@@ -40,7 +42,6 @@ import {
   PictureInPictureVideo,
   PricingSheet,
 } from './src/overlays';
-import {clearSelection} from './src/store/fileSelection';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 
@@ -70,13 +71,11 @@ Navigation.registerComponent(
   () => PictureInPictureVideo,
 );
 
-Navigation.registerComponent('F', () => gestureHandlerRootHOC(Rotation));
-
 // On boarding screens
 Navigation.registerComponent(OnBoardingScreens.GET_STARTED, () => GetStarted);
 Navigation.registerComponent(OnBoardingScreens.LOGIN, () => Login);
 Navigation.registerComponent(
-  OnBoardingScreens.CREATE_ACCOUNT.toString(),
+  OnBoardingScreens.CREATE_ACCOUNT,
   () => CreateAccount,
 );
 
@@ -112,7 +111,9 @@ Navigation.registerComponent(Screens.SETTINGS, () =>
   gestureHandlerRootHOC(Settings),
 );
 
-Navigation.registerComponent('Edit', () => gestureHandlerRootHOC(EditProfile));
+Navigation.registerComponent(Screens.EDIT_PROFILE, () =>
+  gestureHandlerRootHOC(EditProfile),
+);
 
 Navigation.registerComponent(Screens.EDITOR, () =>
   gestureHandlerRootHOC(CropEditor),
@@ -120,17 +121,6 @@ Navigation.registerComponent(Screens.EDITOR, () =>
 
 // Miscelaneous
 Navigation.registerComponent(Screens.TOAST, () => Toast);
-
-Navigation.registerComponent(
-  Modals.CREATE_FOLDER_MODAL,
-  () => CreateFolderModal,
-);
-
-Navigation.registerComponent(Modals.FILE_MENU, () =>
-  gestureHandlerRootHOC(FileOptionsSheet),
-);
-
-Navigation.registerComponent('SM', () => ShareModal);
 
 Navigation.registerComponent(Screens.GENERIC_DETAILS, () => GenericFileDetails);
 
@@ -140,16 +130,20 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent(Screens.FILE_DRAWER, () => FileDrawer);
-
-Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericModal);
-
 Navigation.registerComponent('UserMenu', () => UserMenu);
 
-Navigation.registerComponent('Copy', () => CopyModal);
-
-Navigation.registerComponent('PS', () => gestureHandlerRootHOC(PricingSheet));
-
-Navigation.registerComponent('M', () => EditModal);
+// Modals
+Navigation.registerComponent(Modals.GENERIC_DIALOG, () => GenericDialogModal);
+Navigation.registerComponent(Modals.COPY, () => CopyModal);
+Navigation.registerComponent(Modals.EDIT, () => EditModal);
+Navigation.registerComponent(Modals.CREATE_FOLDER, () => CreateFolderModal);
+Navigation.registerComponent(Modals.SHARE, () => ShareModal);
+Navigation.registerComponent(Modals.PRICING, () =>
+  gestureHandlerRootHOC(PricingSheet),
+);
+Navigation.registerComponent(Modals.FILE_MENU, () =>
+  gestureHandlerRootHOC(FileOptionsSheet),
+);
 
 Navigation.events().registerAppLaunchedListener(async () => {
   const tokenString = mmkv.getString('tokens');
@@ -191,7 +185,6 @@ Navigation.events().registerAppLaunchedListener(async () => {
 Navigation.events().registerComponentWillAppearListener(e => {
   if (e.componentName === Screens.MY_UNIT) {
     emitter.emit('show');
-    clearSelection();
 
     return;
   }
@@ -204,6 +197,9 @@ Navigation.events().registerComponentWillAppearListener(e => {
     Screens.EDITOR,
     Screens.IMAGE_DETAILS,
     Screens.SETTINGS,
+    Modals.CREATE_FOLDER,
+    Modals.SHARE,
+    Modals.PRICING,
   ];
 
   if (removalScreens.includes(e.componentName)) {
@@ -212,7 +208,14 @@ Navigation.events().registerComponentWillAppearListener(e => {
 });
 
 Navigation.events().registerModalDismissedListener(e => {
-  if (e.componentName === Screens.IMAGE_DETAILS) {
+  const popScreens = [
+    Screens.IMAGE_DETAILS,
+    Modals.CREATE_FOLDER,
+    Modals.SHARE,
+    Modals.PRICING,
+  ];
+
+  if (popScreens.includes(e.componentName)) {
     emitter.emit('show');
   }
 });

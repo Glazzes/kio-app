@@ -1,5 +1,5 @@
-import {StyleSheet, Dimensions, ImageBackground} from 'react-native';
-import React, {useState} from 'react';
+import {StyleSheet, Dimensions, ImageBackground, Image} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
@@ -9,8 +9,11 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../../../utils/emitter';
-import {Event} from '../../../enums/events';
+import {
+  addPicturetoSelection,
+  removePictureFromSelection,
+  updateTakenPictureDimensions,
+} from '../../../store/photoStore';
 
 type PickerPhotoProps = {
   uri: string;
@@ -29,9 +32,9 @@ const PickerPhoto: React.FC<PickerPhotoProps> = ({uri, selected}) => {
   const onSelectedPhoto = () => {
     impactAsync(ImpactFeedbackStyle.Light);
     if (isSelected) {
-      emitter.emit(Event.UNSELECT_PHOTO, uri);
+      removePictureFromSelection(uri);
     } else {
-      emitter.emit(Event.SELECT_PHOTO, uri);
+      addPicturetoSelection(uri);
     }
 
     setIsSelected(s => !s);
@@ -57,6 +60,13 @@ const PickerPhoto: React.FC<PickerPhotoProps> = ({uri, selected}) => {
         : withTiming('rgba(51, 102, 255, 0)'),
     };
   });
+
+  useEffect(() => {
+    Image.getSize(uri, (w, h) => {
+      updateTakenPictureDimensions(uri, {width: w, height: h});
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={onSelectedPhoto}>

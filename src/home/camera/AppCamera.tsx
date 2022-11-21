@@ -29,16 +29,21 @@ import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Controls from './Controls';
 import PhotoPicker from './picker/PhotoPicker';
 import {clamp} from '../../utils/animations';
-import Photo from './picker/CameraThumbnail';
+import PictureThumbnail from './picker/PictureThumbnail';
 import emitter from '../../utils/emitter';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import UploadPhotoFAB from './UploadPhotoFAB';
-import {Event} from '../../enums/events';
 import {Screens} from '../../enums/screens';
-
-type Photos = {[id: string]: string};
+import {
+  addTakenPicture,
+  clearPictureSelection,
+  getTakenPicturesUris,
+} from '../../store/photoStore';
+import {getPictureName} from './utils/functions/getPictureName';
+import {PicturePickerEvent} from './utils/enums';
 
 type AppCameraProps = {
+  folderId: string;
   singlePicture: boolean;
 };
 
@@ -48,14 +53,13 @@ const PHOTO_SIZE = SIZE * 0.8;
 
 const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
   componentId,
+  folderId,
   singlePicture,
 }) => {
   const devices = useCameraDevices();
 
   const [isActive, setIsActive] = useState<boolean>(false);
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [selectedPhotos, setselectedPhotos] = useState<Photos>({});
-  const [photoCount, setPhotoCount] = useState<number>(0);
+  const [pictures, setPictures] = useState<string[]>(getTakenPicturesUris);
 
   const [isBackCamera, setIsBackCamera] = useState<boolean>(!singlePicture);
   const [authorized, setAuthorized] = useState<boolean>(false);
@@ -74,20 +78,20 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
 
       const {path} = await cameraRef.current.takePhoto({
         flash: flash.current ? 'on' : 'off',
-        skipMetadata: true,
+        skipMetadata: false,
         qualityPrioritization: 'speed',
       });
 
       opacity.value = withTiming(1);
-      const endPath = Platform.OS === 'android' ? 'file://' + path : path;
+      const uri = Platform.OS === 'android' ? 'file://' + path : path;
 
       if (singlePicture) {
-        Image.getSize(endPath, (w, h) => {
+        Image.getSize(uri, (w, h) => {
           Navigation.push(componentId, {
             component: {
               name: Screens.EDITOR,
               passProps: {
-                uri: endPath,
+                uri: uri,
                 width: w,
                 height: h,
               },
@@ -98,7 +102,14 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
         return;
       }
 
-      setPhotos(a => [...a, endPath]);
+      setPictures(a => [...a, uri]);
+
+      const pictureName = getPictureName();
+      addTakenPicture(uri, {
+        name: pictureName,
+        width: 1,
+        height: 1,
+      });
     }
   };
 
@@ -202,36 +213,6 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    const selectPhoto = emitter.addListener(
-      Event.SELECT_PHOTO,
-      (uri: string) => {
-        setPhotoCount(c => ++c);
-        setselectedPhotos(p => {
-          p = {...p, [uri]: uri};
-          return p;
-        });
-      },
-    );
-
-    const unselecPhoto = emitter.addListener(
-      Event.UNSELECT_PHOTO,
-      (uri: string) => {
-        setPhotoCount(c => --c);
-        setselectedPhotos(p => {
-          delete p[uri];
-          return p;
-        });
-      },
-    );
-
-    return () => {
-      selectPhoto.remove();
-      unselecPhoto.remove();
-    };
-    // eslint-disable-next-linereact-hooks/exhaustive-deps
-  }, []);
-
   useAnimatedReaction(
     () => snap.value,
     s => {
@@ -264,7 +245,20 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
       componentId,
     );
 
-    return () => listener.remove();
+    const removePictures = emitter.addListener(
+      PicturePickerEvent.REMOVE_PICTURES,
+      (uris: string[]) => {
+        setPictures(ps => {
+          return ps.filter(uri => !uris.includes(uri));
+        });
+      },
+    );
+
+    return () => {
+      listener.remove();
+      removePictures.remove();
+      clearPictureSelection();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -274,16 +268,9 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <PhotoPicker
-        snap={snap}
-        scrollY={scrollY}
-        photos={photos}
-        selectedPhotos={selectedPhotos}
-        photoCount={photoCount}
-      />
-      {photoCount > 0 && (
-        <UploadPhotoFAB componentId={componentId} selectedPhotos={[]} />
-      )}
+      <PhotoPicker snap={snap} scrollY={scrollY} photos={pictures} />
+      <UploadPhotoFAB componentId={componentId} folderId={folderId} />
+
       <GestureDetector gesture={combinedGesture}>
         <Animated.View
           style={[styles.cameraContainer, rStyle]}
@@ -311,12 +298,12 @@ const AppCamera: NavigationFunctionComponent<AppCameraProps> = ({
                   </Animated.View>
                 </View>
                 <View style={styles.thumbnailContainer}>
-                  {photos.length > 0 && (
+                  {pictures.length > 0 && (
                     <TouchableWithoutFeedback onPress={showBottomShet}>
                       <View style={styles.photos}>
-                        {photos.map(uri => {
+                        {pictures.map(uri => {
                           return (
-                            <Photo
+                            <PictureThumbnail
                               uri={uri}
                               opacity={opacity}
                               key={`asset-${uri}`}

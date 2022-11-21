@@ -1,6 +1,6 @@
 import {View, Text, Dimensions, StyleSheet, Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   BlurMask,
   Canvas,
@@ -14,7 +14,16 @@ import {Modals} from '../../navigation/screens/modals';
 import {NavigationContext} from '../../navigation/NavigationContextProvider';
 import {Screens} from '../../enums/screens';
 import {Folder as FolderType} from '../../shared/types';
-import {downloadFolder} from '../../shared/requests/functions/downloadFolder';
+import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
+import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
+import emitter from '../../utils/emitter';
+import {
+  addFolderToSelection,
+  fileSelectionState,
+  removeFolderFromSelection,
+  updateSourceSelection,
+} from '../../store/fileSelection';
+import {useSnapshot} from 'valtio';
 
 type FolderProps = {
   folder: FolderType;
@@ -25,32 +34,80 @@ const WIDTH = width * 0.75;
 const HEIGHT = 150;
 
 const Folder: React.FC<FolderProps> = ({folder}) => {
-  const {componentId} = useContext(NavigationContext);
+  const selection = useSnapshot(fileSelectionState);
+  const {componentId, folder: parentFolder} = useContext(NavigationContext);
+  const [isSelected, setisSelected] = useState<boolean>(false);
 
   const pushFolder = () => {
-    downloadFolder(folder);
-    return;
+    if (selection.inProgress) {
+      if (isSelected) {
+        removeFolderFromSelection(folder.id);
+      } else {
+        updateSourceSelection(parentFolder?.id);
+        addFolderToSelection(folder);
+      }
 
-    Navigation.push(componentId, {
+      setisSelected(t => !t);
+    }
+
+    if (!isSelected && !selection.inProgress) {
+      Navigation.push(componentId, {
+        component: {
+          name: Screens.MY_UNIT,
+          passProps: {
+            folder,
+          },
+        },
+      });
+    }
+  };
+
+  const onLongPress = () => {
+    if (selection.locked) {
+      return;
+    }
+
+    if (isSelected) {
+      removeFolderFromSelection(folder.id);
+    } else {
+      updateSourceSelection(parentFolder?.id);
+      addFolderToSelection(folder);
+    }
+
+    setisSelected(t => !t);
+    impactAsync(ImpactFeedbackStyle.Medium);
+  };
+
+  const onPress = () => {
+    Navigation.showOverlay({
       component: {
-        name: Screens.MY_UNIT,
+        name: Modals.FILE_MENU,
         passProps: {
-          folder,
+          parentFolderId: parentFolder?.id,
+          file: folder,
         },
       },
     });
   };
 
-  const onPress = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.FILE_MENU,
+  useEffect(() => {
+    const unselect = emitter.addListener(
+      `clear-selection-${parentFolder?.id}`,
+      () => {
+        setisSelected(false);
       },
-    });
-  };
+    );
+
+    return () => {
+      unselect.remove();
+    };
+  }, [parentFolder]);
 
   return (
-    <Pressable style={styles.container} onPress={pushFolder}>
+    <Pressable
+      style={styles.container}
+      onPress={pushFolder}
+      onLongPress={onLongPress}>
       <Canvas style={styles.canvas}>
         <RoundedRect
           y={HEIGHT * 0.53}
@@ -113,6 +170,14 @@ const Folder: React.FC<FolderProps> = ({folder}) => {
           Created: <Text style={styles.itemText}>{folder.createdAt}</Text>
         </Text>
       </View>
+
+      {isSelected && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={styles.selected}
+        />
+      )}
     </Pressable>
   );
 };
@@ -147,7 +212,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'UberBold',
   },
-
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -165,6 +229,13 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     fontFamily: 'Uber',
     fontSize: 12,
+  },
+  selected: {
+    width: WIDTH,
+    height: HEIGHT,
+    position: 'absolute',
+    backgroundColor: 'rgba(51, 102, 255, 0.45)',
+    borderRadius: 5,
   },
 });
 

@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ModalWrapper from '../../shared/components/ModalWrapper';
+import ModalWrapper from './ModalWrapper';
 
 type GenericModalProps = {
   title: string;

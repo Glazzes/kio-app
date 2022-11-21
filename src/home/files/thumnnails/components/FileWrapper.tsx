@@ -32,6 +32,7 @@ import {
   addFileToSelection,
   fileSelectionState,
   removeFileFromSelection,
+  updateSourceSelection,
 } from '../../../../store/fileSelection';
 import {useSnapshot} from 'valtio';
 
@@ -73,9 +74,15 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   }, [index]);
 
   const onPress = () => {
-    if (isSelected) {
-      setIsSelected(false);
-      removeFileFromSelection(file.id);
+    if (selection.inProgress) {
+      if (isSelected) {
+        removeFileFromSelection(file.id);
+      } else {
+        updateSourceSelection(folder?.id);
+        addFileToSelection(file);
+      }
+
+      setIsSelected(s => !s);
       return;
     }
 
@@ -113,6 +120,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
     setIsSelected(swap);
 
     if (swap) {
+      updateSourceSelection(folder?.id);
       addFileToSelection(file);
     } else {
       removeFileFromSelection(file.id);

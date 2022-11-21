@@ -34,7 +34,7 @@ import {snapPoint} from 'react-native-redash';
 import emitter from '../../utils/emitter';
 import {Modals} from '../../navigation/screens/modals';
 import {Screens} from '../../enums/screens';
-import {Notification} from '../../enums/notification';
+import {NotificationType} from '../../enums/notification';
 import {File} from '../../shared/types';
 import {Overlays} from '../../shared/enum/Overlays';
 import {getSimpleMimeType} from '../../shared/functions/getMimeType';
@@ -42,6 +42,7 @@ import {MimeType} from '../../shared/enum/MimeType';
 import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
 import {deleteFiles} from '../../shared/requests/functions/deleteFiles';
 import {UpdateFolderEvent} from '../../home/utils/types';
+import {deleteFolder} from '../utils/deleteFolder';
 
 type FileOptionSheetProps = {
   parentFolderId: string;
@@ -92,6 +93,8 @@ const sections: {title: string; data: Action[]}[] = [
 const {width, height} = Dimensions.get('window');
 const BORDER_RADIUS = 10;
 
+const estimatedSheetHeight = 30 * 10 + 10 * 14 + 50;
+
 // const AnimatedPresable = Animated.createAnimatedComponent(Pressable);
 const {statusBarHeight} = Navigation.constantsSync();
 
@@ -120,7 +123,7 @@ function renderSectionHeader(info: SectionListData<Action>) {
 }
 
 function sectionSeparator() {
-  return <View style={{height: 15}} />;
+  return <View style={styles.separator} />;
 }
 
 const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
@@ -141,6 +144,10 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
 
   const defineIcon = () => {
     let icon = 'ios-folder-open';
+    if (file.contentType === undefined) {
+      return icon;
+    }
+
     const mimeType = getSimpleMimeType(file.contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
@@ -195,6 +202,19 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
 
   const open = () => {
     const {componentId: lastComponentId} = peekLastNavigationScreen();
+    if (file.contentType === undefined) {
+      Navigation.push(lastComponentId, {
+        component: {
+          name: Screens.MY_UNIT,
+          passProps: {
+            folder: file,
+          },
+        },
+      });
+
+      return;
+    }
+
     const mimeType = getSimpleMimeType(file.contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
@@ -252,7 +272,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
         passProps: {
           title: 'Link copied',
           message: 'Link has been copied to your clipboard.',
-          type: Notification.INFO,
+          type: NotificationType.INFO,
         },
       },
     });
@@ -275,9 +295,14 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   const deleteCurrentFile = () => {
     dissmiss();
 
+    if (file.contentType === undefined) {
+      deleteFolder(file.id);
+      return;
+    }
+
     try {
       deleteFiles({
-        from: '6355742c13cfe841481f223e',
+        from: parentFolderId,
         files: [file.id],
       });
 
@@ -291,7 +316,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
           passProps: {
             title: 'File deleted',
             message: 'The file has been successfully deleted',
-            type: Notification.SUCCESS,
+            type: NotificationType.SUCCESS,
           },
         },
       });
@@ -302,7 +327,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
           passProps: {
             title: 'File delete',
             message: 'Could not delete your file',
-            type: Notification.ERROR,
+            type: NotificationType.ERROR,
           },
         },
       });
@@ -342,7 +367,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
       if (translateY.value < height / 2 || snap === 0) {
         translateY.value = withDecay({
           velocity: velocityY,
-          clamp: [-225, height / 2],
+          clamp: [-estimatedSheetHeight, height / 2],
         });
 
         return;
@@ -352,6 +377,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
         backgroundColor.value = withTiming('transparent', {duration: 150});
         translateY.value = withTiming(snap, undefined, finished => {
           if (finished) {
+            console.log('finished');
             runOnJS(dissmiss)();
           }
         });
@@ -419,7 +445,9 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
           <View style={styles.marker} />
           <View style={styles.header}>
             <Icon name={defineIcon()} color={'#000'} size={22} />
-            <Text style={styles.title}>{file.name}</Text>
+            <Text style={styles.title} numberOfLines={2} ellipsizeMode={'tail'}>
+              {file.name}
+            </Text>
           </View>
           <SectionList
             ref={aRef}
@@ -469,16 +497,15 @@ const styles = StyleSheet.create({
     width,
     flexDirection: 'row',
     alignItems: 'center',
-    // borderBottomWidth: 1,
     paddingVertical: 10,
-    paddingBottom: 20,
+    paddingBottom: 10,
     paddingHorizontal: width * 0.05,
     borderBottomColor: '#000',
   },
   title: {
     fontFamily: 'UberBold',
     color: '#000',
-    marginLeft: 20,
+    marginHorizontal: 20,
     fontSize: 15,
   },
   sectionTitle: {
@@ -522,6 +549,9 @@ const styles = StyleSheet.create({
   deleteText: {
     fontFamily: 'UberBold',
     color: '#ee3060',
+  },
+  separator: {
+    height: 15,
   },
 });
 

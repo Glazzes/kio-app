@@ -19,7 +19,7 @@ import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Screens} from '../../enums/screens';
-import {Notification} from '../../enums/notification';
+import {NotificationType} from '../../enums/notification';
 import {clamp} from '../../shared/functions/clamp';
 
 type PricingSheetProps = {};
@@ -81,7 +81,7 @@ const PricingSheet: NavigationFunctionComponent<PricingSheetProps> = ({
         passProps: {
           title: 'Plan updated',
           message: `Your plan has been sucessfully changed to ${plan} plan!`,
-          type: Notification.SUCCESS,
+          type: NotificationType.SUCCESS,
         },
       },
     });

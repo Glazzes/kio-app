@@ -11,10 +11,10 @@ import {
 import React, {useState, useRef} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Contributor from './Contributor';
+import Contributor from '../../../misc/Contributor';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {FlatList} from 'react-native-gesture-handler';
-import ModalWrapper from '../shared/components/ModalWrapper';
+import ModalWrapper from './ModalWrapper';
 
 type ShareModalProps = {};
 
@@ -107,18 +107,13 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
         {isStyping && (
           <View style={styles.placeHolderContainer}>
             <SkeletonPlaceholder speed={1200}>
-              <View style={{flexDirection: 'row'}}>
+              <View style={styles.row}>
                 <SkeletonPlaceholder.Item
                   width={50}
                   height={50}
                   borderRadius={25}
                 />
-                <View
-                  style={{
-                    height: 50,
-                    justifyContent: 'space-around',
-                    marginLeft: 10,
-                  }}>
+                <View style={styles.itemContainer}>
                   <SkeletonPlaceholder.Item
                     height={15}
                     width={width * 0.55}
@@ -187,6 +182,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  row: {
+    flexDirection: 'row',
+  },
   modal: {
     width: WIDTH,
     borderRadius: 10,
@@ -243,6 +241,11 @@ const styles = StyleSheet.create({
   },
   placeHolderContainer: {
     marginVertical: 10,
+  },
+  itemContainer: {
+    height: 50,
+    justifyContent: 'space-around',
+    marginLeft: 10,
   },
   noResultContainer: {
     marginVertical: 10,

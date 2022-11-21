@@ -1,4 +1,4 @@
-import {Notification} from '../../../enums/notification';
+import {NotificationType} from '../../../enums/notification';
 import {displayToast} from '../../../shared/navigation/displayToast';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {Folder, Page} from '../../../shared/types';
@@ -21,7 +21,7 @@ export const getFolderSubFolders = async (
     displayToast(
       'Load error',
       `Could not retrieve "${folder.name}"'s subfolders`,
-      Notification.ERROR,
+      NotificationType.ERROR,
     );
   }
 };

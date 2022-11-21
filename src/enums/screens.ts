@@ -20,7 +20,4 @@ export enum Screens {
   GENERIC_DETAILS = 'Generic.Details',
   VIDEO_PLAYER = 'Video.Player',
   AUDIO_PLAYER = 'Audio.Player',
-
-  // modals
-  CREATE_FOLDER_MODAL = 'Create folder modal',
 }

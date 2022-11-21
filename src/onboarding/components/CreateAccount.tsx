@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {withKeyboard} from '../../utils/hoc';
 import {Screens} from '../../enums/screens';
-import {Notification} from '../../enums/notification';
+import {NotificationType} from '../../enums/notification';
 import axios, {AxiosResponse} from 'axios';
 import {host} from '../../shared/constants';
 
@@ -55,7 +55,9 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
         setFieldErrors({
           email: '* An account is already registered with this email',
         });
-      } catch (e) {}
+      } catch (e) {
+        console.log(e);
+      }
     }, 1000);
 
     setTimer(newTimer);
@@ -80,7 +82,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
             title: 'Account created',
             message:
               'Your account has been created successfuly, you can now login!',
-            type: Notification.SUCCESS,
+            type: NotificationType.SUCCESS,
           },
         },
       });

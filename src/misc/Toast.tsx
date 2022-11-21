@@ -2,7 +2,7 @@ import {View, StyleSheet, Dimensions, Text, Pressable} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {Notification} from '../enums/notification';
+import {NotificationType} from '../enums/notification';
 import Animated, {
   Easing,
   runOnJS,
@@ -27,31 +27,31 @@ type Color = {
 type ToastProps = {
   title: string;
   message: string;
-  type: Notification;
+  type: NotificationType;
 };
 
 const {width} = Dimensions.get('window');
 
 const information: Color = {
-  [Notification.SUCCESS]: {
+  [NotificationType.SUCCESS]: {
     backgroundColor: '#07c468',
     progressColor: '#A2ECC4',
     icon: 'check-circle',
     status: 'Success!',
   },
-  [Notification.INFO]: {
+  [NotificationType.INFO]: {
     backgroundColor: '#0087D7',
     progressColor: '#81C3EB',
     icon: 'information',
     status: 'Info!',
   },
-  [Notification.WARNING]: {
+  [NotificationType.WARNING]: {
     backgroundColor: '#FFBC00',
     progressColor: '#FFDE81',
     icon: 'information',
     status: 'Warning!',
   },
-  [Notification.ERROR]: {
+  [NotificationType.ERROR]: {
     backgroundColor: '#F94415',
     progressColor: '#FCA48E',
     icon: 'plus-circle',
@@ -137,7 +137,7 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
               styles.icon,
               {
                 transform: [
-                  {rotate: type === Notification.ERROR ? '45deg' : '0deg'},
+                  {rotate: type === NotificationType.ERROR ? '45deg' : '0deg'},
                 ],
               },
             ]}

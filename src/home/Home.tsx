@@ -58,6 +58,9 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
 }) => {
   const ref = useRef<typeof FlashList>(null);
 
+  const [fetchedFolders, setFetchedFolders] = useState<boolean>(false);
+  const [fetchedFiles, setFetchedFiles] = useState<boolean>(false);
+
   const [folder, setFolder] = useState<Folder | undefined>(currentFolder);
   const [subFolders, setSubFolders] = useState<Folder[]>([]);
   const [files, setFiles] = useState<File[]>([]);
@@ -72,8 +75,14 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   const y = useSharedValue<number>(-windowHeight);
 
   const renderHeader = useCallback(() => {
-    return <AppHeader folders={subFolders} />;
-  }, [subFolders]);
+    return (
+      <AppHeader
+        fetchedFiles={fetchedFiles}
+        fetchedFolders={fetchedFolders}
+        folders={subFolders}
+      />
+    );
+  }, [subFolders, fetchedFiles, fetchedFolders]);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: e => {
@@ -151,15 +160,13 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   }, [folder]);
 
   useEffect(() => {
-    if (folder === undefined) {
-      getFolder(componentId, folder, unit => {
-        setFolder(unit);
-        pushNavigationScreen({
-          componentId,
-          folder: unit,
-        });
+    getFolder(folder, unit => {
+      setFolder(unit);
+      pushNavigationScreen({
+        componentId,
+        folder: unit,
       });
-    }
+    });
 
     RNBootSplash.hide({fade: true});
     return () => {
@@ -168,18 +175,15 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   }, []);
 
   useEffect(() => {
-    if (folder !== undefined) {
-      pushNavigationScreen({
-        componentId,
-        folder,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
     if (folder) {
-      getFolderFiles(folder, page => setFiles(page.content));
-      getFolderSubFolders(folder, 0, page => setSubFolders(page.content));
+      getFolderFiles(folder, page => {
+        setFiles(page.content);
+        setFetchedFiles(true);
+      });
+      getFolderSubFolders(folder, 0, page => {
+        setSubFolders(page.content);
+        setFetchedFolders(true);
+      });
     }
   }, [folder]);
 
@@ -196,7 +200,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           numColumns={2}
           nestedScrollEnabled={true}
           ListHeaderComponent={renderHeader}
-          ListEmptyComponent={NoContent}
+          ListEmptyComponent={() => <NoContent folders={subFolders.length} />}
           estimatedItemSize={SIZE}
           estimatedListSize={{
             width: windowWidth,

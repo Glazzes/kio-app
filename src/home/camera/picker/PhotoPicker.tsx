@@ -24,16 +24,14 @@ import {snapPoint} from 'react-native-redash';
 import {Navigation} from 'react-native-navigation';
 import PickerPhoto from './PickerPhoto';
 import {clamp} from '../../../utils/animations';
-import {Canvas, Fill, RoundedRect, Shadow} from '@shopify/react-native-skia';
-
-type Photos = {[id: string]: string};
+import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
+import {useSnapshot} from 'valtio';
+import {pictureSelectionState} from '../../../store/photoStore';
 
 type PhotoPickerProps = {
   snap: Animated.SharedValue<boolean>;
   scrollY: Animated.SharedValue<number>;
   photos: string[];
-  selectedPhotos: Photos;
-  photoCount: number;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -49,14 +47,11 @@ function keyExtractor(path: string) {
   return `photo-${path}`;
 }
 
-const PhotoPicker: React.FC<PhotoPickerProps> = ({
-  scrollY,
-  photos,
-  selectedPhotos,
-  photoCount,
-  snap,
-}) => {
+const PhotoPicker: React.FC<PhotoPickerProps> = ({scrollY, photos, snap}) => {
   const ref = useAnimatedRef<FlatList<string>>();
+
+  const selectedPictures = useSnapshot(pictureSelectionState.selectedPictures);
+  const selectedPicturesCount = Object.keys(selectedPictures).length;
 
   const contentStyles: ViewStyle = {
     width,
@@ -72,7 +67,7 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
     return (
       <PickerPhoto
         uri={info.item}
-        selected={selectedPhotos[info.item] !== undefined}
+        selected={selectedPictures[info.item] !== undefined}
       />
     );
   };
@@ -142,8 +137,10 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
         <View style={styles.marker} />
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
-            {photoCount > 0
-              ? `${photoCount} selected picture${photoCount > 1 ? 's' : ''}`
+            {selectedPicturesCount > 0
+              ? `${selectedPicturesCount} selected picture${
+                  selectedPicturesCount > 1 ? 's' : ''
+                }`
               : 'Upload photos'}
           </Text>
         </View>

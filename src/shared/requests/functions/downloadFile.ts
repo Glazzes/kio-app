@@ -3,7 +3,7 @@ import RNFS from 'react-native-fs';
 import {staticFileUrl} from '../contants';
 import {Platform} from 'react-native';
 import {displayToast} from '../../navigation/displayToast';
-import {Notification} from '../../../enums/notification';
+import {NotificationType} from '../../../enums/notification';
 import authState from '../../../store/authStore';
 
 export const downloadFile = (file: File) => {
@@ -27,7 +27,7 @@ export const downloadFile = (file: File) => {
       displayToast(
         'Download success',
         `Downloaded ${file.name} successfully to your downloads folder!`,
-        Notification.SUCCESS,
+        NotificationType.SUCCESS,
       );
     })
     .catch(e => {
@@ -35,7 +35,7 @@ export const downloadFile = (file: File) => {
       displayToast(
         'Download error',
         `Could not download ${file.name}, try again later`,
-        Notification.SUCCESS,
+        NotificationType.SUCCESS,
       );
     });
 };

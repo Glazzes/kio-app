@@ -20,7 +20,6 @@ export function pushNavigationScreen(screen: NavigationScreen) {
 
   if (!isAlreadyPresent) {
     navigationState.folders.push(screen);
-    console.log('added', screen);
   }
 }
 

@@ -8,7 +8,7 @@ import {host} from '../shared/constants';
 import {useSnapshot} from 'valtio';
 import authState from '../store/authStore';
 import {displayToast} from '../shared/navigation/displayToast';
-import {Notification} from '../enums/notification';
+import {NotificationType} from '../enums/notification';
 
 type VideoPlayerProps = {
   thumbnail: string;
@@ -30,7 +30,7 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
     displayToast(
       'Load error',
       'This video could not be loaded, try again later',
-      Notification.ERROR,
+      NotificationType.ERROR,
     );
   };
 

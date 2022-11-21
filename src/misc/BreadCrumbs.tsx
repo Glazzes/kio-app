@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontFamily: 'UberBold',
-    // color: '#000',
+    fontFamily: 'Uber',
+    color: '#000',
     fontSize: 13,
     maxWidth: 100,
   },

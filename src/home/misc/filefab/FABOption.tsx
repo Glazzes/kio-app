@@ -12,6 +12,8 @@ import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {UpdateFolderEvent} from '../../utils/types';
 import {uploadAudioFile} from '../../utils/functions/uploadAudioFile';
 import {getFileFormData} from '../../utils/functions/getFileFormData';
+import {Screens} from '../../../enums/screens';
+import {apiFilesUrl} from '../../../shared/requests/contants';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -26,7 +28,7 @@ const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
-  const {folder} = useContext(NavigationContext);
+  const {folder, componentId} = useContext(NavigationContext);
 
   const onPress = async () => {
     toggle();
@@ -46,7 +48,17 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       return;
     }
 
-    emitter.emit('press', 'camera');
+    if (folder) {
+      Navigation.push(componentId, {
+        component: {
+          name: Screens.CAMERA,
+          passProps: {
+            singlePicture: false,
+            folderId: folder.id,
+          },
+        },
+      });
+    }
   };
 
   const openDocumentPicker = async () => {
@@ -57,7 +69,9 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     });
 
     const files = result.filter(r => !r.type?.startsWith('audio'));
-    const audioFiles = result.filter(r => r.type?.startsWith('audio'));
+    const audioFiles = result.filter(
+      r => r.type?.startsWith('audio') && !r.name.includes('.'),
+    );
 
     audioFiles.forEach(audioFile => uploadAudioFile(folder?.id!!, audioFile));
 
@@ -79,8 +93,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
 
     try {
       if (files.length > 0) {
-        console.log('uploading normal', audioFiles.length);
-        const res = await axiosInstance.post('/api/v1/files', formData, {
+        const res = await axiosInstance.post(apiFilesUrl, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -105,7 +118,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
   const openShareModal = () => {
     Navigation.showModal({
       component: {
-        name: 'SM',
+        name: Modals.SHARE,
       },
     });
   };
@@ -113,7 +126,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
   const createFolder = () => {
     Navigation.showModal({
       component: {
-        name: Modals.CREATE_FOLDER_MODAL,
+        name: Modals.CREATE_FOLDER,
         passProps: {
           folderId: folder?.id!!,
         },

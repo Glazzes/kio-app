@@ -16,14 +16,15 @@ import {
 } from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
-import {withKeyboard} from '../../utils/hoc';
-import {Notification} from '../../enums/notification';
-import {axiosInstance} from '../../shared/requests/axiosInstance';
-import {displayToast} from '../../shared/navigation/displayToast';
-import ModalWrapper from '../../shared/components/ModalWrapper';
-import {newFolderUrl} from '../../shared/requests/contants';
-import emitter from '../../utils/emitter';
-import {addFolderEventName} from '../../shared/constants';
+import {withKeyboard} from '../../../utils/hoc';
+import {NotificationType} from '../../../enums/notification';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {displayToast} from '../../../shared/navigation/displayToast';
+import ModalWrapper from './ModalWrapper';
+import {newFolderUrl} from '../../../shared/requests/contants';
+import emitter from '../../../utils/emitter';
+import {addFolderEventName} from '../../../shared/constants';
+import {Folder} from '../../../shared/types';
 
 type CreateFolderModalProps = {
   parentComponentId?: string;
@@ -60,7 +61,7 @@ const CreateFolderModal: NavigationFunctionComponent<
     try {
       const uri = newFolderUrl(folderId);
 
-      const {data} = await axiosInstance.post(uri, undefined, {
+      const {data} = await axiosInstance.post<Folder>(uri, undefined, {
         params: {
           name: folderName,
         },
@@ -73,13 +74,13 @@ const CreateFolderModal: NavigationFunctionComponent<
       displayToast(
         'Folder created',
         `Folder "${folderName}" was created successfully`,
-        Notification.SUCCESS,
+        NotificationType.SUCCESS,
       );
     } catch (e) {
       displayToast(
         'Creation error',
         'This folder could not be created, try again later',
-        Notification.ERROR,
+        NotificationType.ERROR,
       );
     }
   };
@@ -95,7 +96,7 @@ const CreateFolderModal: NavigationFunctionComponent<
         <View style={styles.titleContainer}>
           <Text style={styles.title}>New Folder</Text>
           <Image
-            source={require('./assets/folder.png')}
+            source={require('../assets/folder.png')}
             resizeMode={'contain'}
             style={styles.image}
           />

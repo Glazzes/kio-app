@@ -1,11 +1,11 @@
 import {Navigation} from 'react-native-navigation';
-import {Notification} from '../../enums/notification';
+import {NotificationType} from '../../enums/notification';
 import {Screens} from '../../enums/screens';
 
 export const displayToast = (
   title: string,
   message: string,
-  type: Notification,
+  type: NotificationType,
 ) => {
   Navigation.showOverlay({
     component: {
