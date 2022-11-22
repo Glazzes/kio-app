@@ -5,9 +5,11 @@ export enum TypingEvent {
 
 export enum UpdateFolderEvent {
   ADD_FILES = 'Add.File',
-  REMOVE_FILES = 'Remove.File',
+  DELETE_FILES = 'Delete.Files',
   ADD_FOLDER = 'Add.Folder',
-  REMOVE_FOLDERS = 'Remove.Folder',
+  DELETE_FOLDERS = 'Delete.Folders',
+  UPDATE_PREVIEW = 'Update.Preview',
+  UPDATE_APPBAR = 'Update.Appbar',
 }
 
 export enum HomeEvents {

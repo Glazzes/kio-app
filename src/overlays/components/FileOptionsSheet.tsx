@@ -42,7 +42,7 @@ import {MimeType} from '../../shared/enum/MimeType';
 import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
 import {deleteFiles} from '../../shared/requests/functions/deleteFiles';
 import {UpdateFolderEvent} from '../../home/utils/types';
-import {deleteFolder} from '../utils/deleteFolder';
+import {deleteFolder} from '../../shared/functions/deleteFolder';
 
 type FileOptionSheetProps = {
   parentFolderId: string;
@@ -306,7 +306,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
         files: [file.id],
       });
 
-      emitter.emit(`${UpdateFolderEvent.REMOVE_FILES}-${parentFolderId}`, [
+      emitter.emit(`${UpdateFolderEvent.DELETE_FILES}-${parentFolderId}`, [
         file.id,
       ]);
 

@@ -14,7 +14,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../../../utils/emitter';
+import emitter, {
+  emitFolderAddFiles,
+  emitFolderDeleteFiles,
+} from '../../../utils/emitter';
 import {Screens} from '../../../enums/screens';
 import {Event} from '../../../enums/events';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -30,8 +33,8 @@ import {
   peekLastNavigationScreen,
 } from '../../../store/navigationStore';
 import {CopyType} from '../../../shared/enums';
-import {CopyRequest, Folder} from '../../../shared/types';
-import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {CopyRequest} from '../../../shared/types';
+import {cutSelection} from '../../../shared/requests/functions/cutSelection';
 
 type CopyModalProps = {
   copyType: CopyType;
@@ -74,27 +77,43 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   const performSelection = async () => {
     const lastFolder = peekLastNavigationScreen().folder;
 
-    const items = selection.folders.map(f => f.id);
     const folderCopyRequest: CopyRequest = {
       from: selection.source!!,
       to: lastFolder.id,
-      items,
+      items: selection.folders.map(f => f.id),
     };
 
-    try {
-      // const tokens = JSON.parse(mmkv.getString('tokens')!!).accessToken;
+    const fileCopyRequest: CopyRequest = {
+      from: selection.source!!,
+      to: lastFolder.id,
+      items: selection.files.map(f => f.id),
+    };
 
-      const {data} = await axiosInstance.put<Folder[]>(
-        '/api/v1/cc/folders/copy',
-        folderCopyRequest,
-      );
+    await cut(fileCopyRequest, folderCopyRequest);
+  };
 
-      console.log(data);
-    } catch (e) {
-      console.log(e.response.data);
+  const cut = async (fileRequest: CopyRequest, folderRequest: CopyRequest) => {
+    if (folderRequest.items.length > 0) {
+      try {
+        const {data} = await cutSelection(folderRequest, 'folders');
+      } catch (e) {
+        console.log('Could not copy folders', e);
+      }
     }
 
-    console.log('amongos');
+    if (fileRequest.items.length > 0) {
+      try {
+        const {data: files} = await cutSelection(fileRequest, 'files');
+        emitFolderDeleteFiles(
+          fileRequest.from,
+          files.map(f => f.id),
+        );
+
+        emitFolderAddFiles(fileRequest.to, files);
+      } catch (e) {
+        console.log('Could not copy files', e);
+      }
+    }
   };
 
   const translateY = useSharedValue<number>(100);
@@ -154,7 +173,10 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
                 <Text>{selection.folders.length} folders</Text>
               )}
               {selection.files.length > 0 && (
-                <Text> and {selection.files.length} files</Text>
+                <Text>
+                  {selection.folders.length > 0 ? ' and ' : ''}
+                  {selection.files.length} files
+                </Text>
               )}
             </Text>
           </View>

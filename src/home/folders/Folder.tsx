@@ -34,16 +34,17 @@ const WIDTH = width * 0.75;
 const HEIGHT = 150;
 
 const Folder: React.FC<FolderProps> = ({folder}) => {
+  const [isSelected, setisSelected] = useState<boolean>(false);
+
   const selection = useSnapshot(fileSelectionState);
   const {componentId, folder: parentFolder} = useContext(NavigationContext);
-  const [isSelected, setisSelected] = useState<boolean>(false);
 
   const pushFolder = () => {
     if (selection.inProgress) {
       if (isSelected) {
         removeFolderFromSelection(folder.id);
       } else {
-        updateSourceSelection(parentFolder?.id);
+        updateSourceSelection(parentFolder?.id!!);
         addFolderToSelection(folder);
       }
 
@@ -70,7 +71,7 @@ const Folder: React.FC<FolderProps> = ({folder}) => {
     if (isSelected) {
       removeFolderFromSelection(folder.id);
     } else {
-      updateSourceSelection(parentFolder?.id);
+      updateSourceSelection(parentFolder?.id!!);
       addFolderToSelection(folder);
     }
 

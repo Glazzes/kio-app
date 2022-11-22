@@ -128,7 +128,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
       });
 
       emitter.emit(
-        `${UpdateFolderEvent.REMOVE_FILES}-${folder?.id}`,
+        `${UpdateFolderEvent.DELETE_FILES}-${folder?.id}`,
         selection.files.map(f => f.id),
       );
 

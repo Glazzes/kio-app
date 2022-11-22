@@ -22,9 +22,13 @@ import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {displayToast} from '../../../shared/navigation/displayToast';
 import ModalWrapper from './ModalWrapper';
 import {newFolderUrl} from '../../../shared/requests/contants';
-import emitter from '../../../utils/emitter';
-import {addFolderEventName} from '../../../shared/constants';
+import {
+  emitFolderAddFolders,
+  emitFolderUpdatePreview,
+} from '../../../utils/emitter';
 import {Folder} from '../../../shared/types';
+import {useSnapshot} from 'valtio';
+import {navigationState} from '../../../store/navigationStore';
 
 type CreateFolderModalProps = {
   parentComponentId?: string;
@@ -40,6 +44,7 @@ const CreateFolderModal: NavigationFunctionComponent<
   CreateFolderModalProps
 > = ({componentId, folderId}) => {
   const ref = useRef<TextInput>(null);
+  const navigation = useSnapshot(navigationState);
 
   const [folderName, setFolderName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -67,8 +72,11 @@ const CreateFolderModal: NavigationFunctionComponent<
         },
       });
 
-      const eventName = addFolderEventName(folderId);
-      emitter.emit(eventName, data);
+      emitFolderAddFolders(folderId, [data]);
+      const prevFolder = navigation.folders[navigation.folders.length - 2];
+      if (prevFolder) {
+        emitFolderUpdatePreview(prevFolder.folder.id, folderId, 0, 1);
+      }
 
       Navigation.dismissModal(componentId);
       displayToast(

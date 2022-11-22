@@ -30,8 +30,13 @@ import {getSimpleMimeType} from '../shared/functions/getMimeType';
 import {MimeType} from '../shared/enum/MimeType';
 import RNBootSplash from 'react-native-bootsplash';
 import {SIZE} from './utils/constants';
-import emitter from '../utils/emitter';
-import {UpdateFolderEvent} from './utils/types';
+import emitter, {
+  getFolderAddFilesEventName,
+  getFolderAddFoldersEventName,
+  getFolderDeleteFilesEventName,
+  getFolderDeleteFoldersEventName,
+  getFolderUpdatePreviewEventName,
+} from '../utils/emitter';
 import {getFolder} from './utils/functions/getFolder';
 import {getFolderFiles} from './utils/functions/getFolderFiles';
 import {getFolderSubFolders} from './utils/functions/getFolderSubFolders';
@@ -131,15 +136,17 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   }, []);
 
   useEffect(() => {
+    const addFilesEventName = getFolderAddFilesEventName(folder?.id!!);
     const addFiles = emitter.addListener(
-      `${UpdateFolderEvent.ADD_FILES}-${folder?.id}`,
+      addFilesEventName,
       (newFiles: File[]) => {
         setFiles(f => [...newFiles, ...f]);
       },
     );
 
-    const removeFiles = emitter.addListener(
-      `${UpdateFolderEvent.REMOVE_FILES}-${folder?.id}`,
+    const deleteFilesEventName = getFolderDeleteFilesEventName(folder?.id!!);
+    const deleteFiles = emitter.addListener(
+      deleteFilesEventName,
       (ids: string[]) => {
         setFiles(filess => {
           return filess.filter(f => !ids.includes(f.id));
@@ -147,15 +154,49 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       },
     );
 
+    const addFoldersEventName = getFolderAddFoldersEventName(folder?.id!!);
     const addFolder = emitter.addListener(
-      `${UpdateFolderEvent.ADD_FOLDER}-${folder?.id}`,
-      (newfolder: Folder) => setSubFolders(sfs => [newfolder, ...sfs]),
+      addFoldersEventName,
+      (newfolders: Folder[]) => setSubFolders(sfs => [...newfolders, ...sfs]),
+    );
+
+    const deleteFoldersEventName = getFolderDeleteFoldersEventName(
+      folder?.id!!,
+    );
+    const deleteFolders = emitter.addListener(
+      deleteFoldersEventName,
+      (ids: string[]) => {
+        setSubFolders(sfs => sfs.filter(s => !ids.includes(s.id)));
+      },
+    );
+
+    const updatePreviewEventName = getFolderUpdatePreviewEventName(
+      folder?.id!!,
+    );
+
+    const updatePreview = emitter.addListener(
+      updatePreviewEventName,
+      (folderId: string, fileCount: number, folders: number) => {
+        setSubFolders(sfs => {
+          return sfs.map(f => {
+            if (f.id === folderId) {
+              f.summary.files += fileCount;
+              f.summary.folders += folders;
+              return f;
+            }
+
+            return f;
+          });
+        });
+      },
     );
 
     return () => {
       addFiles.remove();
       addFolder.remove();
-      removeFiles.remove();
+      deleteFiles.remove();
+      deleteFolders.remove();
+      updatePreview.remove();
     };
   }, [folder]);
 
@@ -200,7 +241,12 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           numColumns={2}
           nestedScrollEnabled={true}
           ListHeaderComponent={renderHeader}
-          ListEmptyComponent={() => <NoContent folders={subFolders.length} />}
+          ListEmptyComponent={() => (
+            <NoContent
+              fetchComplete={fetchedFiles && fetchedFolders}
+              folders={subFolders.length}
+            />
+          )}
           estimatedItemSize={SIZE}
           estimatedListSize={{
             width: windowWidth,

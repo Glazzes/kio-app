@@ -2,7 +2,10 @@ import {StyleSheet, Dimensions, Pressable} from 'react-native';
 import React, {useContext} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
-import emitter from '../../../utils/emitter';
+import emitter, {
+  emitFolderAddFiles,
+  emitFolderUpdatePreview,
+} from '../../../utils/emitter';
 import {pickMultiple} from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
@@ -14,6 +17,8 @@ import {uploadAudioFile} from '../../utils/functions/uploadAudioFile';
 import {getFileFormData} from '../../utils/functions/getFileFormData';
 import {Screens} from '../../../enums/screens';
 import {apiFilesUrl} from '../../../shared/requests/contants';
+import {useSnapshot} from 'valtio';
+import {navigationState} from '../../../store/navigationStore';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -28,6 +33,7 @@ const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
+  const navigation = useSnapshot(navigationState);
   const {folder, componentId} = useContext(NavigationContext);
 
   const onPress = async () => {
@@ -93,13 +99,24 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
 
     try {
       if (files.length > 0) {
-        const res = await axiosInstance.post(apiFilesUrl, formData, {
+        const {data} = await axiosInstance.post(apiFilesUrl, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
 
-        emitter.emit(`${UpdateFolderEvent.ADD_FILES}-${folder?.id}`, res.data);
+        emitFolderAddFiles(folder?.id!!, data);
+
+        const prevFolder = navigation.folders[navigation.folders.length - 2];
+        if (prevFolder) {
+          console.log(prevFolder.folder.id, folder?.id);
+          emitFolderUpdatePreview(
+            prevFolder.folder.id,
+            folder?.id,
+            data.length,
+            0,
+          );
+        }
 
         await notifee.displayNotification({
           id: 'upload',
