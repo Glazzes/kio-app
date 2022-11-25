@@ -1,13 +1,13 @@
 import {Text, Pressable, TextStyle, StyleSheet, View} from 'react-native';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {pdfState, PdfContent} from '../../store/pdfStore';
+import {pdfState, PdfContent} from '../../../store/pdfStore';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../../utils/emitter';
-import {PdfEvent} from '../enums';
+import emitter from '../../../utils/emitter';
+import {PdfEvent} from '../../utils/enums';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useSnapshot} from 'valtio';
 

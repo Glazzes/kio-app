@@ -1,5 +1,5 @@
 import {Dimensions, StyleSheet, Image, ImageStyle, View} from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useMemo} from 'react';
 import {File} from '../../../../shared/types';
 import {useSnapshot} from 'valtio';
 import authState from '../../../../store/authStore';
@@ -16,26 +16,23 @@ const THUMBNAIL_WIDTH = SIZE * 0.85;
 const PdfThumnail: React.FC<PdfThumnailProps> = ({file}) => {
   const thumbnail = staticFileThumbnail(file.id);
   const {accessToken} = useSnapshot(authState.tokens);
-  const [dimensions, setDimensions] = useState({width: 1, height: 1});
 
-  const imageStyles: ImageStyle = useMemo(
-    () => ({
+  const imageStyles: ImageStyle = useMemo(() => {
+    const aspectRatio =
+      (file.details.dimensions?.[0] ?? THUMBNAIL_WIDTH) /
+      (file.details.dimensions?.[1] ?? THUMBNAIL_WIDTH);
+
+    return {
       borderRadius: 5,
       width: THUMBNAIL_WIDTH,
-      height: THUMBNAIL_WIDTH / (dimensions.width / dimensions.height),
-    }),
-    [dimensions],
-  );
-
-  useEffect(() => {
-    Image.getSize(thumbnail, (w, h) => {
-      setDimensions({width: w, height: h});
-    });
-  }, [thumbnail]);
+      height: THUMBNAIL_WIDTH / aspectRatio,
+    };
+  }, [file]);
 
   return (
     <View style={styles.root}>
       <Image
+        nativeID={`pdf-${file.id}`}
         source={{
           uri: thumbnail,
           headers: {Authorization: `Bearer ${accessToken}`},

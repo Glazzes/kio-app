@@ -2,7 +2,7 @@
 import {StyleSheet, Dimensions, View} from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
-import AppHeader from './misc/header/AppHeader';
+import AppHeader from './misc/header/components/AppHeader';
 import {
   FlashList,
   FlashListProps,
@@ -12,7 +12,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
-import Appbar from './misc/header/Appbar';
+import Appbar from './misc/header/components/Appbar';
 import FAB from './misc/filefab/FAB';
 import {Dimension, File, Folder} from '../shared/types';
 import FileWrapper from './files/thumnnails/components/FileWrapper';
@@ -35,7 +35,6 @@ import emitter, {
   getFolderAddFoldersEventName,
   getFolderDeleteFilesEventName,
   getFolderDeleteFoldersEventName,
-  getFolderUpdatePreviewEventName,
 } from '../utils/emitter';
 import {getFolder} from './utils/functions/getFolder';
 import {getFolderFiles} from './utils/functions/getFolderFiles';
@@ -170,33 +169,11 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       },
     );
 
-    const updatePreviewEventName = getFolderUpdatePreviewEventName(
-      folder?.id!!,
-    );
-
-    const updatePreview = emitter.addListener(
-      updatePreviewEventName,
-      (folderId: string, fileCount: number, folders: number) => {
-        setSubFolders(sfs => {
-          return sfs.map(f => {
-            if (f.id === folderId) {
-              f.summary.files += fileCount;
-              f.summary.folders += folders;
-              return f;
-            }
-
-            return f;
-          });
-        });
-      },
-    );
-
     return () => {
       addFiles.remove();
       addFolder.remove();
       deleteFiles.remove();
       deleteFolders.remove();
-      updatePreview.remove();
     };
   }, [folder]);
 

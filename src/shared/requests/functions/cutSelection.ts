@@ -11,5 +11,5 @@ export const cutSelection = async <T extends ItemType>(
   itemType: T,
 ): Promise<AxiosResponse<CopyResult<T>>> => {
   const uri = itemType === 'files' ? apiCutFilesUrl : apiCutFoldersUrl;
-  return axiosInstance.put(uri, request, undefined);
+  return axiosInstance.put(uri, request);
 };

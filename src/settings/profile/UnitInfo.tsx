@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   BlurMask,
   Canvas,
@@ -18,7 +18,9 @@ import {
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../navigation/screens/modals';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
-import {apiUnitUrl} from '../../shared/requests/contants';
+import {apiUnitSize} from '../../shared/requests/contants';
+import {UnitSize} from '../../shared/types';
+import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
 
 type UnitInfoProps = {};
 
@@ -42,8 +44,11 @@ path.addArc(
 );
 
 const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
+  const [storage, setStorage] = useState<UnitSize>({capacity: 0, used: 0});
+
   const end = useValue(0);
   const uberBold = useFont(require('../../assets/UberBold.otf'), 20);
+
   const x = useComputedValue(() => {
     return (
       center.x -
@@ -55,8 +60,8 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
     return `${Math.floor(end.current * 100)}%`;
   }, [end]);
 
-  const animateArc = () => {
-    runTiming(end, {from: 0, to: 0.58}, {duration: 2000});
+  const animateArc = (to: number) => {
+    runTiming(end, {from: 0, to}, {duration: 2000});
   };
 
   const showPricingSheet = () => {
@@ -69,9 +74,9 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
 
   useEffect(() => {
     if (uberBold) {
-      axiosInstance.get(apiUnitUrl).then(({data}) => {
-        console.log(data);
-        animateArc();
+      axiosInstance.get<UnitSize>(apiUnitSize).then(({data}) => {
+        animateArc(data.used / data.capacity);
+        setStorage(data);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,7 +137,10 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
       <View style={styles.storage}>
         <Text style={styles.title}>My Unit</Text>
         <Text style={styles.space}>
-          <Text style={styles.used}>1GB</Text> of 5GB used
+          <Text style={styles.used}>
+            {convertBytesToRedableUnit(storage.used)}
+          </Text>{' '}
+          of {convertBytesToRedableUnit(storage.capacity)} used
         </Text>
         <Pressable style={styles.button} onPress={showPricingSheet}>
           <Text style={styles.buttonText}>Buy Storage</Text>

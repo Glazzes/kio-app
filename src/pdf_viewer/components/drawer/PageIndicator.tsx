@@ -1,7 +1,7 @@
 import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import emitter from '../../utils/emitter';
-import {PdfEvent} from '../enums';
+import emitter from '../../../utils/emitter';
+import {PdfEvent} from '../../utils/enums';
 
 const {height} = Dimensions.get('window');
 

@@ -40,6 +40,6 @@ export const staticFileThumbnail = (id: string) => {
   return `${host}/static/file/${id}/thumbnail`;
 };
 
-export const downloadFolderUrl = (folderId: string) => {
+export const staticFolderUrl = (folderId: string) => {
   return `${host}/static/folder/${folderId}`;
 };

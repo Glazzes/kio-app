@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
-import React, {useContext, useRef} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
 import SearchBar from './SearchBar';
 import {
@@ -17,26 +17,32 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../../../utils/emitter';
+import emitter, {
+  emitFolderDeleteFiles,
+  emitFolderUpdatePreview,
+  getFolderUpdatePreviewEventName,
+} from '../../../../utils/emitter';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {NavigationContext} from '../../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import UserAvatar from './UserAvatar';
-import {Modals} from '../../../navigation/screens/modals';
+import {Modals} from '../../../../navigation/screens/modals';
 import {useSnapshot} from 'valtio';
-import authState from '../../../store/authStore';
-import {FileDeleteRequest} from '../../../shared/requests/types';
+import authState from '../../../../store/authStore';
+import {FileDeleteRequest} from '../../../../shared/requests/types';
 import {
   clearSelection,
   fileSelectionState,
   toggleSelectionLock,
-} from '../../../store/fileSelection';
-import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {displayToast} from '../../../shared/navigation/displayToast';
-import {NotificationType} from '../../../enums/notification';
-import {apiFilesUrl} from '../../../shared/requests/contants';
-import {UpdateFolderEvent} from '../../utils/types';
-import {downloadFiles} from '../../../shared/requests/functions/downloafFiles';
-import {CopyType} from '../../../shared/enums';
+} from '../../../../store/fileSelection';
+import {axiosInstance} from '../../../../shared/requests/axiosInstance';
+import {displayToast} from '../../../../shared/navigation/displayToast';
+import {NotificationType} from '../../../../enums/notification';
+import {apiFilesUrl} from '../../../../shared/requests/contants';
+import {CopyType} from '../../../../shared/enums';
+import {File, Folder} from '../../../../shared/types';
+import {EventSubscription} from 'fbemitter';
+import {Screens} from '../../../../enums/screens';
+import {donwloadSelection} from '../utils/downloadSelection';
 
 type AppbarProps = {
   scrollY: Animated.SharedValue<number>;
@@ -51,8 +57,9 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   const user = useSnapshot(authState.user);
   const selection = useSnapshot(fileSelectionState);
 
-  const {componentId, folder} = useContext(NavigationContext);
-  const isRoot = useRef<boolean>(folder === undefined);
+  const {componentId, folder: currentFolder} = useContext(NavigationContext);
+  const [folder, setFolder] = useState<Folder | undefined>(currentFolder);
+  const isRoot = useRef<boolean>(componentId === Screens.MY_UNIT);
 
   const contentCount = selection.locked
     ? 0
@@ -85,21 +92,8 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   };
 
   const openDownloadSelectionModal = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: 'Download selection',
-          message: `${contentCount} files will be downloaded, this may take a while`,
-          action: () => {
-            // @ts-ignore
-            downloadFiles(selection.files);
-            clearSelection();
-            clear();
-          },
-        },
-      },
-    });
+    donwloadSelection(selection.files as File[], selection.folders as Folder[]);
+    sendEventAndClearSelection();
   };
 
   const openDeleteSelectionModal = () => {
@@ -117,25 +111,24 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   };
 
   const deleteSelection = async () => {
-    const deleteRequest: FileDeleteRequest = {
-      from: folder?.id!!,
-      files: selection.files.map(f => f.id),
-    };
-
     try {
+      const files = selection.files.map(f => f.id);
+      const deleteRequest: FileDeleteRequest = {
+        from: folder?.id!!,
+        files,
+      };
+
       await axiosInstance.delete(apiFilesUrl, {
         data: deleteRequest,
       });
 
-      emitter.emit(
-        `${UpdateFolderEvent.DELETE_FILES}-${folder?.id}`,
-        selection.files.map(f => f.id),
-      );
+      emitFolderDeleteFiles(folder?.id!!, files);
+      emitFolderUpdatePreview(folder?.id!!, -1 * files.length, 0);
 
       clear();
       clearSelection();
       displayToast(
-        'Files deletes',
+        'Files deleted',
         `${contentCount} file${contentCount > 1 ? 's' : ''} have been deleted`,
         NotificationType.SUCCESS,
       );
@@ -171,6 +164,28 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
     },
   );
 
+  useEffect(() => {
+    let subscription: EventSubscription | undefined;
+    if (currentFolder) {
+      const eventName = getFolderUpdatePreviewEventName(currentFolder.id);
+      subscription = emitter.addListener(
+        eventName,
+        (files: number, folders: number) => {
+          setFolder(_ => {
+            const copy = {...currentFolder};
+            copy.summary.files = Math.max(0, copy.summary.files + files);
+            copy.summary.folders = Math.max(0, copy.summary.folders + folders);
+            return copy;
+          });
+        },
+      );
+
+      setFolder(currentFolder);
+    }
+
+    return () => subscription?.remove();
+  }, [currentFolder]);
+
   return (
     <Animated.View style={styles.root}>
       <Canvas style={styles.canvas}>
@@ -203,7 +218,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                   <Icon name={'ios-arrow-back'} color={'#000'} size={22} />
                 </Pressable>
                 <View style={styles.center}>
-                  <Text style={[styles.title, {textAlign: 'center'}]}>
+                  <Text style={[styles.title, styles.align]}>
                     {folder?.name}
                   </Text>
                   {(folder?.summary.files ?? 0) +
@@ -315,7 +330,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'UberBold',
-    fontSize: 17,
+    fontSize: 15,
     color: '#000',
     textTransform: 'capitalize',
   },
@@ -339,6 +354,9 @@ const styles = StyleSheet.create({
   },
   center: {
     alignItems: 'center',
+  },
+  align: {
+    textAlign: 'center',
   },
 });
 

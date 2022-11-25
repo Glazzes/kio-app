@@ -2,10 +2,10 @@ import {Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import authState from '../../../store/authStore';
 import {Folder} from '../../types';
-import {downloadFolderUrl} from '../contants';
+import {staticFolderUrl} from '../contants';
 
 export const downloadFolder = (folder: Folder) => {
-  const fromUrl = downloadFolderUrl(folder.id);
+  const fromUrl = staticFolderUrl(folder.id);
 
   const toFile =
     (Platform.OS === 'android' ? 'file://' : '') +

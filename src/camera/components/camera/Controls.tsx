@@ -1,6 +1,6 @@
 import {View, Dimensions, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
-import emitter from '../../utils/emitter';
+import emitter from '../../../utils/emitter';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';

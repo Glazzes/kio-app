@@ -17,11 +17,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {Screens} from '../../../enums/screens';
-import {mmkv} from '../../../store/mmkv';
-import {onBoardingRoot} from '../../../navigation/roots';
-import {NotificationType} from '../../../enums/notification';
-import {Modals} from '../../../navigation/screens/modals';
+import {Screens} from '../../../../enums/screens';
+import {mmkv} from '../../../../store/mmkv';
+import {onBoardingRoot} from '../../../../navigation/roots';
+import {NotificationType} from '../../../../enums/notification';
+import {Modals} from '../../../../navigation/screens/modals';
 
 type UserMenuProps = {
   x: number;

@@ -86,12 +86,9 @@ export type Point = {
   y: number;
 };
 
-export type ImageStyle = {
-  width: number | undefined;
-  maxWidth: number | undefined;
-  height: number | undefined;
-  maxHeight: number | undefined;
-  aspectRatio: number;
+export type UnitSize = {
+  capacity: number;
+  used: number;
 };
 
 export type SharedTransitionInfo = {

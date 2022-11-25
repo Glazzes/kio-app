@@ -1,12 +1,12 @@
 import {StyleSheet, View} from 'react-native';
 import React, {useContext} from 'react';
-import Contributors from '../../../misc/Contributors';
-import FolderList from '../../folders/FolderList';
-import FileHeader from '../../../misc/FileHeader';
-import BreadCrumbs from '../../../misc/BreadCrumbs';
-import {Folder} from '../../../shared/types';
-import {NavigationContext} from '../../../navigation/NavigationContextProvider';
-import {Screens} from '../../../enums/screens';
+import Contributors from '../../../../misc/Contributors';
+import FolderList from '../../../folders/FolderList';
+import FileHeader from '../../../../misc/FileHeader';
+import BreadCrumbs from '../../../../misc/BreadCrumbs';
+import {Folder} from '../../../../shared/types';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {Screens} from '../../../../enums/screens';
 
 type AppHeaderProps = {
   fetchedFiles: boolean;
@@ -27,7 +27,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       {(folder?.summary.folders ?? 0) > 0 && fetchedFolders && (
         <FolderList folders={folders} />
       )}
-      {fetchedFiles && fetchedFolders && <Contributors />}
+      {fetchedFiles && fetchedFolders && folders.length > 0 && <Contributors />}
       {(folder?.summary.files ?? 0) > 0 && fetchedFiles && (
         <FileHeader title={'Files'} itemLength={8} />
       )}

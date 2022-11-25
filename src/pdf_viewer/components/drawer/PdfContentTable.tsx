@@ -1,7 +1,7 @@
 import {StyleSheet, ScrollView, Text} from 'react-native';
 import React from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {PdfContent, pdfState} from '../../store/pdfStore';
+import {PdfContent, pdfState} from '../../../store/pdfStore';
 import PdfIndexView from './PdfIndexView';
 import {useSnapshot} from 'valtio';
 

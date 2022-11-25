@@ -3,15 +3,15 @@ import React, {useEffect, useRef} from 'react';
 import Pdf from 'react-native-pdf';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import PdfProgressIndicator from './PdfProgressIndicator';
-import {pdfState, setPdfContents, setPdfIndexes} from '../../store/pdfStore';
-import emitter from '../../utils/emitter';
-import {PdfEvent} from '../enums';
-import {convertTableContentsIntoIndexes} from '../utils/functions/convertTableContentsIntoIndexes';
-import PageIndicator from './PageIndicator';
+import {pdfState, setPdfContents, setPdfIndexes} from '../../../store/pdfStore';
+import emitter from '../../../utils/emitter';
+import {PdfEvent} from '../../utils/enums';
+import {convertTableContentsIntoIndexes} from '../../utils/functions/convertTableContentsIntoIndexes';
+import PageIndicator from '../drawer/PageIndicator';
 import {useSnapshot} from 'valtio';
-import {File} from '../../shared/types';
-import {host} from '../../shared/constants';
-import authState from '../../store/authStore';
+import {File} from '../../../shared/types';
+import authState from '../../../store/authStore';
+import {staticFileUrl} from '../../../shared/requests/contants';
 
 type PDFViewerProps = {
   file: File;
@@ -27,6 +27,7 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
   componentId,
   file,
 }) => {
+  const uri = staticFileUrl(file.id);
   const {accessToken} = useSnapshot(authState.tokens);
 
   const pdf = useSnapshot(pdfState);
@@ -70,13 +71,14 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
         ref={ref as any}
         style={styles.pdf}
         source={{
-          uri: `${host}/static/file/${file.id}`,
+          uri,
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }}
+        cache={true}
         trustAllCerts={false}
-        renderActivityIndicator={() => <PdfProgressIndicator />}
+        renderActivityIndicator={() => <PdfProgressIndicator file={file} />}
         onPageChanged={onPageChanged}
         onLoadComplete={(pages, path, size, contents) => {
           if (contents !== undefined) {
@@ -95,7 +97,7 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
   );
 };
 
-PDFViewer.options = {
+PDFViewer.options = ({file}) => ({
   statusBar: {
     visible: true,
     drawBehind: true,
@@ -105,7 +107,27 @@ PDFViewer.options = {
       enabled: true,
     },
   },
-};
+  animations: {
+    push: {
+      sharedElementTransitions: [
+        {
+          fromId: `pdf-${file.id}`,
+          toId: `pdf-${file.id}-dest`,
+          duration: 300,
+        },
+      ],
+    },
+    pop: {
+      sharedElementTransitions: [
+        {
+          fromId: `pdf-${file.id}-dest`,
+          toId: `pdf-${file.id}`,
+          duration: 300,
+        },
+      ],
+    },
+  },
+});
 
 const styles = StyleSheet.create({
   root: {

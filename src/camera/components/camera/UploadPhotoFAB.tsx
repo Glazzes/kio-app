@@ -3,20 +3,21 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {useSnapshot} from 'valtio';
-
-import {displayToast} from '../../shared/navigation/displayToast';
-import {NotificationType} from '../../enums/notification';
+import {displayToast} from '../../../shared/navigation/displayToast';
+import {NotificationType} from '../../../enums/notification';
 import {
   clearPictureSelection,
   pictureSelectionState,
   removeSelectedPicturesFromTaken,
-} from '../../store/photoStore';
-import {uploadPictures} from './utils/functions/uploadPictures';
-import emitter from '../../utils/emitter';
-import {PicturePickerEvent} from './utils/enums';
-import {UpdateFolderEvent} from '../utils/types';
+} from '../../../store/photoStore';
+import {uploadPictures} from '../../utils/functions/uploadPictures';
+import emitter, {
+  emitFolderAddFiles,
+  emitFolderUpdatePreview,
+} from '../../../utils/emitter';
+import {PicturePickerEvent} from '../../utils/enums';
 import {Navigation} from 'react-native-navigation';
-import {Modals} from '../../navigation/screens/modals';
+import {Modals} from '../../../navigation/screens/modals';
 
 type UploadPhotoFABProps = {
   folderId: string;
@@ -56,7 +57,9 @@ const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({folderId}) => {
       clearPictureSelection();
 
       emitter.emit(PicturePickerEvent.REMOVE_PICTURES, selectedPicturesUris);
-      emitter.emit(`${UpdateFolderEvent.ADD_FILES}-${folderId}`, data);
+
+      emitFolderAddFiles(folderId, data);
+      emitFolderUpdatePreview(folderId, data.length, 0);
 
       displayToast(
         'Pictures uploaded',

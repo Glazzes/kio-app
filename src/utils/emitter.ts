@@ -44,18 +44,17 @@ export const emitFolderAddFolders = (folderId: string, folders: Folder[]) => {
 
 export const emitFolderDeleteFolders = (
   folderId: string,
-  folderIds: string,
+  folderIds: string[],
 ) => {
   const eventName = getFolderDeleteFoldersEventName(folderId);
   emitter.emit(eventName, folderIds);
 };
 
 export const emitFolderUpdatePreview = (
-  parentFolderId: string,
   folderId: string,
   files: number,
   folders: number,
 ) => {
-  const eventName = getFolderUpdatePreviewEventName(parentFolderId);
-  emitter.emit(eventName, folderId, files, folders);
+  const eventName = getFolderUpdatePreviewEventName(folderId);
+  emitter.emit(eventName, files, folders);
 };

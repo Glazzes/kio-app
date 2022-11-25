@@ -31,7 +31,7 @@ import {peekLastNavigationScreen} from '../../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {clamp} from '../../shared/functions/clamp';
 import {snapPoint} from 'react-native-redash';
-import emitter from '../../utils/emitter';
+import emitter, {emitFolderDeleteFolders} from '../../utils/emitter';
 import {Modals} from '../../navigation/screens/modals';
 import {Screens} from '../../enums/screens';
 import {NotificationType} from '../../enums/notification';
@@ -43,6 +43,7 @@ import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
 import {deleteFiles} from '../../shared/requests/functions/deleteFiles';
 import {UpdateFolderEvent} from '../../home/utils/types';
 import {deleteFolder} from '../../shared/functions/deleteFolder';
+import {displayToast} from '../../shared/navigation/displayToast';
 
 type FileOptionSheetProps = {
   parentFolderId: string;
@@ -292,12 +293,28 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
     });
   };
 
-  const deleteCurrentFile = () => {
+  const deleteCurrentFile = async () => {
     dissmiss();
 
     if (file.contentType === undefined) {
-      deleteFolder(file.id);
-      return;
+      try {
+        await deleteFolder(file.id);
+        emitFolderDeleteFolders(parentFolderId, [file.id]);
+
+        displayToast(
+          'Folder deleted',
+          `Folder "${file.name}" was deleted successfully`,
+          NotificationType.SUCCESS,
+        );
+      } catch (e) {
+        displayToast(
+          'Delete error',
+          `Folder "${file.name}" could not be deleted, try again later`,
+          NotificationType.ERROR,
+        );
+      } finally {
+        return;
+      }
     }
 
     try {

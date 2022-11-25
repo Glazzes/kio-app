@@ -7,7 +7,7 @@ import Notifications from './src/notifications/Notifications';
 import {Settings} from './src/settings';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
-import {Home, Camera} from './src/home';
+import {Home} from './src/home';
 import {Toast} from './src/misc';
 import EditProfile from './src/settings/edit/EditProfile';
 import {AudioPlayer} from './src/audio_player';
@@ -25,7 +25,6 @@ import {
   EditModal,
   GenericDialogModal,
 } from './src/home/modals';
-import UserMenu from './src/home/misc/header/UserMenu';
 import {FileDrawer} from './src/navigation';
 import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
@@ -42,6 +41,8 @@ import {
   PictureInPictureVideo,
   PricingSheet,
 } from './src/overlays';
+import UserMenu from './src/home/misc/header/components/UserMenu';
+import {Camera} from './src/camera';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
 

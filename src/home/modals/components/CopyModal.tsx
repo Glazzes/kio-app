@@ -5,8 +5,9 @@ import {
   LayoutChangeEvent,
   View,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Animated, {
   runOnJS,
@@ -16,9 +17,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import emitter, {
   emitFolderAddFiles,
+  emitFolderAddFolders,
   emitFolderDeleteFiles,
+  emitFolderDeleteFolders,
+  emitFolderUpdatePreview,
 } from '../../../utils/emitter';
-import {Screens} from '../../../enums/screens';
 import {Event} from '../../../enums/events';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ModalWrapper from './ModalWrapper';
@@ -35,6 +38,12 @@ import {
 import {CopyType} from '../../../shared/enums';
 import {CopyRequest} from '../../../shared/types';
 import {cutSelection} from '../../../shared/requests/functions/cutSelection';
+import {copySelection} from '../../../shared/requests/functions/copySelection';
+import {
+  copySelectionErrorMessage,
+  copySelectionSuccessMessage,
+  displayToast,
+} from '../../../shared/toast';
 
 type CopyModalProps = {
   copyType: CopyType;
@@ -48,24 +57,29 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
 }) => {
   const navigation = useSnapshot(navigationState);
   const selection = useSnapshot(fileSelectionState);
-  const [dimensions, setdimensions] = useState({width: 1, height: 1});
+  const [isCopying, setIsCopying] = useState<boolean>(false);
+
+  const isMeasured = useRef<boolean>(false);
 
   const onLayout = ({
     nativeEvent: {
-      layout: {height: h, width: w},
+      layout: {height: h},
     },
   }: LayoutChangeEvent) => {
-    setdimensions({width: w, height: h});
+    if (!isMeasured.current) {
+      emitter.emit(Event.FAB_MOVE_UP, h + 10);
+      isMeasured.current = true;
+    }
   };
 
   const dissmis = () => {
-    emitter.emit(Event.FAB_MOVE_DOWN);
     Navigation.dismissOverlay(componentId);
   };
 
   const dissmisSelection = () => {
     clearSelection();
     toggleSelectionLock();
+    emitter.emit(Event.FAB_MOVE_DOWN);
 
     translateY.value = withTiming(100, undefined, finished => {
       if (finished) {
@@ -89,30 +103,70 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
       items: selection.files.map(f => f.id),
     };
 
-    await cut(fileCopyRequest, folderCopyRequest);
+    if (copyType === CopyType.COPY) {
+      copy(fileCopyRequest, folderCopyRequest);
+    } else {
+      cut(fileCopyRequest, folderCopyRequest);
+    }
+  };
+
+  const copy = async (fileRequest: CopyRequest, folderRequest: CopyRequest) => {
+    try {
+      if (folderRequest.items.length > 0) {
+        const {data} = await copySelection(folderRequest, 'folders');
+        emitFolderAddFolders(folderRequest.to, data);
+        emitFolderUpdatePreview(folderRequest.to, 0, data.length);
+      }
+
+      if (fileRequest.items.length > 0) {
+        const {data} = await copySelection(fileRequest, 'files');
+        emitFolderAddFiles(fileRequest.to, data);
+        emitFolderUpdatePreview(folderRequest.to, data.length, 0);
+      }
+
+      const message = copySelectionSuccessMessage('copy');
+      displayToast(message);
+    } catch (e) {
+      const message = copySelectionErrorMessage();
+      displayToast(message);
+    } finally {
+      dissmisSelection();
+    }
   };
 
   const cut = async (fileRequest: CopyRequest, folderRequest: CopyRequest) => {
-    if (folderRequest.items.length > 0) {
-      try {
+    try {
+      if (folderRequest.items.length > 0) {
         const {data} = await cutSelection(folderRequest, 'folders');
-      } catch (e) {
-        console.log('Could not copy folders', e);
-      }
-    }
-
-    if (fileRequest.items.length > 0) {
-      try {
-        const {data: files} = await cutSelection(fileRequest, 'files');
-        emitFolderDeleteFiles(
-          fileRequest.from,
-          files.map(f => f.id),
+        emitFolderAddFolders(folderRequest.to, data);
+        emitFolderDeleteFolders(
+          folderRequest.from,
+          data.map(f => f.id),
         );
 
-        emitFolderAddFiles(fileRequest.to, files);
-      } catch (e) {
-        console.log('Could not copy files', e);
+        emitFolderUpdatePreview(folderRequest.to, 0, data.length);
+        emitFolderUpdatePreview(folderRequest.from, 0, -1 * data.length);
       }
+
+      if (fileRequest.items.length > 0) {
+        const {data} = await cutSelection(fileRequest, 'files');
+        emitFolderAddFiles(fileRequest.to, data);
+        emitFolderDeleteFiles(
+          fileRequest.from,
+          data.map(f => f.id),
+        );
+
+        emitFolderUpdatePreview(folderRequest.to, data.length, 0);
+        emitFolderUpdatePreview(folderRequest.from, -1 * data.length, 0);
+      }
+
+      const message = copySelectionErrorMessage('copy');
+      displayToast(message);
+    } catch (e) {
+      const message = copySelectionErrorMessage();
+      displayToast(message);
+    } finally {
+      dissmisSelection();
     }
   };
 
@@ -140,22 +194,6 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    emitter.emit(Event.FAB_MOVE_UP, dimensions.height + 10);
-
-    const listener = Navigation.events().registerComponentDidAppearListener(
-      e => {
-        if (e.componentName === Screens.MY_UNIT) {
-          emitter.emit(Event.FAB_MOVE_UP, dimensions.height + 10);
-        }
-      },
-    );
-
-    return () => {
-      listener.remove();
-    };
-  }, [dimensions.height]);
 
   return (
     <Animated.View style={[styles.root, rStyle]} onLayout={onLayout}>
@@ -185,7 +223,7 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
               <Icon
                 name={'ios-close-circle-outline'}
                 size={30}
-                color={'#C5C8D7'}
+                color={'#000'}
                 style={styles.icon}
               />
             </Pressable>
@@ -239,6 +277,10 @@ const styles = StyleSheet.create({
   subtitle: {
     fontFamily: 'UberBold',
     fontSize: 12,
+  },
+  indicator: {
+    height: 30,
+    width: 30,
   },
 });
 

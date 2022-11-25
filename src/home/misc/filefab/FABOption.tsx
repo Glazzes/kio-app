@@ -2,7 +2,7 @@ import {StyleSheet, Dimensions, Pressable} from 'react-native';
 import React, {useContext} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
-import emitter, {
+import {
   emitFolderAddFiles,
   emitFolderUpdatePreview,
 } from '../../../utils/emitter';
@@ -12,13 +12,10 @@ import {Modals} from '../../../navigation/screens/modals';
 import notifee from '@notifee/react-native';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {UpdateFolderEvent} from '../../utils/types';
 import {uploadAudioFile} from '../../utils/functions/uploadAudioFile';
 import {getFileFormData} from '../../utils/functions/getFileFormData';
 import {Screens} from '../../../enums/screens';
 import {apiFilesUrl} from '../../../shared/requests/contants';
-import {useSnapshot} from 'valtio';
-import {navigationState} from '../../../store/navigationStore';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -33,7 +30,6 @@ const CENTER = windowWidth / 2 - BUTTON_RADIUS;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
-  const navigation = useSnapshot(navigationState);
   const {folder, componentId} = useContext(NavigationContext);
 
   const onPress = async () => {
@@ -106,17 +102,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
         });
 
         emitFolderAddFiles(folder?.id!!, data);
-
-        const prevFolder = navigation.folders[navigation.folders.length - 2];
-        if (prevFolder) {
-          console.log(prevFolder.folder.id, folder?.id);
-          emitFolderUpdatePreview(
-            prevFolder.folder.id,
-            folder?.id,
-            data.length,
-            0,
-          );
-        }
+        emitFolderUpdatePreview(folder?.id!!, data.length, 0);
 
         await notifee.displayNotification({
           id: 'upload',

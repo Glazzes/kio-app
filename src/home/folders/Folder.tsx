@@ -16,7 +16,7 @@ import {Screens} from '../../enums/screens';
 import {Folder as FolderType} from '../../shared/types';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import emitter from '../../utils/emitter';
+import emitter, {getFolderUpdatePreviewEventName} from '../../utils/emitter';
 import {
   addFolderToSelection,
   fileSelectionState,
@@ -33,9 +33,10 @@ const {width} = Dimensions.get('window');
 const WIDTH = width * 0.75;
 const HEIGHT = 150;
 
-const Folder: React.FC<FolderProps> = ({folder}) => {
+const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
   const [isSelected, setisSelected] = useState<boolean>(false);
 
+  const [folder, setFolder] = useState<FolderType>(currentFolder);
   const selection = useSnapshot(fileSelectionState);
   const {componentId, folder: parentFolder} = useContext(NavigationContext);
 
@@ -103,6 +104,25 @@ const Folder: React.FC<FolderProps> = ({folder}) => {
       unselect.remove();
     };
   }, [parentFolder]);
+
+  useEffect(() => {
+    const eventName = getFolderUpdatePreviewEventName(folder.id);
+    const listener = emitter.addListener(
+      eventName,
+      (files: number, folders: number) => {
+        setFolder(f => {
+          f.summary.files = Math.max(0, f.summary.files + files);
+          f.summary.folders = Math.max(0, f.summary.folders + folders);
+          return {...f};
+        });
+      },
+    );
+
+    return () => {
+      listener.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Pressable

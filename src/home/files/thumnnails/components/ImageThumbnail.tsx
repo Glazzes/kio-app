@@ -19,7 +19,6 @@ import {Dimension, File} from '../../../../shared/types';
 import {useSnapshot} from 'valtio';
 import {SIZE} from '../utils/constants';
 import {pushToImageDetails} from '../../../../shared/functions/navigation/pushToImageDetails';
-import {host} from '../../../../shared/constants';
 import {staticFileUrl} from '../../../../shared/requests/contants';
 
 type Reflection = {
@@ -153,7 +152,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
             nativeID={`img-${file.id}`}
             style={[styles.image, cc]}
             source={{
-              uri: `${host}/static/file/${file.id}`,
+              uri,
               headers: {Authorization: `Bearer ${accessToken}`},
             }}
             resizeMode={'cover'}

@@ -13,7 +13,6 @@ import {Folder} from '../../../utils/types';
 import FABOption from './FABOption';
 import emitter from '../../../utils/emitter';
 import {Event} from '../../../enums/events';
-import AppCamera from '../../camera/AppCamera';
 import {FabAction} from './types';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
 import {SelectAction} from '../../utils/enums';
@@ -126,15 +125,6 @@ const FAB: React.FC<FABProps> = () => {
       </AnimatedPressable>
     </View>
   );
-};
-
-AppCamera.options = {
-  statusBar: {
-    visible: false,
-  },
-  topBar: {
-    visible: false,
-  },
 };
 
 const styles = StyleSheet.create({
