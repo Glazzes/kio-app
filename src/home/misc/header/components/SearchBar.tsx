@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import emitter from '../../../../utils/emitter';
+import emitter from '../../../../shared/emitter';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {withKeyboard} from '../../../../utils/hoc';
 import {TypingEvent} from '../../../utils/types';

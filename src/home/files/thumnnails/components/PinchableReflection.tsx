@@ -6,7 +6,7 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
 } from 'react-native-reanimated';
-import emitter from '../../../../utils/emitter';
+import emitter from '../../../../shared/emitter';
 import {Dimension} from '../../../../shared/types';
 
 type PinchableReflectionProps = {

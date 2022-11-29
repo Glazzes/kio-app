@@ -16,7 +16,10 @@ import {Screens} from '../../enums/screens';
 import {Folder as FolderType} from '../../shared/types';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import emitter, {getFolderUpdatePreviewEventName} from '../../utils/emitter';
+import emitter, {
+  getClearSelectionEventName,
+  getFolderUpdatePreviewEventName,
+} from '../../shared/emitter';
 import {
   addFolderToSelection,
   fileSelectionState,
@@ -80,25 +83,25 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
     impactAsync(ImpactFeedbackStyle.Medium);
   };
 
-  const onPress = () => {
-    Navigation.showOverlay({
-      component: {
-        name: Modals.FILE_MENU,
-        passProps: {
-          parentFolderId: parentFolder?.id,
-          file: folder,
+  const openOptions = () => {
+    if (!selection.inProgress) {
+      Navigation.showModal({
+        component: {
+          name: Modals.FILE_MENU,
+          passProps: {
+            parentFolderId: parentFolder?.id,
+            file: folder,
+          },
         },
-      },
-    });
+      });
+    }
   };
 
   useEffect(() => {
-    const unselect = emitter.addListener(
-      `clear-selection-${parentFolder?.id}`,
-      () => {
-        setisSelected(false);
-      },
-    );
+    const unselectEventName = getClearSelectionEventName(parentFolder?.id!!);
+    const unselect = emitter.addListener(unselectEventName, () => {
+      setisSelected(false);
+    });
 
     return () => {
       unselect.remove();
@@ -159,7 +162,10 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
           numberOfLines={2}>
           {folder.name}
         </Text>
-        <Pressable hitSlop={20} onPress={onPress}>
+        <Pressable
+          hitSlop={20}
+          onPress={openOptions}
+          pointerEvents={selection.inProgress ? 'none' : 'auto'}>
           <Icon color={'#fff'} name={'ellipsis-vertical'} size={22} />
         </Pressable>
       </View>
@@ -194,8 +200,8 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
 
       {isSelected && (
         <Animated.View
-          entering={FadeIn.duration(200)}
-          exiting={FadeOut.duration(200)}
+          entering={FadeIn.duration(150)}
+          exiting={FadeOut.duration(150)}
           style={styles.selected}
         />
       )}

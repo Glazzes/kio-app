@@ -5,7 +5,7 @@ import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {
   emitFolderAddFiles,
   emitFolderUpdatePreview,
-} from '../../../utils/emitter';
+} from '../../../shared/emitter';
 import {pickMultiple} from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
@@ -71,27 +71,11 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     });
 
     const files = result.filter(r => !r.type?.startsWith('audio'));
-    const audioFiles = result.filter(
-      r => r.type?.startsWith('audio') && !r.name.includes('.'),
-    );
+    const audioFiles = result.filter(r => r.type?.startsWith('audio'));
 
     audioFiles.forEach(audioFile => uploadAudioFile(folder?.id!!, audioFile));
 
     const formData = await getFileFormData(folder?.id!!, files);
-
-    await notifee.displayNotification({
-      id: 'upload',
-      title: `Uploading file${result.length > 1 ? 's' : ''}`,
-      body: 'this may take a while',
-      android: {
-        channelId: 'kio',
-        progress: {
-          current: 1,
-          indeterminate: true,
-          max: 100,
-        },
-      },
-    });
 
     try {
       if (files.length > 0) {
@@ -105,7 +89,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
         emitFolderUpdatePreview(folder?.id!!, data.length, 0);
 
         await notifee.displayNotification({
-          id: 'upload',
+          id: 'Upload',
           title: 'Files uploded',
           body: 'Your files have been uploaded successfully',
           android: {

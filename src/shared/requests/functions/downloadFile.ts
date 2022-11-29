@@ -14,8 +14,6 @@ export const downloadFile = (file: File) => {
     '/' +
     file.name;
 
-  console.log(RNFS.DownloadDirectoryPath);
-
   RNFS.downloadFile({
     fromUrl: uri,
     toFile,

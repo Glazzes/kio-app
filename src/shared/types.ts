@@ -5,6 +5,13 @@ export enum FileVisibility {
   PUBLIC,
 }
 
+export type User = {
+  id: string;
+  username: string;
+  email: string;
+  hasProfilePicture: boolean;
+};
+
 type FileDetails = {
   dimensions: [number, number] | null;
   duration: number | null;

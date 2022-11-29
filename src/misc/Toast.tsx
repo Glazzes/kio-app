@@ -10,7 +10,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../utils/emitter';
+import emitter, {
+  dismissToastsEventName,
+  emitDismissAllToasts,
+} from '../shared/emitter';
 import {Event} from '../enums/events';
 
 type ToastInfo = {
@@ -106,6 +109,17 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
   }, [height]);
 
   useEffect(() => {
+    emitDismissAllToasts(componentId);
+
+    const autoDissmis = emitter.addListener(
+      dismissToastsEventName,
+      (compId: string) => {
+        if (componentId !== compId) {
+          hide();
+        }
+      },
+    );
+
     translateY.value = withTiming(0);
     translateX.value = withTiming(
       -TOAST_WIDTH,
@@ -116,6 +130,11 @@ const Toast: NavigationFunctionComponent<ToastProps> = ({
         }
       },
     );
+
+    return () => {
+      autoDissmis.remove();
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -170,7 +189,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     overflow: 'hidden',
     bottom: SPACING,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: 'center',
     alignSelf: 'center',
   },

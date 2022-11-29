@@ -30,7 +30,7 @@ import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
 import GenericFileDetails from './src/home/files/details/GenericFileDetails';
 import ProgressIndicator from './src/misc/ProgressIndicator';
-import emitter from './src/utils/emitter';
+import emitter from './src/shared/emitter';
 import axios from 'axios';
 import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';

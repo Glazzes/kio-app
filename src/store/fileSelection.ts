@@ -66,7 +66,7 @@ export const toggleSelectionLock = () => {
   fileSelectionState.inProgress = false;
 };
 
-export const clearSelection = () => {
+export const clearFileSelection = () => {
   fileSelectionState.files = [];
   fileSelectionState.folders = [];
   fileSelectionState.inProgress = false;

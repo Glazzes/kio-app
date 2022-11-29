@@ -17,7 +17,7 @@ import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import EffectIndicator from './EffectIndicator';
 import crop from '../utils/functions/crop';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import emitter from '../../utils/emitter';
+import emitter from '../../shared/emitter';
 import {findLastByName} from '../../store/navigationStore';
 import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';

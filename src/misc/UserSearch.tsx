@@ -1,11 +1,14 @@
 import {View, Text, StyleSheet, Image} from 'react-native';
 import React from 'react';
+import {User} from '../shared/types';
 
-type UserSearchProps = {};
+type UserSearchProps = {
+  user: User;
+};
 
 const SIZE = 50;
 
-const UserSearch: React.FC<UserSearchProps> = ({}) => {
+const UserSearch: React.FC<UserSearchProps> = ({user}) => {
   return (
     <View style={styles.root}>
       <Image
@@ -13,8 +16,8 @@ const UserSearch: React.FC<UserSearchProps> = ({}) => {
         style={styles.image}
       />
       <View>
-        <Text style={styles.username}>Glaze</Text>
-        <Text style={styles.email}>glaze@demo.com</Text>
+        <Text style={styles.username}>{user.username}</Text>
+        <Text style={styles.email}>{user.email}</Text>
       </View>
     </View>
   );

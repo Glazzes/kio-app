@@ -2,6 +2,7 @@ import {Dimensions, StyleSheet, ViewStyle} from 'react-native';
 import React, {useEffect} from 'react';
 import {
   Navigation,
+  NavigationComponentListener,
   NavigationFunctionComponent,
   OptionsModalPresentationStyle,
 } from 'react-native-navigation';
@@ -19,8 +20,11 @@ import {snapPoint, useVector} from 'react-native-redash';
 import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
 import {Dimension, File} from '../../../shared/types';
 import {getMaxImageScale} from '../../../crop_editor/utils/functions/getMaxImageScale';
-import emitter from '../../../utils/emitter';
-import FileDetailsAppbar from '../../../misc/FileDetailsAppbar';
+import emitter, {
+  dismissLastModalEventName,
+  emitHideAppbar,
+} from '../../../shared/emitter';
+import FileDetailsAppbar from '../../../shared/components/FileDetailsAppbar';
 import {useSnapshot} from 'valtio';
 import authState from '../../../store/authStore';
 
@@ -55,7 +59,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   const scaleOffset = useSharedValue<number>(1);
 
   const origin = useVector(0, 0);
-  const originAssign = useSharedValue<boolean>(true);
+  const canAssignOrigin = useSharedValue<boolean>(true);
 
   const translation = useDerivedValue<{x: number; y: number}>(() => {
     const offsetX = Math.max((layout.x.value * scale.value - width) / 2, 0);
@@ -88,7 +92,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   };
 
   const sendHideAppbarEvent = () => {
-    emitter.emit('st');
+    emitHideAppbar();
   };
 
   const pan = Gesture.Pan()
@@ -137,20 +141,20 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       scaleOffset.value = scale.value;
     })
     .onChange(e => {
-      const {translateX, translateY} = pinch(
-        {x: layout.x.value / 2, y: layout.y.value / 2},
-        {x: offset.x.value, y: offset.y.value},
-        e,
-        {x: origin.x, y: origin.y},
-        originAssign,
-      );
+      const {translateX, translateY} = pinch({
+        center: {x: layout.x.value / 2, y: layout.y.value / 2},
+        offset: {x: offset.x.value, y: offset.y.value},
+        event: e,
+        origin,
+        canAssignOrigin: canAssignOrigin,
+      });
 
       translate.x.value = offset.x.value + translateX;
       translate.y.value = offset.y.value + translateY;
       scale.value = scaleOffset.value * e.scale;
     })
     .onEnd(_ => {
-      originAssign.value = true;
+      canAssignOrigin.value = true;
       if (scale.value < 1) {
         scale.value = withTiming(1);
         set(translate, 0);
@@ -179,13 +183,13 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
         toScale = 1;
       }
 
-      const {translateX, translateY} = pinch(
-        {x: layout.x.value / 2, y: layout.y.value / 2},
-        {x: offset.x.value, y: offset.y.value},
-        {focalX: e.x, focalY: e.y, scale: toScale},
-        {x: origin.x, y: origin.y},
-        originAssign,
-      );
+      const {translateX, translateY} = pinch({
+        center: {x: layout.x.value / 2, y: layout.y.value / 2},
+        offset: {x: offset.x.value, y: offset.y.value},
+        event: {focalX: e.x, focalY: e.y, scale: toScale},
+        origin,
+        canAssignOrigin: canAssignOrigin,
+      });
 
       if (toScale === 1) {
         translate.y.value = withTiming(0);
@@ -196,7 +200,7 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       scale.value = withTiming(toScale);
     })
     .onFinalize(() => {
-      originAssign.value = true;
+      canAssignOrigin.value = true;
     });
 
   const combinedGesture = Gesture.Exclusive(
@@ -226,15 +230,21 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   });
 
   useEffect(() => {
-    const backListener =
-      Navigation.events().registerNavigationButtonPressedListener(e => {
-        if (e.buttonId === 'RNN.hardwareBackButton') {
+    const componentListener: NavigationComponentListener = {
+      navigationButtonPressed: ({buttonId}) => {
+        if (buttonId === 'RNN.hardwareBackButton') {
           lightenBackground.value = true;
           dismissModal();
         }
-      });
+      },
+    };
 
-    const dissmiss = emitter.addListener('dis', () => {
+    const backListener = Navigation.events().registerComponentListener(
+      componentListener,
+      componentId,
+    );
+
+    const dissmiss = emitter.addListener(dismissLastModalEventName, () => {
       dismissModal();
     });
 
@@ -265,7 +275,6 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       <FileDetailsAppbar
         file={file}
         parentComponentId={componentId}
-        isVideo={false}
         isModal={true}
       />
     </Animated.View>

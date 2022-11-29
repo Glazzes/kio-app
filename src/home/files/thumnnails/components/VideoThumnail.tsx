@@ -4,12 +4,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
 import {SIZE} from '../utils/constants';
-import emitter from '../../../../utils/emitter';
+import emitter from '../../../../shared/emitter';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import {File} from '../../../../shared/types';
-import {host} from '../../../../shared/constants';
 import {useSnapshot} from 'valtio';
 import authState from '../../../../store/authStore';
+import {staticFileThumbnail} from '../../../../shared/requests/contants';
 
 type VideoThumnailProps = {
   file: File;
@@ -18,18 +18,17 @@ type VideoThumnailProps = {
 
 const VideoThumnail: React.FC<VideoThumnailProps> = ({index, file}) => {
   const {accessToken} = useSnapshot(authState.tokens);
-  const thumbnailUri = `${host}/static/file/${file.id}/thumbnail`;
   const {componentId} = useContext(NavigationContext);
+
+  const thumbnailUri = staticFileThumbnail(file.id);
 
   const pushToPlayer = () => {
     Navigation.push(componentId, {
       component: {
         name: Screens.VIDEO_PLAYER,
         passProps: {
-          thumbnail: thumbnailUri,
-          index,
-          isVideo: true,
           file,
+          thumbnailUri,
         },
       },
     });
@@ -49,7 +48,7 @@ const VideoThumnail: React.FC<VideoThumnailProps> = ({index, file}) => {
   return (
     <View style={styles.root}>
       <Image
-        nativeID={`video-${index}`}
+        nativeID={`video-${file.id}`}
         source={{
           uri: thumbnailUri,
           headers: {Authorization: `Bearer ${accessToken}`},

@@ -9,7 +9,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import React, {useEffect, useState} from 'react';
 import {Navigation} from 'react-native-navigation';
-import emitter from '../../utils/emitter';
+import emitter from '../../shared/emitter';
 import {Screens} from '../../enums/screens';
 
 type UserInfoProps = {

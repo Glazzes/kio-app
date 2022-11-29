@@ -6,6 +6,7 @@ import {
 import RNFS from 'react-native-fs';
 import {Platform} from 'react-native';
 import notifee from '@notifee/react-native';
+import authState from '../../../../store/authStore';
 
 type DownloadFile = {
   uri: string;
@@ -34,12 +35,6 @@ export const donwloadSelection = async (files: File[], folders: Folder[]) => {
     body: 'Kio is preparing your files to be downloaded',
     android: {
       channelId,
-      onlyAlertOnce: true,
-      progress: {
-        max: content,
-        current: 1,
-        indeterminate: false,
-      },
     },
   });
 
@@ -54,6 +49,12 @@ export const donwloadSelection = async (files: File[], folders: Folder[]) => {
     await RNFS.downloadFile({
       fromUrl: file.uri,
       toFile,
+      headers: {
+        Authorization: `Bearer ${authState.tokens.accessToken}`,
+      },
+      progress(res) {
+        console.log(res.bytesWritten);
+      },
     }).promise;
 
     downloadCount++;
@@ -66,6 +67,11 @@ export const donwloadSelection = async (files: File[], folders: Folder[]) => {
         android: {
           channelId,
           onlyAlertOnce: true,
+          progress: {
+            max: content,
+            current: downloadCount,
+            indeterminate: false,
+          },
         },
       });
     } catch (e) {}

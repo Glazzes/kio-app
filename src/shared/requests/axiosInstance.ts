@@ -54,11 +54,6 @@ axiosInstance.interceptors.response.use(
 
         return axiosInstance(config);
       } catch (e) {
-        // @ts-ignore
-        if (e.response.status !== 404) {
-          console.log('Your refresh token has expired');
-        }
-
         return Promise.reject(error);
       }
     }

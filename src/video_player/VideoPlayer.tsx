@@ -1,37 +1,32 @@
-import {View, StyleSheet, ActivityIndicator} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import Video from 'react-native-video';
-import FileDetailsAppbar from '../misc/FileDetailsAppbar';
+import FileDetailsAppbar from '../shared/components/FileDetailsAppbar';
 import {File} from '../shared/types';
-import {host} from '../shared/constants';
 import {useSnapshot} from 'valtio';
 import authState from '../store/authStore';
-import {displayToast} from '../shared/navigation/displayToast';
-import {NotificationType} from '../enums/notification';
+import {staticFileUrl} from '../shared/requests/contants';
+import {displayToast, videoLoadErrorMessage} from '../shared/toast';
+import ThumbnailLoadingIndicator from '../shared/components/ThumbnailLoadingIndicator';
 
 type VideoPlayerProps = {
-  thumbnail: string;
   file: File;
+  thumbnailUri: string;
 };
 
 const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
   componentId,
-  thumbnail,
   file,
+  thumbnailUri,
 }) => {
-  const uri = `${host}/static/file/${file.id}`;
+  const uri = staticFileUrl(file.id);
   const {accessToken} = useSnapshot(authState.tokens);
 
   const [ready, setReady] = useState<boolean>(false);
 
-  const onError = (e: any) => {
-    console.log(e);
-    displayToast(
-      'Load error',
-      'This video could not be loaded, try again later',
-      NotificationType.ERROR,
-    );
+  const onError = () => {
+    displayToast(videoLoadErrorMessage);
   };
 
   return (
@@ -41,36 +36,41 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
         paused={false}
         controls={true}
         style={[StyleSheet.absoluteFillObject, styles.black]}
+        poster={thumbnailUri}
         resizeMode={'contain'}
-        poster={thumbnail}
-        posterResizeMode={'contain'}
-        useTextureView={false}
         onReadyForDisplay={() => setReady(true)}
         onError={onError}
       />
-      {!ready && (
-        <View style={styles.placeholder}>
-          <ActivityIndicator size={'large'} color={'#3366ff'} />
-        </View>
-      )}
+      {!ready && <ThumbnailLoadingIndicator file={file} />}
       <FileDetailsAppbar
         file={file}
         parentComponentId={componentId}
-        isVideo={ready}
         isModal={false}
+        isVideoReadyForDisplay={ready}
       />
     </View>
   );
 };
 
-VideoPlayer.options = {
+VideoPlayer.options = ({file}) => ({
   statusBar: {
     visible: false,
   },
   topBar: {
     visible: false,
   },
-};
+  animations: {
+    push: {
+      sharedElementTransitions: [
+        {
+          fromId: `video-${file.id}`,
+          toId: `video-${file.id}-dest`,
+          duration: 300,
+        },
+      ],
+    },
+  },
+});
 
 const styles = StyleSheet.create({
   root: {

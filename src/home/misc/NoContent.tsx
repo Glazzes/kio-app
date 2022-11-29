@@ -44,8 +44,8 @@ const styles = StyleSheet.create({
   root: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: width * 0.9,
-    height: width * 0.9,
+    width: width,
+    height: width,
   },
   message: {
     fontFamily: 'UberBold',

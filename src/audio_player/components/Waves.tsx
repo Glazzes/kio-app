@@ -46,6 +46,7 @@ type WavesProps = {
   progress: Animated.SharedValue<number>;
   duration: number;
   isPlaying: boolean;
+  animateTimeLine: () => void;
 };
 
 const {width} = Dimensions.get('window');
@@ -57,6 +58,7 @@ const Waves: React.FC<WavesProps> = ({
   progress,
   duration,
   isPlaying,
+  animateTimeLine,
 }) => {
   const skWidth = useValue(0);
   const offset = useSharedValue<number>(0);
@@ -79,20 +81,6 @@ const Waves: React.FC<WavesProps> = ({
     return convertCurrentTimeToTextTime(Math.floor(progress.value * duration));
   }, [progress, duration]);
 
-  const animateWave = () => {
-    translateX.value = withTiming(
-      -width / 2,
-      {
-        duration: (1 - progress.value) * duration * 1000,
-        easing: Easing.linear,
-      },
-      hasFinished => {
-        if (hasFinished) {
-        }
-      },
-    );
-  };
-
   const pause = () => {
     sound?.pause();
   };
@@ -106,7 +94,7 @@ const Waves: React.FC<WavesProps> = ({
     sound?.setCurrentTime(progress.value * duration);
 
     if (isPlaying) {
-      animateWave();
+      animateTimeLine();
       sound?.play();
     }
   };

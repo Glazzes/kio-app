@@ -25,7 +25,7 @@ import {newFolderUrl} from '../../../shared/requests/contants';
 import {
   emitFolderAddFolders,
   emitFolderUpdatePreview,
-} from '../../../utils/emitter';
+} from '../../../shared/emitter';
 import {Folder} from '../../../shared/types';
 
 type CreateFolderModalProps = {

@@ -2,7 +2,7 @@ import {View, Dimensions, StyleSheet} from 'react-native';
 import {FlashList, ListRenderItemInfo} from '@shopify/flash-list';
 import Folder from './Folder';
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import emitter from '../../utils/emitter';
+import emitter from '../../shared/emitter';
 import {TypingEvent} from '../utils/types';
 import FolderSkeleton from '../../misc/skeleton/FolderSkeleton';
 import {Folder as FolderType} from '../../shared/types';

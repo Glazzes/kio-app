@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Appbar from './misc/header/components/Appbar';
 import FAB from './misc/filefab/FAB';
-import {Dimension, File, Folder} from '../shared/types';
+import {Dimension, File, Folder, Page} from '../shared/types';
 import FileWrapper from './files/thumnnails/components/FileWrapper';
 import {
   ImageThumbnail,
@@ -35,7 +35,7 @@ import emitter, {
   getFolderAddFoldersEventName,
   getFolderDeleteFilesEventName,
   getFolderDeleteFoldersEventName,
-} from '../utils/emitter';
+} from '../shared/emitter';
 import {getFolder} from './utils/functions/getFolder';
 import {getFolderFiles} from './utils/functions/getFolderFiles';
 import {getFolderSubFolders} from './utils/functions/getFolderSubFolders';
@@ -47,6 +47,8 @@ import {
 type HomeProps = {
   folder?: Folder;
 };
+
+type PageFile = Page<File[]>;
 
 function keyExtractor(item: File): string {
   return item.id;
@@ -67,10 +69,31 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
 
   const [folder, setFolder] = useState<Folder | undefined>(currentFolder);
   const [subFolders, setSubFolders] = useState<Folder[]>([]);
-  const [files, setFiles] = useState<File[]>([]);
 
+  const [filesPage, setFilesPage] = useState<PageFile>({
+    content: [],
+    last: true,
+    pageNumber: 0,
+    totalPages: 0,
+  });
+
+  const [filteredPageContent, setFilteredPageContent] = useState<File[]>([]);
+
+  const onThresholdReached = async () => {
+    if (filesPage.last) {
+      return;
+    }
+
+    if (folder) {
+      getFolderFiles(folder, filesPage.pageNumber + 1, page => {
+        const content = [...filesPage.content, ...page.content];
+        return {...page, content};
+      });
+    }
+  };
+
+  // animation values
   const scrollY = useSharedValue<number>(0);
-
   const dimensions = useSharedValue<Dimension>({width: 1, height: 1});
   const translateX = useSharedValue<number>(0);
   const translateY = useSharedValue<number>(0);
@@ -139,7 +162,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     const addFiles = emitter.addListener(
       addFilesEventName,
       (newFiles: File[]) => {
-        setFiles(f => [...newFiles, ...f]);
+        setFilesPage(p => ({...p, content: [...p.content, ...newFiles]}));
       },
     );
 
@@ -147,8 +170,9 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     const deleteFiles = emitter.addListener(
       deleteFilesEventName,
       (ids: string[]) => {
-        setFiles(filess => {
-          return filess.filter(f => !ids.includes(f.id));
+        setFilesPage(page => {
+          page.content.filter(c => !ids.includes(c.id));
+          return {...page};
         });
       },
     );
@@ -180,6 +204,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   useEffect(() => {
     getFolder(folder, unit => {
       setFolder(unit);
+
       pushNavigationScreen({
         componentId,
         folder: unit,
@@ -194,14 +219,17 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
 
   useEffect(() => {
     if (folder) {
-      getFolderFiles(folder, page => {
-        setFiles(page.content);
-        setFetchedFiles(true);
+      getFolderFiles(folder, 0, page => {
+        setFilesPage(page);
+        setFilteredPageContent(page.content);
       });
-      getFolderSubFolders(folder, 0, page => {
-        setSubFolders(page.content);
-        setFetchedFolders(true);
-      });
+
+      if (folder.summary.folders > 0) {
+        getFolderSubFolders(folder, 0, page => {
+          setSubFolders(page.content);
+          setFetchedFolders(true);
+        });
+      }
     }
   }, [folder]);
 
@@ -210,9 +238,9 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       <View style={styles.root}>
         <Appbar scrollY={scrollY} />
 
-        <Animated.FlatList
+        <AnimatedFlashList
           ref={ref as any}
-          data={files}
+          data={filesPage.content}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           numColumns={2}
@@ -227,10 +255,12 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
           estimatedItemSize={SIZE}
           estimatedListSize={{
             width: windowWidth,
-            height: (files.length / 2) * SIZE,
+            height: (filesPage.content.length / 2) * SIZE,
           }}
           contentContainerStyle={styles.content}
           onScroll={onScroll}
+          onEndReachedThreshold={0.3}
+          onEndReached={onThresholdReached}
         />
 
         <FAB />

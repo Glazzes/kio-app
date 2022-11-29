@@ -15,6 +15,10 @@ import Contributor from '../../../misc/Contributor';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {FlatList} from 'react-native-gesture-handler';
 import ModalWrapper from './ModalWrapper';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {apiUsersUrl} from '../../../shared/requests/contants';
+import {User} from '../../../shared/types';
+import UserSearch from '../../../misc/UserSearch';
 
 type ShareModalProps = {};
 
@@ -38,6 +42,8 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
 }) => {
   const inputRef = useRef<TextInput>(null);
 
+  const [user, setUser] = useState<User | null>(null);
+
   const [coowners, setCoowners] = useState<string[]>([]);
   const [text, setText] = useState<string>('');
   const [timer, setTimer] = useState<NodeJS.Timeout>();
@@ -52,12 +58,21 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
       clearTimeout(timer);
     }
 
-    const newTimer = setTimeout(() => {
-      fetch('https://jsonplaceholder.typicode.com/users')
-        .then(res => res.json())
-        .then(_ => setIsStyping(false))
-        .catch(() => console.log('sos'))
-        .finally(() => setHasFetched(true));
+    const newTimer = setTimeout(async () => {
+      try {
+        const {data} = await axiosInstance.get<User>(apiUsersUrl, {
+          params: {q: value},
+        });
+
+        setUser(data);
+      } catch (e) {
+        console.log(e);
+        setUser(null);
+      } finally {
+        setHasFetched(true);
+        setIsStyping(false);
+        clearTimeout(newTimer);
+      }
     }, 1000);
 
     setTimer(newTimer);
@@ -97,6 +112,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
               onChangeText={onChangeText}
               style={styles.input}
               placeholder={'Email / Username'}
+              autoCapitalize={'none'}
             />
           </View>
           <Pressable style={styles.addButton} onPress={addCoowner}>
@@ -130,10 +146,14 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
           </View>
         )}
 
-        {!isStyping && hasFetched && text !== '' && (
+        {!isStyping && hasFetched && text !== '' && user === null && (
           <View style={styles.noResultContainer}>
             <Text>No results found for "{text}"</Text>
           </View>
+        )}
+
+        {!isStyping && hasFetched && user !== null && text !== '' && (
+          <UserSearch user={user} />
         )}
 
         {coowners.length > 0 && (

@@ -5,7 +5,6 @@ import {
   LayoutChangeEvent,
   View,
   Pressable,
-  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
@@ -21,12 +20,12 @@ import emitter, {
   emitFolderDeleteFiles,
   emitFolderDeleteFolders,
   emitFolderUpdatePreview,
-} from '../../../utils/emitter';
+} from '../../../shared/emitter';
 import {Event} from '../../../enums/events';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ModalWrapper from './ModalWrapper';
 import {
-  clearSelection,
+  clearFileSelection,
   fileSelectionState,
   toggleSelectionLock,
 } from '../../../store/fileSelection';
@@ -77,7 +76,7 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   };
 
   const dissmisSelection = () => {
-    clearSelection();
+    clearFileSelection();
     toggleSelectionLock();
     emitter.emit(Event.FAB_MOVE_DOWN);
 

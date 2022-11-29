@@ -8,14 +8,12 @@ import {
 import React from 'react';
 import Sound from 'react-native-sound';
 import Animated, {cancelAnimation} from 'react-native-reanimated';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Action from './Action';
 import {Canvas, Circle, LinearGradient, vec} from '@shopify/react-native-skia';
 import {downloadFile} from '../../shared/requests/functions/downloadFile';
 import {File} from '../../shared/types';
-
-type Loop = 0 | 1 | -1;
 
 type AuidoControlsProps = {
   file: File;
@@ -23,8 +21,8 @@ type AuidoControlsProps = {
   loaded: boolean;
   isPlaying: boolean;
   setIsPlaying: (value: React.SetStateAction<boolean>) => void;
-  loops: Loop;
-  setLoops: (value: React.SetStateAction<Loop>) => void;
+  loop: boolean;
+  setLoop: (value: React.SetStateAction<boolean>) => void;
   translateX: Animated.SharedValue<number>;
   animateTimeLine: () => void;
 };
@@ -40,8 +38,8 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
   sound,
   loaded,
   isPlaying,
-  loops,
-  setLoops,
+  loop,
+  setLoop,
   setIsPlaying,
   translateX,
   animateTimeLine,
@@ -58,19 +56,9 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
     animateTimeLine();
   };
 
-  const toggleLoops = async () => {
-    await impactAsync(ImpactFeedbackStyle.Light);
-    setLoops(l => {
-      if (l === 0) {
-        return 1;
-      }
-
-      if (l === 1) {
-        return -1;
-      }
-
-      return 0;
-    });
+  const toggleLoops = () => {
+    impactAsync(ImpactFeedbackStyle.Light);
+    setLoop(l => !l);
   };
 
   return (
@@ -80,7 +68,7 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
         color={'#e3e5eb'}
         callback={() => downloadFile(file)}
       />
-      <Action icon={'step-backward'} callback={() => {}} />
+      <Action icon={'ios-play-back'} callback={() => {}} />
 
       <View style={styles.playButton}>
         <Canvas style={styles.canvas}>
@@ -99,20 +87,20 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
         <Pressable onPress={play} style={[styles.playButton]}>
           {loaded ? (
             <Icon
-              name={isPlaying ? 'pause' : 'play'}
+              name={isPlaying ? 'ios-pause' : 'ios-play'}
               color={'#fff'}
-              size={40}
+              size={35}
             />
           ) : (
-            <ActivityIndicator size={40} color={'#C5C8D7'} />
+            <ActivityIndicator size={40} color={'#fff'} />
           )}
         </Pressable>
       </View>
 
-      <Action icon={'step-forward'} callback={() => {}} />
+      <Action icon={'ios-play-forward'} callback={() => {}} />
       <Action
-        icon={loops === -1 ? 'repeat-once' : 'repeat'}
-        color={loops !== 0 ? '#ee3060' : '#e3e5eb'}
+        icon={'repeat'}
+        color={loop ? '#ee3060' : '#e3e5eb'}
         callback={toggleLoops}
       />
     </View>

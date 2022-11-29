@@ -19,6 +19,7 @@ import {File} from '../../shared/types';
 import {staticFileUrl} from '../../shared/requests/contants';
 import {useSnapshot} from 'valtio';
 import authState from '../../store/authStore';
+import {displayToast, videoLoadErrorMessage} from '../../shared/toast';
 
 type PictureInPictureVideoProps = {
   file: File;
@@ -30,7 +31,7 @@ const ICON_SIZE = 20;
 
 /*
 When a GestureHandlerRootView is on top of a Gesture Detector it will cause the one on top
-to not longer work, so in order to drag the video around it's necesary to use animated
+to not longer work, so in order to drag the video around it's necesary to use animated from RN
 */
 const PictureInPictureVideo: NavigationFunctionComponent<
   PictureInPictureVideoProps
@@ -71,6 +72,11 @@ const PictureInPictureVideo: NavigationFunctionComponent<
     });
   };
 
+  const onError = () => {
+    pop();
+    displayToast(videoLoadErrorMessage);
+  };
+
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderStart() {
@@ -101,7 +107,7 @@ const PictureInPictureVideo: NavigationFunctionComponent<
     return {
       width: finalWidth,
       height: finalHeight,
-      backgroundColor: '#f3f3f3',
+      backgroundColor: '#000',
       position: 'absolute',
       overflow: 'hidden',
       left: (width - finalWidth) / 2,
@@ -179,9 +185,8 @@ const PictureInPictureVideo: NavigationFunctionComponent<
         resizeMode={'contain'}
         repeat={true}
         useTextureView={false}
-        maxBitRate={1000000}
         onReadyForDisplay={() => setReady(true)}
-        onError={e => console.log(e)}
+        onError={onError}
       />
       {!ready && (
         <View style={styles.placeholder}>

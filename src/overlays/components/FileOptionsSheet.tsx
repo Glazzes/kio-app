@@ -31,23 +31,30 @@ import {peekLastNavigationScreen} from '../../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {clamp} from '../../shared/functions/clamp';
 import {snapPoint} from 'react-native-redash';
-import emitter, {emitFolderDeleteFolders} from '../../utils/emitter';
+import emitter, {emitFolderDeleteFolders} from '../../shared/emitter';
 import {Modals} from '../../navigation/screens/modals';
 import {Screens} from '../../enums/screens';
 import {NotificationType} from '../../enums/notification';
-import {File} from '../../shared/types';
-import {Overlays} from '../../shared/enum/Overlays';
+import {File, Folder} from '../../shared/types';
 import {getSimpleMimeType} from '../../shared/functions/getMimeType';
 import {MimeType} from '../../shared/enum/MimeType';
 import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
 import {deleteFiles} from '../../shared/requests/functions/deleteFiles';
 import {UpdateFolderEvent} from '../../home/utils/types';
 import {deleteFolder} from '../../shared/functions/deleteFolder';
-import {displayToast} from '../../shared/navigation/displayToast';
+import {downloadFile} from '../../shared/requests/functions/downloadFile';
+import {downloadFolder} from '../../shared/requests/functions/downloadFolder';
+import {
+  deleteFolderErrorMessage,
+  deleteFolderSuccessMessage,
+  displayToast,
+} from '../../shared/toast';
+import {shareFile} from '../utils/share';
+import {copyLinkToClipboard} from '../utils/copyToClipboard';
 
 type FileOptionSheetProps = {
   parentFolderId: string;
-  file: File;
+  file: File | Folder;
 };
 
 type Action = {
@@ -133,6 +140,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   file,
 }) => {
   const aRef = useAnimatedRef<SectionList>();
+  const isFile = (file as File).contentType !== undefined;
 
   const close = (text: string) => {
     backgroundColor.value = withTiming('transparent');
@@ -145,11 +153,11 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
 
   const defineIcon = () => {
     let icon = 'ios-folder-open';
-    if (file.contentType === undefined) {
+    if (!isFile) {
       return icon;
     }
 
-    const mimeType = getSimpleMimeType(file.contentType);
+    const mimeType = getSimpleMimeType((file as File).contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
         icon = 'ios-headset';
@@ -181,21 +189,35 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
       case 'Open':
         open();
         return;
+
       case 'Details':
         openDetails();
         return;
+
       case 'Copy link':
         copyLink();
         return;
+
       case 'Favorite':
         faveFile();
         return;
+
       case 'Download':
         download();
         return;
+
       case 'Delete':
         openDeleteModal();
         return;
+
+      case 'Share':
+        shareFile(file);
+        return;
+
+      case 'Copy link':
+        copyLinkToClipboard(file);
+        return;
+
       default:
         return;
     }
@@ -203,7 +225,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
 
   const open = () => {
     const {componentId: lastComponentId} = peekLastNavigationScreen();
-    if (file.contentType === undefined) {
+    if (!isFile) {
       Navigation.push(lastComponentId, {
         component: {
           name: Screens.MY_UNIT,
@@ -216,7 +238,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
       return;
     }
 
-    const mimeType = getSimpleMimeType(file.contentType);
+    const mimeType = getSimpleMimeType((file as File).contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
         pushToScreen(lastComponentId, Screens.AUDIO_PLAYER, {file});
@@ -259,11 +281,11 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   };
 
   const download = () => {
-    Navigation.showOverlay({
-      component: {
-        name: Overlays.PROGRESS_INDICATOR,
-      },
-    });
+    if (isFile) {
+      downloadFile(file as File);
+    } else {
+      downloadFolder(file as Folder);
+    }
   };
 
   const copyLink = () => {
@@ -296,22 +318,16 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   const deleteCurrentFile = async () => {
     dissmiss();
 
-    if (file.contentType === undefined) {
+    if (!isFile) {
       try {
         await deleteFolder(file.id);
         emitFolderDeleteFolders(parentFolderId, [file.id]);
 
-        displayToast(
-          'Folder deleted',
-          `Folder "${file.name}" was deleted successfully`,
-          NotificationType.SUCCESS,
-        );
+        const message = deleteFolderSuccessMessage(file.name, 1);
+        displayToast(message);
       } catch (e) {
-        displayToast(
-          'Delete error',
-          `Folder "${file.name}" could not be deleted, try again later`,
-          NotificationType.ERROR,
-        );
+        const message = deleteFolderErrorMessage(file.name, 1);
+        displayToast(message);
       } finally {
         return;
       }
@@ -352,7 +368,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   };
 
   const dissmiss = () => {
-    Navigation.dismissOverlay(componentId);
+    Navigation.dismissModal(componentId);
   };
 
   const backgroundColor = useSharedValue<string>('transparent');

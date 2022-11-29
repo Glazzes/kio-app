@@ -11,7 +11,7 @@ import Animated, {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Folder} from '../../../utils/types';
 import FABOption from './FABOption';
-import emitter from '../../../utils/emitter';
+import emitter from '../../../shared/emitter';
 import {Event} from '../../../enums/events';
 import {FabAction} from './types';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';

@@ -21,6 +21,18 @@ export const displayToast = (content: ToastMessage) => {
   });
 };
 
+export const videoLoadErrorMessage: ToastMessage = {
+  title: 'Load error',
+  message: 'This video could not be loaded, try again later',
+  type: NotificationType.ERROR,
+};
+
+export const audioLoadErrorMessage: ToastMessage = {
+  title: 'Load Error',
+  message: 'This audio file could not be downloaded, try again later',
+  type: NotificationType.ERROR,
+};
+
 export const uploadFilesSuccessMessage = (
   uploadLength: number,
 ): ToastMessage => {
@@ -101,4 +113,37 @@ export const copySelectionErrorMessage = (reason?: string): ToastMessage => {
     message,
     type: NotificationType.ERROR,
   };
+};
+
+// Selection
+export const deleteSelectionSuccessMessage: ToastMessage = {
+  title: 'Files deleted',
+  message: 'All selected files have been deleted',
+  type: NotificationType.SUCCESS,
+};
+
+export const deleteSelectionErrorMessage: ToastMessage = {
+  title: 'Delete error',
+  message:
+    'Something went wrong deleting your files, some of them may have not been deleted',
+  type: NotificationType.ERROR,
+};
+
+// Sharing
+export const shareInforMessage: ToastMessage = {
+  title: 'Preparing file',
+  message: "We're preparing your file to be shared",
+  type: NotificationType.INFO,
+};
+
+export const shareErrorMessage: ToastMessage = {
+  title: 'Sharing error',
+  message: 'Your file could not be shared',
+  type: NotificationType.ERROR,
+};
+
+export const shareNotAvialableErrorMessage: ToastMessage = {
+  title: 'Sharing error',
+  message: 'Your device does not have sharing capabilities',
+  type: NotificationType.ERROR,
 };

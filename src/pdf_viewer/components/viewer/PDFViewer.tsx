@@ -2,9 +2,8 @@ import {Dimensions, StyleSheet, View} from 'react-native';
 import React, {useEffect, useRef} from 'react';
 import Pdf from 'react-native-pdf';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import PdfProgressIndicator from './PdfProgressIndicator';
 import {pdfState, setPdfContents, setPdfIndexes} from '../../../store/pdfStore';
-import emitter from '../../../utils/emitter';
+import emitter from '../../../shared/emitter';
 import {PdfEvent} from '../../utils/enums';
 import {convertTableContentsIntoIndexes} from '../../utils/functions/convertTableContentsIntoIndexes';
 import PageIndicator from '../drawer/PageIndicator';
@@ -12,6 +11,7 @@ import {useSnapshot} from 'valtio';
 import {File} from '../../../shared/types';
 import authState from '../../../store/authStore';
 import {staticFileUrl} from '../../../shared/requests/contants';
+import ThumbnailLoadingIndicator from '../../../shared/components/ThumbnailLoadingIndicator';
 
 type PDFViewerProps = {
   file: File;
@@ -76,9 +76,10 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
             Authorization: `Bearer ${accessToken}`,
           },
         }}
-        cache={true}
         trustAllCerts={false}
-        renderActivityIndicator={() => <PdfProgressIndicator file={file} />}
+        renderActivityIndicator={() => (
+          <ThumbnailLoadingIndicator file={file} />
+        )}
         onPageChanged={onPageChanged}
         onLoadComplete={(pages, path, size, contents) => {
           if (contents !== undefined) {

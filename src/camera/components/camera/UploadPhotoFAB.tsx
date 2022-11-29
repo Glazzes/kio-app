@@ -14,7 +14,7 @@ import {uploadPictures} from '../../utils/functions/uploadPictures';
 import emitter, {
   emitFolderAddFiles,
   emitFolderUpdatePreview,
-} from '../../../utils/emitter';
+} from '../../../shared/emitter';
 import {PicturePickerEvent} from '../../utils/enums';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';

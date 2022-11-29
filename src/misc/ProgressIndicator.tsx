@@ -32,7 +32,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import FS from 'react-native-fs';
 import {createAlbumAsync, createAssetAsync} from 'expo-media-library';
-import emitter from '../utils/emitter';
+import emitter from '../shared/emitter';
 import {Event} from '../enums/events';
 import notifee from '@notifee/react-native';
 

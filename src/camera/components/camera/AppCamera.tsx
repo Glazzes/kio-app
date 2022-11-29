@@ -30,7 +30,7 @@ import Controls from './Controls';
 import PhotoPicker from '../picker/PhotoPicker';
 import {clamp} from '../../../utils/animations';
 import PictureThumbnail from '../picker/PictureThumbnail';
-import emitter from '../../../utils/emitter';
+import emitter from '../../../shared/emitter';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import UploadPhotoFAB from './UploadPhotoFAB';
 import {Screens} from '../../../enums/screens';

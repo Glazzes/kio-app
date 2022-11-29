@@ -18,7 +18,7 @@ import {Navigation} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import {Modals} from '../../../../navigation/screens/modals';
-import emitter from '../../../../utils/emitter';
+import emitter, {getClearSelectionEventName} from '../../../../shared/emitter';
 import {getSimpleMimeType} from '../../../../shared/functions/getMimeType';
 import {MimeType} from '../../../../shared/enum/MimeType';
 import {pushToScreen} from '../../../../shared/functions/navigation/pushToScreen';
@@ -56,8 +56,8 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
   const openMenu = async () => {
-    if (folder) {
-      Navigation.showOverlay({
+    if (folder && !selection.inProgress) {
+      Navigation.showModal({
         component: {
           name: Modals.FILE_MENU,
           passProps: {
@@ -78,7 +78,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       if (isSelected) {
         removeFileFromSelection(file.id);
       } else {
-        updateSourceSelection(folder?.id);
+        updateSourceSelection(folder?.id!!);
         addFileToSelection(file);
       }
 
@@ -120,7 +120,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
     setIsSelected(swap);
 
     if (swap) {
-      updateSourceSelection(folder?.id);
+      updateSourceSelection(folder?.id!!);
       addFileToSelection(file);
     } else {
       removeFileFromSelection(file.id);
@@ -153,12 +153,10 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   }, []);
 
   useEffect(() => {
-    const unselect = emitter.addListener(
-      `clear-selection-${folder?.id}`,
-      () => {
-        setIsSelected(false);
-      },
-    );
+    const unselectEventName = getClearSelectionEventName(folder?.id!!);
+    const unselect = emitter.addListener(unselectEventName, () => {
+      setIsSelected(false);
+    });
 
     return () => {
       unselect.remove();
@@ -189,8 +187,8 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
         )}
         {isSelected && (
           <Animated.View
-            entering={FadeIn.duration(200)}
-            exiting={FadeOut.duration(200)}
+            entering={FadeIn.duration(150)}
+            exiting={FadeOut.duration(150)}
             style={styles.selected}
           />
         )}

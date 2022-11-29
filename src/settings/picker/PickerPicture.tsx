@@ -1,7 +1,7 @@
 import {StyleSheet, Dimensions, View, Pressable, Image} from 'react-native';
 import React from 'react';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import emitter from '../../utils/emitter';
+import emitter from '../../shared/emitter';
 import {Asset} from 'expo-media-library';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 

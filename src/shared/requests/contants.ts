@@ -1,10 +1,9 @@
 import {host} from '../constants';
 
-// files
+export const apiUsersUrl = '/api/v1/users';
 export const apiFilesUrl = '/api/v1/files';
-
-// folders
 export const apiFoldersUrl = '/api/v1/folders';
+
 export const apiUnitUrl = `${apiFoldersUrl}/my-unit`;
 export const apiUnitSize = `${apiFoldersUrl}/unit/size`;
 

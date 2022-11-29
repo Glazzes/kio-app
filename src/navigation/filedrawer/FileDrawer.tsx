@@ -18,8 +18,7 @@ import Avatar from '../../misc/Avatar';
 import {Screens} from '../../enums/screens';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
 import {folderSizeUrl} from '../../shared/requests/contants';
-import {mmkv} from '../../store/mmkv';
-import emitter from '../../utils/emitter';
+import emitter from '../../shared/emitter';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -69,16 +68,9 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
 
   useEffect(() => {
     if (last) {
-      const size = mmkv.getNumber(last.folder.id);
-      if (size) {
-        setFolderSize(size);
-        return;
-      }
-
       const uri = folderSizeUrl(last.folder.id);
       axiosInstance.get<number>(uri).then(({data}) => {
         setFolderSize(data);
-        mmkv.set(last.folder.id, data);
       });
     }
   }, [last]);

@@ -18,31 +18,26 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import emitter, {
-  emitFolderDeleteFiles,
-  emitFolderUpdatePreview,
+  emitClearSelection,
   getFolderUpdatePreviewEventName,
-} from '../../../../utils/emitter';
+} from '../../../../shared/emitter';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import UserAvatar from './UserAvatar';
 import {Modals} from '../../../../navigation/screens/modals';
 import {useSnapshot} from 'valtio';
 import authState from '../../../../store/authStore';
-import {FileDeleteRequest} from '../../../../shared/requests/types';
 import {
-  clearSelection,
+  clearFileSelection,
   fileSelectionState,
   toggleSelectionLock,
 } from '../../../../store/fileSelection';
-import {axiosInstance} from '../../../../shared/requests/axiosInstance';
-import {displayToast} from '../../../../shared/navigation/displayToast';
-import {NotificationType} from '../../../../enums/notification';
-import {apiFilesUrl} from '../../../../shared/requests/contants';
 import {CopyType} from '../../../../shared/enums';
 import {File, Folder} from '../../../../shared/types';
 import {EventSubscription} from 'fbemitter';
 import {Screens} from '../../../../enums/screens';
 import {donwloadSelection} from '../utils/downloadSelection';
+import {deleteSelection} from '../utils/deleteSelection';
 
 type AppbarProps = {
   scrollY: Animated.SharedValue<number>;
@@ -67,11 +62,11 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
 
   const sendEventAndClearSelection = () => {
     clear();
-    clearSelection();
+    clearFileSelection();
   };
 
   const clear = () => {
-    emitter.emit(`clear-selection-${folder?.id}`);
+    emitClearSelection(folder?.id!!);
   };
 
   const goBack = () => {
@@ -91,7 +86,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
     });
   };
 
-  const openDownloadSelectionModal = () => {
+  const downloadUserSelection = () => {
     donwloadSelection(selection.files as File[], selection.folders as Folder[]);
     sendEventAndClearSelection();
   };
@@ -108,37 +103,6 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
         },
       },
     });
-  };
-
-  const deleteSelection = async () => {
-    try {
-      const files = selection.files.map(f => f.id);
-      const deleteRequest: FileDeleteRequest = {
-        from: folder?.id!!,
-        files,
-      };
-
-      await axiosInstance.delete(apiFilesUrl, {
-        data: deleteRequest,
-      });
-
-      emitFolderDeleteFiles(folder?.id!!, files);
-      emitFolderUpdatePreview(folder?.id!!, -1 * files.length, 0);
-
-      clear();
-      clearSelection();
-      displayToast(
-        'Files deleted',
-        `${contentCount} file${contentCount > 1 ? 's' : ''} have been deleted`,
-        NotificationType.SUCCESS,
-      );
-    } catch (e) {
-      displayToast(
-        'Delete file error',
-        `Could not delete ${contentCount} files`,
-        NotificationType.ERROR,
-      );
-    }
   };
 
   const opacity = useValue(0);
@@ -270,7 +234,7 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                 />
               </Pressable>
 
-              <Pressable onPress={openDownloadSelectionModal}>
+              <Pressable onPress={downloadUserSelection}>
                 <Icon
                   name={'ios-cloud-download-outline'}
                   size={23}

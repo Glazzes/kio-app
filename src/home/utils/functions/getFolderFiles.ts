@@ -6,11 +6,15 @@ import {File, Folder, Page} from '../../../shared/types';
 
 type Callback = (file: Page<File[]>) => void;
 
-export const getFolderFiles = async (folder: Folder, callback: Callback) => {
+export const getFolderFiles = async (
+  folder: Folder,
+  pageNumber: number,
+  callback: Callback,
+) => {
   try {
     const uri = apiFindFolderFilesByIdUrl(folder.id);
     const {data: page}: {data: Page<File[]>} = await axiosInstance.get(uri, {
-      params: {page: 0},
+      params: {page: pageNumber},
     });
 
     callback(page);

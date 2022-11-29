@@ -28,6 +28,9 @@ import RNFS from 'react-native-fs';
 import {useSnapshot} from 'valtio';
 import authState from '../../store/authStore';
 import {staticFileUrl} from '../../shared/requests/contants';
+import {audioLoadErrorMessage, displayToast} from '../../shared/toast';
+import {shareFile} from '../../overlays/utils/share';
+import {Modals} from '../../navigation/screens/modals';
 
 Sound.setCategory('Playback');
 
@@ -52,7 +55,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   const [loaded, setLoaded] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
-  const [loops, setLoops] = useState<0 | 1 | -1>(0);
+  const [loop, setLoop] = useState<boolean>(false);
 
   const translateX = useSharedValue<number>(width / 2);
 
@@ -70,11 +73,30 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
     await impactAsync(ImpactFeedbackStyle.Light);
   };
 
-  const animateProgressBar = () => {
+  const share = async () => {
+    setIsPlaying(false);
+    sound?.pause();
+    await shareFile(file);
+    sound?.play();
+    setIsPlaying(true);
+  };
+
+  const openFileOptions = () => {
+    Navigation.showOverlay({
+      component: {
+        name: Modals.FILE_MENU,
+        passProps: {
+          file,
+        },
+      },
+    });
+  };
+
+  const animateTimeLine = () => {
     translateX.value = withTiming(
       -width / 2,
       {
-        duration: (1 - progress.value) * duration * 1000,
+        duration: Math.floor((1 - progress.value) * duration) * 1000,
         easing: Easing.linear,
       },
       hasFinished => {
@@ -91,11 +113,10 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       setIsPlaying(false);
       sound.stop();
 
-      if (loops !== 0) {
+      if (loop) {
         sound.play();
-        animateProgressBar();
+        animateTimeLine();
         setIsPlaying(true);
-        setLoops(l => (l === 1 ? 0 : -1));
       }
     }
   };
@@ -121,17 +142,18 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       .promise.then(_ => {
         const downloadedSound = new Sound(toFile, undefined, e => {
           if (e) {
-            console.log(e);
+            displayToast(audioLoadErrorMessage);
+            return;
           }
 
           setLoaded(true);
           setSound(downloadedSound);
         });
       })
-      .catch(e => console.log('Error', e));
+      .catch(_ => displayToast(audioLoadErrorMessage));
 
     return () => {
-      RNFS.unlink(toFile).then(() => console.log('music cache deleted'));
+      RNFS.unlink(toFile);
     };
   }, []);
 
@@ -167,7 +189,17 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
               style={styles.icon}
             />
           </Pressable>
-          <Icon name={'ellipsis-vertical'} size={ICON_SIZE} color={'#000'} />
+          <Pressable onPress={share}>
+            <Icon
+              name={'ios-share-social'}
+              size={ICON_SIZE}
+              color={'#000'}
+              style={styles.icon}
+            />
+          </Pressable>
+          <Pressable onPress={openFileOptions}>
+            <Icon name={'ellipsis-vertical'} size={ICON_SIZE} color={'#000'} />
+          </Pressable>
         </View>
       </View>
 
@@ -186,6 +218,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
           progress={progress}
           duration={duration}
           isPlaying={isPlaying}
+          animateTimeLine={animateTimeLine}
         />
 
         <AuidoControls
@@ -194,10 +227,10 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
           loaded={loaded}
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
-          loops={loops}
-          setLoops={setLoops}
+          loop={loop}
+          setLoop={setLoop}
           translateX={translateX}
-          animateTimeLine={animateProgressBar}
+          animateTimeLine={animateTimeLine}
         />
       </View>
     </View>
@@ -232,7 +265,8 @@ const styles = StyleSheet.create({
     paddingBottom: width * 0.05,
   },
   appbar: {
-    width: WIDTH,
+    width: width,
+    paddingHorizontal: width * 0.05,
     height: statusBarHeight * 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -271,7 +305,7 @@ const styles = StyleSheet.create({
     color: '#C5C8D7',
   },
   icon: {
-    marginRight: 10,
+    marginRight: width * 0.05,
   },
 });
 

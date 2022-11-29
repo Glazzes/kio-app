@@ -10,7 +10,7 @@ import {
 import React, {useEffect, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Appbar from '../profile/Appbar';
-import emitter from '../../utils/emitter';
+import emitter from '../../shared/emitter';
 import ImagePicker from '../picker/ImagePicker';
 import Animated, {
   BounceIn,

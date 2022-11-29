@@ -6,7 +6,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import emitter from '../../../utils/emitter';
+import emitter from '../../../shared/emitter';
 import {PdfEvent} from '../../utils/enums';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useSnapshot} from 'valtio';

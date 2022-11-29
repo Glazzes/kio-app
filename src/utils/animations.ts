@@ -31,23 +31,37 @@ const imageStyles = (layout: Dim): Styles => {
   return styles;
 };
 
-// gestures
-const pinch = (
-  center: {x: number; y: number},
-  offset: {x: number; y: number},
-  event: {focalX: number; focalY: number; scale: number},
-  origin: {x: Animated.SharedValue<number>; y: Animated.SharedValue<number>},
-  assign: Animated.SharedValue<boolean>,
-): {translateX: number; translateY: number} => {
+// Gestures
+type PinchEvent = {
+  focalX: number;
+  focalY: number;
+  scale: number;
+};
+
+type PinchOptions = {
+  center: Vector<number>;
+  offset: Vector<number>;
+  event: PinchEvent;
+  origin: Vector<Animated.SharedValue<number>>;
+  canAssignOrigin: Animated.SharedValue<boolean>;
+};
+
+type PinchReturnType = {
+  translateX: number;
+  translateY: number;
+};
+
+const pinch = (options: PinchOptions): PinchReturnType => {
   'worklet';
 
+  const {center, offset, event, canAssignOrigin, origin} = options;
   const adjustedFocalX = event.focalX - (center.x + offset.x);
   const adjustedFocalY = event.focalY - (center.y + offset.y);
 
-  if (assign.value) {
+  if (canAssignOrigin.value) {
     origin.x.value = adjustedFocalX;
     origin.y.value = adjustedFocalY;
-    assign.value = false;
+    canAssignOrigin.value = false;
   }
 
   const pinchX = adjustedFocalX - origin.x.value;

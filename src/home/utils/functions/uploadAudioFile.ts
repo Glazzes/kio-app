@@ -1,12 +1,10 @@
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import Sound from 'react-native-sound';
-import {NotificationType} from '../../../enums/notification';
 import {apiFilesUrl} from '../../../shared/constants';
-import {displayToast} from '../../../shared/navigation/displayToast';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {displayToast, uploadFilesErrorMessage} from '../../../shared/toast';
 import {File, UploadRequest} from '../../../shared/types';
-import emitter from '../../../utils/emitter';
-import {UpdateFolderEvent} from '../types';
+import {emitFolderAddFiles} from '../../../shared/emitter';
 
 export const uploadAudioFile = (
   folderId: string,
@@ -42,7 +40,6 @@ export const uploadAudioFile = (
       console.log('upload', error);
     }
 
-    console.log('here');
     request.details[name].duration = sound.getDuration();
     formData.append('request', JSON.stringify(request));
 
@@ -53,14 +50,10 @@ export const uploadAudioFile = (
         },
       });
 
-      emitter.emit(`${UpdateFolderEvent.ADD_FILES}-${folderId}`, data);
-      console.log(data);
+      emitFolderAddFiles(folderId, data);
     } catch (e) {
-      displayToast(
-        'Upload error',
-        `An error happended while uploading ${pick.name}`,
-        NotificationType.ERROR,
-      );
+      const uploadError = uploadFilesErrorMessage;
+      displayToast(uploadError);
     } finally {
       sound.release();
     }

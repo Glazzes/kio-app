@@ -11,8 +11,6 @@ export const downloadFolder = (folder: Folder) => {
     (Platform.OS === 'android' ? 'file://' : '') +
     `${RNFS.DownloadDirectoryPath}/${folder.name}.zip`;
 
-  console.log(toFile);
-
   RNFS.downloadFile({
     fromUrl,
     toFile,

@@ -1,6 +1,6 @@
 import React from 'react';
 import {Pressable} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 type ActionProps = {
   icon: string;
@@ -9,7 +9,7 @@ type ActionProps = {
   size?: number;
 };
 
-const ICON_SIZE = 23;
+const ICON_SIZE = 25;
 
 const Action: React.FC<ActionProps> = ({icon, color, size, callback}) => {
   return (

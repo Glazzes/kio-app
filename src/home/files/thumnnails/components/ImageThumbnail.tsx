@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import emitter from '../../../../utils/emitter';
+import emitter from '../../../../shared/emitter';
 import authState from '../../../../store/authStore';
 import {clamp} from '../../../../shared/functions/clamp';
 import {pinch} from '../../../../utils/animations';
@@ -68,7 +68,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
 
   const aref = useAnimatedRef<View>();
   const origin = useVector(0, 0);
-  const canPinch = useSharedValue<boolean>(true);
+  const canAssignOrigin = useSharedValue<boolean>(true);
   const opacity = useSharedValue<number>(1);
 
   const pinchG = Gesture.Pinch()
@@ -88,20 +88,20 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
       });
     })
     .onChange(e => {
-      const {translateX: tx, translateY: ty} = pinch(
+      const {translateX: tx, translateY: ty} = pinch({
         center,
-        {x: 0, y: 0},
-        e,
-        {x: origin.x, y: origin.y},
-        canPinch,
-      );
+        offset: {x: 0, y: 0},
+        event: e,
+        origin,
+        canAssignOrigin,
+      });
 
       translateX.value = tx;
       translateY.value = ty;
       scale.value = clamp(e.scale, 1, 4);
     })
     .onEnd(() => {
-      canPinch.value = true;
+      canAssignOrigin.value = true;
       origin.x.value = 0;
       origin.y.value = 0;
 
