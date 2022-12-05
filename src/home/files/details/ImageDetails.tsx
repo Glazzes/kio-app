@@ -244,9 +244,10 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       componentId,
     );
 
-    const dissmiss = emitter.addListener(dismissLastModalEventName, () => {
-      dismissModal();
-    });
+    const dissmiss = emitter.addListener(
+      dismissLastModalEventName,
+      dismissModal,
+    );
 
     return () => {
       backListener.remove();

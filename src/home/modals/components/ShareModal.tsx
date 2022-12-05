@@ -23,7 +23,7 @@ import UserSearch from '../../../misc/UserSearch';
 type ShareModalProps = {};
 
 const {width} = Dimensions.get('window');
-const WIDTH = width * 0.85;
+const WIDTH = width * 0.8;
 
 function renderItem(info: ListRenderItemInfo<string>) {
   return <Contributor index={info.index} imageUrl={info.item} name={'glaze'} />;
@@ -61,12 +61,14 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
     const newTimer = setTimeout(async () => {
       try {
         const {data} = await axiosInstance.get<User>(apiUsersUrl, {
-          params: {q: value},
+          params: {
+            username: text,
+            email: text,
+          },
         });
 
         setUser(data);
       } catch (e) {
-        console.log(e);
         setUser(null);
       } finally {
         setHasFetched(true);
@@ -95,7 +97,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
 
   return (
     <View style={styles.root}>
-      <ModalWrapper style={styles.modal} witdh={width * 0.85}>
+      <ModalWrapper style={styles.modal} witdh={WIDTH}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Share file</Text>
         </View>

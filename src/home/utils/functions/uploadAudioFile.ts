@@ -1,10 +1,10 @@
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import Sound from 'react-native-sound';
-import {apiFilesUrl} from '../../../shared/constants';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {displayToast, uploadFilesErrorMessage} from '../../../shared/toast';
 import {File, UploadRequest} from '../../../shared/types';
 import {emitFolderAddFiles} from '../../../shared/emitter';
+import {apiFilesUrl} from '../../../shared/requests/contants';
 
 export const uploadAudioFile = (
   folderId: string,

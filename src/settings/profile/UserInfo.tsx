@@ -1,26 +1,21 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Dimensions,
-  Pressable,
-} from 'react-native';
+import {View, Text, StyleSheet, Dimensions, Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {Navigation} from 'react-native-navigation';
-import emitter from '../../shared/emitter';
 import {Screens} from '../../enums/screens';
+import {useSnapshot} from 'valtio';
+import authState from '../../store/authStore';
+import Avatar from '../../shared/components/Avatar';
 
 type UserInfoProps = {
   parentComponentId: string;
 };
 
 const {width} = Dimensions.get('window');
-const IMAGE_SIZE = 70;
+const IMAGE_SIZE = 60;
 
 const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
-  const [newPic, setNewPic] = useState<string | undefined>(undefined);
+  const {user} = useSnapshot(authState);
 
   const pushToEditProfile = () => {
     Navigation.push(parentComponentId, {
@@ -30,25 +25,13 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
     });
   };
 
-  useEffect(() => {
-    const listener = emitter.addListener('np', (pic: string) => {
-      setNewPic(pic);
-    });
-
-    return () => {
-      listener.remove();
-    };
-  }, []);
-
   return (
     <View style={styles.infoContainer}>
-      <Image
-        nativeID="pfp"
-        style={styles.image}
-        source={{
-          uri: newPic ?? 'https://randomuser.me/api/portraits/men/32.jpg',
-        }}
-        resizeMode={'cover'}
+      <Avatar
+        user={user}
+        size={IMAGE_SIZE}
+        includeBorder={false}
+        fontSize={20}
       />
       <View style={styles.userInfoContainer}>
         <View style={styles.margin}>
@@ -56,10 +39,10 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
             style={styles.username}
             numberOfLines={1}
             ellipsizeMode={'tail'}>
-            Glaze
+            {user.username}
           </Text>
           <Text style={styles.email} numberOfLines={1} ellipsizeMode={'tail'}>
-            Glaze@outlook.es
+            {user.email}
           </Text>
         </View>
       </View>
@@ -88,6 +71,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   username: {
+    textTransform: 'capitalize',
     fontFamily: 'UberBold',
     fontSize: 18,
     color: '#000',

@@ -5,6 +5,52 @@ import {File, Folder} from './types';
 const emitter = new EventEmitter();
 export default emitter;
 
+export const updatePictureEventName = 'Update.Picture';
+export const emitUpdateProfilePicture = (uri: string) => {
+  emitter.emit(updatePictureEventName, uri);
+};
+
+// Favorite
+export const getFavoriteEventName = (fileId: string) => {
+  return `Favorite-${fileId}`;
+};
+
+export const emitFavoriteFile = (fileId: string) => {
+  const eventName = getFavoriteEventName(fileId);
+  emitter.emit(eventName);
+};
+
+// SearchBar events
+export const getClenTextSearchEventName = (folderId: String) => {
+  return `Clear.Text.Search-${folderId}`;
+};
+
+export const emitCleanTextSearch = (folderId: string) => {
+  const eventName = getClenTextSearchEventName(folderId);
+  emitter.emit(eventName);
+};
+
+export const getTextSearchEventName = (folderId: string) => {
+  return `Text.Search-${folderId}`;
+};
+
+export const emitTextSearch = (folderId: string, text: string) => {
+  const eventName = getTextSearchEventName(folderId);
+  emitter.emit(eventName, text);
+};
+
+export const getTextSearchEndTypingEventName = (folderId: string) => {
+  return `Text.Search.End.Typing-${folderId}`;
+};
+
+export const emitTextSearchEndTyping = (
+  folderId: string,
+  searchTerm: string,
+) => {
+  const eventName = getTextSearchEndTypingEventName(folderId);
+  emitter.emit(eventName, searchTerm);
+};
+
 export const hideAppbarEventName = 'Hide.Appbar';
 export const emitHideAppbar = () => {
   emitter.emit(hideAppbarEventName);
@@ -22,6 +68,24 @@ export const emitDismissAllToasts = (componentId: string) => {
 };
 
 // Event names (files and folders)
+export const getFolderUpdateFileEventName = (folderId: string) => {
+  return `${UpdateFolderEvent.UPDATE_FILE}-${folderId}`;
+};
+
+export const emitFolderUpdateFile = (folderId: string, file: File) => {
+  const eventName = getFolderUpdateFileEventName(folderId);
+  emitter.emit(eventName, file);
+};
+
+export const getFolderUpdateFolderEventName = (folderId: string) => {
+  return `${UpdateFolderEvent.UPDATE_FOLDER}-${folderId}`;
+};
+
+export const emitFolderUpdateFolder = (parentId: string, folder: Folder) => {
+  const eventName = getFolderUpdateFolderEventName(parentId);
+  emitter.emit(eventName, folder);
+};
+
 export const getClearSelectionEventName = (folderId: string) => {
   return `clear-selection-${folderId}`;
 };

@@ -10,8 +10,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useSnapshot} from 'valtio';
 import authState from '../../store/authStore';
 import Audio from './Audio';
-import {host} from '../../shared/constants';
 import {File} from '../../shared/types';
+import {staticFileUrl} from '../../shared/requests/contants';
 
 type DrawerImageThumbnailProps = {
   file: File;
@@ -24,7 +24,7 @@ const DrawerImageThumbnail: React.FC<DrawerImageThumbnailProps> = ({file}) => {
   const {accessToken} = useSnapshot(authState.tokens);
 
   const uri =
-    `${host}/static/file/${file.id}` +
+    staticFileUrl(file.id) +
     (file.contentType.startsWith('video') || file.contentType.endsWith('pdf')
       ? '/thumbnail'
       : '');

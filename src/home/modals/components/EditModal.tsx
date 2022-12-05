@@ -9,10 +9,16 @@ import {
 import React, {useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Point} from '../../../shared/types';
+import {File, FileVisibility, Folder, Point} from '../../../shared/types';
 import ModalWrapper from './ModalWrapper';
+import Button from '../../../shared/components/Button';
+import {peekLastNavigationScreen} from '../../../store/navigationStore';
+import {withKeyboard} from '../../../utils/hoc';
+import {editResource} from '../utils/editResource';
 
-type EditModalProps = {};
+type EditModalProps = {
+  file: File | Folder;
+};
 
 const {width} = Dimensions.get('window');
 
@@ -20,23 +26,33 @@ const HEIGHT = 40;
 const WIDTH = width * 0.75;
 
 const visibilityInfo = {
-  Owner: 'Only you can see this file/folder and its inner contents',
-  Restricted:
+  [FileVisibility.OWNER]:
+    'Only you can see this file/folder and its inner contents',
+  [FileVisibility.RESTRICTED]:
     'Only you and co-owners can see this file/folder and its inner contents',
-  Public: 'Everyone can see this file/folder and its inner contents',
+  [FileVisibility.PUBLIC]:
+    'Everyone can see this file/folder and its inner contents',
 };
 
 const EditModal: NavigationFunctionComponent<EditModalProps> = ({
   componentId,
+  file,
 }) => {
+  const isFile = (file as File).contentType !== undefined;
+  const extension = file.name.substring(
+    file.name.lastIndexOf('.'),
+    file.name.length,
+  );
+
   const ref = useRef<View>();
 
+  const [name, setName] = useState<string>(
+    isFile ? file.name.replace(extension, '') : file.name,
+  );
+  const [isNameValid, setIsNameValid] = useState<boolean>(true);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [position, setposition] = useState<Point>({x: 0, y: 0});
-
-  const [visibility, setVisibility] = useState<
-    'Owner' | 'Restricted' | 'Public'
-  >('Owner');
+  const [visibility, setVisibility] = useState<FileVisibility>(file.visibility);
 
   const toggleDropdown = () => {
     ref.current?.measure((x, y, w, h, pageX, pageY) => {
@@ -45,16 +61,44 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
     });
   };
 
+  const onChangeText = (text: string) => {
+    setIsNameValid(text.length > 0);
+    setName(text);
+  };
+
   const dissmis = () => {
     Navigation.dismissModal(componentId);
+  };
+
+  const editFile = async () => {
+    const lastFolder = peekLastNavigationScreen().folder;
+    const newName = name.includes(extension) ? name : name + extension;
+    editResource({
+      file: file,
+      from: lastFolder.id,
+      newName: isFile ? newName : name,
+      visibility,
+    });
   };
 
   return (
     <View style={styles.root}>
       <ModalWrapper>
-        <Text style={styles.title}>Modify glaceon.png</Text>
+        <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
+          Modify {file.name}
+        </Text>
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Change name" />
+          <TextInput
+            placeholder="New name"
+            onChangeText={onChangeText}
+            style={styles.input}
+            value={name}
+          />
+          {isFile ? (
+            <View style={styles.extensionContainer}>
+              <Text style={styles.exntesion}>{extension}</Text>
+            </View>
+          ) : null}
         </View>
         <View>
           <Text style={styles.subtitle}>Visibility</Text>
@@ -70,14 +114,20 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
           </View>
         </View>
         <View style={styles.buttonContainer}>
-          <Pressable
-            style={[styles.button, styles.cancelButton]}
-            onPress={dissmis}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </Pressable>
-          <Pressable style={[styles.button, styles.confirmButton]}>
-            <Text style={styles.confirmButtonText}>Confirm</Text>
-          </Pressable>
+          <Button
+            text="Cancel"
+            width={WIDTH / 2 - 15}
+            onPress={dissmis as any}
+            extraStyle={styles.cancelButton}
+            extraTextStyle={styles.cancelButtonText}
+          />
+
+          <Button
+            text="Confirm"
+            width={WIDTH / 2 - 15}
+            onPress={editFile}
+            disabled={!isNameValid}
+          />
         </View>
       </ModalWrapper>
       {showDropdown && (
@@ -92,7 +142,7 @@ const EditModal: NavigationFunctionComponent<EditModalProps> = ({
                 }}
                 style={styles.dropdownSection}
                 key={`${v}-${index}`}>
-                <Text style={styles.visibility}>{v}</Text>
+                <Text style={styles.visibility}>{v.toLocaleLowerCase()}</Text>
               </Pressable>
             );
           })}
@@ -138,9 +188,19 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     padding: 5,
-    fontFamily: 'UberBold',
+    fontFamily: 'Uber',
     color: '#C5C8D7',
     borderRadius: 3,
+  },
+  extensionContainer: {
+    borderRadius: 5,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  exntesion: {
+    fontFamily: 'Uber',
+    color: '#C5C8D7',
   },
   subtitle: {
     fontFamily: 'UberBold',
@@ -176,6 +236,7 @@ const styles = StyleSheet.create({
   visibility: {
     fontFamily: 'UberBold',
     color: '#000',
+    textTransform: 'capitalize',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -205,4 +266,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditModal;
+export default withKeyboard(EditModal);

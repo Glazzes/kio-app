@@ -8,9 +8,13 @@ import {
   TextInput,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {
+  Navigation,
+  NavigationComponentListener,
+  NavigationFunctionComponent,
+} from 'react-native-navigation';
 import Appbar from '../profile/Appbar';
-import emitter from '../../shared/emitter';
+import emitter, {updatePictureEventName} from '../../shared/emitter';
 import ImagePicker from '../picker/ImagePicker';
 import Animated, {
   BounceIn,
@@ -26,9 +30,17 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {ScrollView} from 'react-native-gesture-handler';
-import {NotificationType} from '../../enums/notification';
-import {Modals} from '../../navigation/screens/modals';
-import {Folder} from '../../shared/types';
+import {Folder, UserExists} from '../../shared/types';
+import {displayGenericModal} from '../../shared/functions/navigation/displayGenericModal';
+import {
+  displayToast,
+  savedProfileChangesSuccessMessage,
+} from '../../shared/toast';
+import {useSnapshot} from 'valtio';
+import authState from '../../store/authStore';
+import Button from '../../shared/components/Button';
+import {axiosInstance} from '../../shared/requests/axiosInstance';
+import {apiUsersUrl} from '../../shared/requests/contants';
 
 type EditProfileProps = {};
 
@@ -39,11 +51,91 @@ const IMAGE_SIZE = 90;
 const BAGDE_SIZE = IMAGE_SIZE / 3.3;
 const ANGLE = -Math.PI / 4;
 
+type Edit = {
+  username: string;
+  email: string;
+  password: string;
+  confirmation: string;
+};
+
+type Errors = {
+  username: string | undefined;
+  email: string | undefined;
+};
+
+type Field = keyof Edit;
+
 const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
   componentId,
 }) => {
+  const {user} = useSnapshot(authState);
+
   const [isSecure, setIsSecure] = useState<boolean>(true);
   const [newPic, setNewPic] = useState<string | undefined>(undefined);
+  const [timer, setTimer] = useState<NodeJS.Timeout | undefined>(undefined);
+  const [errors, setErrors] = useState<Errors>({
+    username: undefined,
+    email: undefined,
+  });
+
+  const [info, setInfo] = useState<Edit>({
+    username: user.username,
+    email: user.email,
+    password: '',
+    confirmation: '',
+  });
+
+  const onChangeTextWithTimer = (text: string, field: Field) => {
+    setInfo(i => {
+      i[field] = text;
+      return {...i};
+    });
+
+    setErrors({username: undefined, email: undefined});
+
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(async () => {
+      try {
+        const {data} = await axiosInstance.get<UserExists>(apiUsersUrl, {
+          params: {
+            username: text,
+            email: text,
+          },
+        });
+
+        setErrors(err => {
+          if (data.existsByUsername) {
+            err.username = '* This username is already taken';
+          } else {
+            err.username = undefined;
+          }
+
+          if (data.existsByUsername) {
+            err.email = '* An account is already registered with this email';
+          } else {
+            err.email = undefined;
+          }
+
+          return {...err};
+        });
+      } catch (e) {
+      } finally {
+        clearTimeout(newTimer);
+      }
+    }, 1000);
+
+    setTimer(newTimer);
+  };
+
+  const onChangeText = (text: string, field: Field) => {
+    setInfo(i => {
+      i[field] = text;
+      return {...i};
+    });
+  };
 
   const translateY = useSharedValue<number>(0);
 
@@ -53,29 +145,20 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
   };
 
   const onDeleteAccount = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: 'Delete account',
-          message:
-            'Deleting your account will delete all information associated with you, including your files, this action can not be undone',
-        },
-      },
+    displayGenericModal({
+      title: 'Delete account',
+      message:
+        'Deleting your account will delete all information associated with you, including your files, this action can not be undone',
+      action: () => {},
     });
   };
 
+  const pop = () => {
+    Navigation.pop(componentId);
+  };
+
   const onSavedChanges = () => {
-    Navigation.showOverlay({
-      component: {
-        name: Screens.TOAST,
-        passProps: {
-          title: 'Saved changes',
-          message: 'Your account has been updated successfully',
-          type: NotificationType.SUCCESS,
-        },
-      },
-    });
+    displayToast(savedProfileChangesSuccessMessage);
   };
 
   const openSheet = () => {
@@ -96,9 +179,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       });
     });
 
-    const listener = emitter.addListener('np', (pic: string) => {
-      setNewPic(pic);
-    });
+    const listener = emitter.addListener(updatePictureEventName, setNewPic);
 
     const pushToCamera = emitter.addListener('push.camera', () => {
       Navigation.push(componentId, {
@@ -124,6 +205,31 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const componentListener: NavigationComponentListener = {
+      navigationButtonPressed: ({buttonId}) => {
+        if (buttonId === 'RNN.hardwareBackButton') {
+          if (info.username !== user.username || info.email !== user.email) {
+            displayGenericModal({
+              title: 'Discard changes',
+              message:
+                "You've got unsaved changes. Do you want to discard these changes?",
+              action: pop,
+            });
+          }
+        }
+      },
+    };
+
+    const navigationListener = Navigation.events().registerComponentListener(
+      componentListener,
+      componentId,
+    );
+
+    return navigationListener.remove;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info]);
 
   return (
     <View style={styles.root}>
@@ -152,8 +258,8 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               <Icon name="camera" size={15} color={'#fff'} />
             </Animated.View>
           </Pressable>
-          <Text style={styles.username}>Glaze</Text>
-          <Text style={styles.emailText}>glaze@demo.com</Text>
+          <Text style={styles.username}>{user.username}</Text>
+          <Text style={styles.emailText}>{user.email}</Text>
         </View>
 
         <View style={styles.editContainer}>
@@ -166,7 +272,12 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               color={'#9E9EA7'}
               style={styles.icon}
             />
-            <TextInput style={styles.textInput} placeholder={'Email'} />
+            <TextInput
+              onChangeText={text => onChangeTextWithTimer(text, 'email')}
+              style={styles.textInput}
+              placeholder={'Email'}
+              value={info.email}
+            />
           </View>
 
           <View style={styles.textInputContainer}>
@@ -176,7 +287,12 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               color={'#9E9EA7'}
               style={styles.icon}
             />
-            <TextInput style={styles.textInput} placeholder={'Username'} />
+            <TextInput
+              onChangeText={text => onChangeTextWithTimer(text, 'username')}
+              style={styles.textInput}
+              placeholder={'Username'}
+              value={info.username}
+            />
           </View>
 
           <View style={styles.textInputContainer}>
@@ -187,6 +303,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               style={styles.icon}
             />
             <TextInput
+              onChangeText={text => onChangeText(text, 'password')}
               style={styles.textInput}
               placeholder={'Password'}
               secureTextEntry={isSecure}
@@ -200,25 +317,49 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
             </Pressable>
           </View>
 
-          <View>
-            <Text style={[styles.title]}>Danger zone</Text>
-            <Text style={styles.privacy}>
-              For more information on account deletion read our{' '}
-              <Text style={styles.date}>privacy policy</Text>{' '}
-            </Text>
-            <Pressable
-              style={[styles.button, styles.deleteAccountButton]}
-              onPress={onDeleteAccount}>
-              <Text style={styles.deleteAccountText}>Delete account</Text>
+          <View style={styles.textInputContainer}>
+            <Icon
+              name={'ios-lock-closed'}
+              size={22}
+              color={'#9E9EA7'}
+              style={styles.icon}
+            />
+            <TextInput
+              onChangeText={text => onChangeText(text, 'confirmation')}
+              style={styles.textInput}
+              placeholder={'Re-type Password'}
+              secureTextEntry={isSecure}
+            />
+            <Pressable onPress={toggleIsSecure} hitSlop={40}>
+              <Icon
+                name={isSecure ? 'eye' : 'eye-off'}
+                size={22}
+                color={'#9E9EA7'}
+              />
             </Pressable>
           </View>
 
           <View>
-            <Pressable
-              style={[styles.button, styles.confirmButton]}
-              onPress={onSavedChanges}>
-              <Text style={styles.confirmButtonText}>Save changes</Text>
-            </Pressable>
+            <Button
+              text="Save changes"
+              width={width * 0.9}
+              onPress={async () => {}}
+              extraStyle={{marginVertical: 15}}
+            />
+
+            <View>
+              <Text style={[styles.title]}>Danger zone</Text>
+              <Text style={styles.privacy}>
+                For more information on account deletion read our{' '}
+                <Text style={styles.date}>privacy policy</Text>{' '}
+              </Text>
+              <Pressable
+                style={[styles.button, styles.deleteAccountButton]}
+                onPress={onDeleteAccount}>
+                <Text style={styles.deleteAccountText}>Delete account</Text>
+              </Pressable>
+            </View>
+
             <Text style={styles.joined}>
               Joined <Text style={styles.date}>21 oct, 2020</Text>{' '}
             </Text>
@@ -232,6 +373,9 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
 };
 
 EditProfile.options = {
+  hardwareBackButton: {
+    popStackOnPress: false,
+  },
   statusBar: {
     visible: true,
     drawBehind: true,
@@ -301,6 +445,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   username: {
+    textTransform: 'capitalize',
     fontFamily: 'UberBold',
     color: '#000',
     fontSize: 20,

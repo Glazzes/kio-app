@@ -8,12 +8,12 @@ import {
 import React from 'react';
 import Sound from 'react-native-sound';
 import Animated, {cancelAnimation} from 'react-native-reanimated';
-import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Action from './Action';
 import {Canvas, Circle, LinearGradient, vec} from '@shopify/react-native-skia';
-import {downloadFile} from '../../shared/requests/functions/downloadFile';
 import {File} from '../../shared/types';
+import {downloadResource} from '../../shared/requests/functions/downloadResource';
 
 type AuidoControlsProps = {
   file: File;
@@ -56,6 +56,10 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
     animateTimeLine();
   };
 
+  const downloadFile = () => {
+    downloadResource(file);
+  };
+
   const toggleLoops = () => {
     impactAsync(ImpactFeedbackStyle.Light);
     setLoop(l => !l);
@@ -63,11 +67,7 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
 
   return (
     <View style={styles.controls}>
-      <Action
-        icon={'download'}
-        color={'#e3e5eb'}
-        callback={() => downloadFile(file)}
-      />
+      <Action icon={'ios-download'} color={'#e3e5eb'} callback={downloadFile} />
       <Action icon={'ios-play-back'} callback={() => {}} />
 
       <View style={styles.playButton}>
@@ -86,8 +86,8 @@ const AuidoControls: React.FC<AuidoControlsProps> = ({
         </Canvas>
         <Pressable onPress={play} style={[styles.playButton]}>
           {loaded ? (
-            <Icon
-              name={isPlaying ? 'ios-pause' : 'ios-play'}
+            <MaterialIcon
+              name={isPlaying ? 'pause' : 'play'}
               color={'#fff'}
               size={35}
             />

@@ -5,7 +5,7 @@ import {Modals} from '../../../navigation/screens/modals';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {File} from '../../../shared/types';
 import {convertBytesToRedableUnit} from '../../../shared/functions/convertBytesToRedableUnit';
-import {downloadFile} from '../../../shared/requests/functions/downloadFile';
+import {downloadResource} from '../../../shared/requests/functions/downloadResource';
 
 type GenericFileDetailsProps = {
   file: File;
@@ -30,7 +30,7 @@ const GenericFileDetails: NavigationFunctionComponent<
   };
 
   const download = () => {
-    downloadFile(file);
+    downloadResource(file);
   };
 
   return (

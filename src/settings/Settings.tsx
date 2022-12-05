@@ -1,4 +1,4 @@
-import {View, StyleSheet, Dimensions, Text} from 'react-native';
+import {View, StyleSheet, Dimensions, Text, Pressable} from 'react-native';
 import React from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import Appbar from './profile/Appbar';
@@ -6,6 +6,7 @@ import UserInfo from './profile/UserInfo';
 import UnitInfo from './profile/UnitInfo';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
+import {logout} from '../shared/requests/functions/logout';
 
 const {width} = Dimensions.get('window');
 
@@ -50,7 +51,8 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
         </Canvas>
         {actions.map((action, index) => {
           return (
-            <View
+            <Pressable
+              onPress={action.title === 'Log Out' ? logout : () => {}}
               style={styles.optionContaier}
               key={`${action.title}-${index}`}>
               <View style={styles.optionIconContainer}>
@@ -60,7 +62,7 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
                 <Text style={styles.optionText}>{action.title}</Text>
               </View>
               <Icon name="ios-chevron-forward" size={22} color={'#000'} />
-            </View>
+            </Pressable>
           );
         })}
       </View>

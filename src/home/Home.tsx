@@ -31,10 +31,14 @@ import {MimeType} from '../shared/enum/MimeType';
 import RNBootSplash from 'react-native-bootsplash';
 import {SIZE} from './utils/constants';
 import emitter, {
+  getClenTextSearchEventName,
   getFolderAddFilesEventName,
   getFolderAddFoldersEventName,
   getFolderDeleteFilesEventName,
   getFolderDeleteFoldersEventName,
+  getFolderUpdateFileEventName,
+  getFolderUpdateFolderEventName,
+  getTextSearchEndTypingEventName,
 } from '../shared/emitter';
 import {getFolder} from './utils/functions/getFolder';
 import {getFolderFiles} from './utils/functions/getFolderFiles';
@@ -63,6 +67,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   folder: currentFolder,
 }) => {
   const ref = useRef<typeof FlashList>(null);
+
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const [fetchedFolders, setFetchedFolders] = useState<boolean>(false);
   const [fetchedFiles, setFetchedFiles] = useState<boolean>(false);
@@ -101,7 +107,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
   const x = useSharedValue<number>(-windowHeight);
   const y = useSharedValue<number>(-windowHeight);
 
-  const renderHeader = useCallback(() => {
+  const renderHeader = () => {
     return (
       <AppHeader
         fetchedFiles={fetchedFiles}
@@ -109,7 +115,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
         folders={subFolders}
       />
     );
-  }, [subFolders, fetchedFiles, fetchedFolders]);
+  };
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: e => {
@@ -117,52 +123,61 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     },
   });
 
-  const renderItem = useCallback((info: ListRenderItemInfo<File>) => {
-    const mimeType = getSimpleMimeType(info.item.contentType);
+  const renderItem = useCallback(
+    (info: ListRenderItemInfo<File>) => {
+      const mimeType = getSimpleMimeType(info.item.contentType);
 
-    const defineComponent = () => {
-      switch (mimeType) {
-        case MimeType.IMAGE:
-          return (
-            <ImageThumbnail
-              file={info.item}
-              dimensions={dimensions}
-              translateX={translateX}
-              translateY={translateY}
-              x={x}
-              y={y}
-              scale={scale}
-            />
-          );
+      const defineComponent = () => {
+        switch (mimeType) {
+          case MimeType.IMAGE:
+            return (
+              <ImageThumbnail
+                file={info.item}
+                dimensions={dimensions}
+                translateX={translateX}
+                translateY={translateY}
+                x={x}
+                y={y}
+                scale={scale}
+              />
+            );
 
-        case MimeType.AUDIO:
-          return <AudioThumbnail samples={info.item.details.audioSamples} />;
+          case MimeType.AUDIO:
+            return <AudioThumbnail samples={info.item.details.audioSamples} />;
 
-        case MimeType.VIDEO:
-          return <VideoThumbnail index={info.index} file={info.item} />;
+          case MimeType.VIDEO:
+            return <VideoThumbnail index={info.index} file={info.item} />;
 
-        case MimeType.PDF:
-          return <PdfThumnail file={info.item} />;
+          case MimeType.PDF:
+            return <PdfThumnail file={info.item} />;
 
-        default:
-          return <GenericThumbnail mimeType="image" />;
-      }
-    };
+          default:
+            return <GenericThumbnail mimeType="image" />;
+        }
+      };
 
-    return (
-      // @ts-ignore
-      <FileWrapper index={info.index} file={info.item}>
-        {defineComponent()}
-      </FileWrapper>
-    );
-  }, []);
+      return (
+        // @ts-ignore
+        <FileWrapper
+          index={info.index}
+          file={info.item}
+          searchTerm={searchTerm}>
+          {defineComponent()}
+        </FileWrapper>
+      );
+    },
+    [searchTerm],
+  );
 
   useEffect(() => {
     const addFilesEventName = getFolderAddFilesEventName(folder?.id!!);
     const addFiles = emitter.addListener(
       addFilesEventName,
       (newFiles: File[]) => {
-        setFilesPage(p => ({...p, content: [...p.content, ...newFiles]}));
+        setFilesPage(p => ({...p, content: [...newFiles, ...p.content]}));
+        if (searchTerm === '') {
+          setFilteredPageContent(content => [...newFiles, ...content]);
+        }
       },
     );
 
@@ -170,14 +185,66 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     const deleteFiles = emitter.addListener(
       deleteFilesEventName,
       (ids: string[]) => {
+        if (searchTerm === '') {
+          setFilteredPageContent(files =>
+            files.filter(f => !ids.includes(f.id)),
+          );
+        }
+
         setFilesPage(page => {
-          page.content.filter(c => !ids.includes(c.id));
+          page.content = page.content.filter(c => !ids.includes(c.id));
           return {...page};
         });
       },
     );
 
-    const addFoldersEventName = getFolderAddFoldersEventName(folder?.id!!);
+    const updateFolderEventName = getFolderUpdateFolderEventName(
+      folder?.id ?? '',
+    );
+    const updateFolder = emitter.addListener(
+      updateFolderEventName,
+      (updatedFolder: Folder) => {
+        setSubFolders(subs =>
+          subs.map(s => {
+            if (s.id === updatedFolder.id) {
+              return updatedFolder;
+            }
+
+            return s;
+          }),
+        );
+      },
+    );
+
+    const updateFileEventName = getFolderUpdateFileEventName(folder?.id ?? '');
+    const updateFile = emitter.addListener(
+      updateFileEventName,
+      (file: File) => {
+        setFilteredPageContent(files =>
+          files.map(f => {
+            if (f.id === file.id) {
+              return file;
+            }
+
+            return f;
+          }),
+        );
+
+        setFilesPage(page => {
+          page.content = page.content.map(f => {
+            if (file.id === f.id) {
+              return file;
+            }
+
+            return f;
+          });
+
+          return {...page};
+        });
+      },
+    );
+
+    const addFoldersEventName = getFolderAddFoldersEventName(folder?.id ?? '');
     const addFolder = emitter.addListener(
       addFoldersEventName,
       (newfolders: Folder[]) => setSubFolders(sfs => [...newfolders, ...sfs]),
@@ -193,16 +260,36 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       },
     );
 
+    const eventName = getTextSearchEndTypingEventName(folder?.id ?? '');
+    const onEndTyping = emitter.addListener(eventName, (text: string) => {
+      setSearchTerm(text);
+      setFilteredPageContent(files => {
+        return files.filter(f =>
+          f.name.toLocaleLowerCase().includes(text.toLocaleLowerCase()),
+        );
+      });
+    });
+
+    const cleanSearchEventName = getClenTextSearchEventName(folder?.id ?? '');
+    const cleanSearch = emitter.addListener(cleanSearchEventName, () => {
+      setFilteredPageContent(filesPage.content);
+      setSearchTerm('');
+    });
+
     return () => {
       addFiles.remove();
       addFolder.remove();
       deleteFiles.remove();
       deleteFolders.remove();
+      updateFile.remove();
+      updateFolder.remove();
+      onEndTyping.remove();
+      cleanSearch.remove();
     };
   }, [folder]);
 
   useEffect(() => {
-    getFolder(folder, unit => {
+    getFolder(folder).then(unit => {
       setFolder(unit);
 
       pushNavigationScreen({
@@ -222,6 +309,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       getFolderFiles(folder, 0, page => {
         setFilesPage(page);
         setFilteredPageContent(page.content);
+        setFetchedFiles(true);
       });
 
       if (folder.summary.folders > 0) {
@@ -238,9 +326,9 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       <View style={styles.root}>
         <Appbar scrollY={scrollY} />
 
-        <AnimatedFlashList
+        <Animated.FlatList
           ref={ref as any}
-          data={filesPage.content}
+          data={filteredPageContent}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           numColumns={2}
@@ -250,6 +338,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
             <NoContent
               fetchComplete={fetchedFiles && fetchedFolders}
               folders={subFolders.length}
+              files={filesPage.content.length}
             />
           )}
           estimatedItemSize={SIZE}

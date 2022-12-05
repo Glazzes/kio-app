@@ -1,6 +1,6 @@
 import {NotificationType} from '../../../enums/notification';
-import {displayToast} from '../../../shared/navigation/displayToast';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {displayToast} from '../../../shared/toast';
 import {Folder, Page} from '../../../shared/types';
 
 type Callback = (page: Page<Folder[]>) => void;
@@ -18,10 +18,10 @@ export const getFolderSubFolders = async (
 
     callback(data);
   } catch (e) {
-    displayToast(
-      'Load error',
-      `Could not retrieve "${folder.name}"'s subfolders`,
-      NotificationType.ERROR,
-    );
+    displayToast({
+      title: 'Load error',
+      message: `Could not retrieve "${folder.name}"'s subfolders`,
+      type: NotificationType.ERROR,
+    });
   }
 };

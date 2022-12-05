@@ -3,7 +3,6 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {useSnapshot} from 'valtio';
-import {displayToast} from '../../../shared/navigation/displayToast';
 import {NotificationType} from '../../../enums/notification';
 import {
   clearPictureSelection,
@@ -16,8 +15,8 @@ import emitter, {
   emitFolderUpdatePreview,
 } from '../../../shared/emitter';
 import {PicturePickerEvent} from '../../utils/enums';
-import {Navigation} from 'react-native-navigation';
-import {Modals} from '../../../navigation/screens/modals';
+import {displayGenericModal} from '../../../shared/functions/navigation/displayGenericModal';
+import {displayToast} from '../../../shared/toast';
 
 type UploadPhotoFABProps = {
   folderId: string;
@@ -36,16 +35,11 @@ const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({folderId}) => {
   const selectedPicturesCount = selectedPicturesUris.length;
 
   const openUploadDialog = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: 'Picture upload',
-          message:
-            'All pictures that have not been selected will be present until you close the app',
-          action: upload,
-        },
-      },
+    displayGenericModal({
+      title: 'Picture upload',
+      message:
+        'All pictures that have not been selected will be present until you close the app',
+      action: upload,
     });
   };
 
@@ -61,17 +55,17 @@ const UploadPhotoFAB: React.FC<UploadPhotoFABProps> = ({folderId}) => {
       emitFolderAddFiles(folderId, data);
       emitFolderUpdatePreview(folderId, data.length, 0);
 
-      displayToast(
-        'Pictures uploaded',
-        `Upload ${selectedPicturesUris.length} pictures successfuly`,
-        NotificationType.SUCCESS,
-      );
+      displayToast({
+        title: 'Pictures uploaded',
+        message: `Upload ${selectedPicturesUris.length} pictures successfuly`,
+        type: NotificationType.SUCCESS,
+      });
     } catch (e) {
-      displayToast(
-        'Upload error',
-        'Your pictures could have not been uploaded, try again later',
-        NotificationType.ERROR,
-      );
+      displayToast({
+        title: 'Upload error',
+        message: 'Your pictures could have not been uploaded, try again later',
+        type: NotificationType.ERROR,
+      });
     }
   };
 

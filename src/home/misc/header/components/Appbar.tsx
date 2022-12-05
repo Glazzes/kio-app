@@ -34,10 +34,10 @@ import {
 } from '../../../../store/fileSelection';
 import {CopyType} from '../../../../shared/enums';
 import {File, Folder} from '../../../../shared/types';
-import {EventSubscription} from 'fbemitter';
 import {Screens} from '../../../../enums/screens';
 import {donwloadSelection} from '../utils/downloadSelection';
 import {deleteSelection} from '../utils/deleteSelection';
+import {displayGenericModal} from '../../../../shared/functions/navigation/displayGenericModal';
 
 type AppbarProps = {
   scrollY: Animated.SharedValue<number>;
@@ -92,16 +92,18 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   };
 
   const openDeleteSelectionModal = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: 'Delte selection',
-          message:
-            'Are you sure you want to delete these files? This action can not be undone',
-          action: deleteSelection,
-        },
-      },
+    const action = () =>
+      deleteSelection(
+        selection.source!!,
+        selection.files as File[],
+        selection.folders as Folder[],
+      );
+
+    displayGenericModal({
+      title: 'Delete selection',
+      message:
+        'Are you sure you want to delete these files? This action can not be undone',
+      action,
     });
   };
 
@@ -129,25 +131,26 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
   );
 
   useEffect(() => {
-    let subscription: EventSubscription | undefined;
-    if (currentFolder) {
-      const eventName = getFolderUpdatePreviewEventName(currentFolder.id);
-      subscription = emitter.addListener(
-        eventName,
-        (files: number, folders: number) => {
-          setFolder(_ => {
+    const eventName = getFolderUpdatePreviewEventName(currentFolder?.id ?? '');
+    const subscription = emitter.addListener(
+      eventName,
+      (files: number, folders: number) => {
+        setFolder(_ => {
+          if (currentFolder) {
             const copy = {...currentFolder};
             copy.summary.files = Math.max(0, copy.summary.files + files);
             copy.summary.folders = Math.max(0, copy.summary.folders + folders);
             return copy;
-          });
-        },
-      );
+          }
+        });
+      },
+    );
 
+    if (currentFolder) {
       setFolder(currentFolder);
     }
 
-    return () => subscription?.remove();
+    return () => subscription.remove();
   }, [currentFolder]);
 
   return (
@@ -192,13 +195,17 @@ const Appbar: React.FC<AppbarProps> = ({scrollY}) => {
                   ) : (
                     <Text style={styles.subTitle}>
                       {(folder?.summary.files ?? 0) > 0 && (
-                        <Text>{folder?.summary.files} files</Text>
+                        <Text>
+                          {folder?.summary.files} file
+                          {(folder?.summary.files ?? 0) > 1 ? 's' : ''}
+                        </Text>
                       )}
 
                       {(folder?.summary.folders ?? 0) > 0 && (
                         <Text>
-                          {', '}
-                          {folder?.summary.folders} folders{' '}
+                          {folder?.summary.files ?? 0 ? ', ' : ''}
+                          {folder?.summary.folders} folder
+                          {(folder?.summary.folders ?? 0) > 1 ? 's' : ''}
                         </Text>
                       )}
                     </Text>

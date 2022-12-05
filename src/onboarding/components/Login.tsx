@@ -16,13 +16,14 @@ import {NotificationType} from '../../enums/notification';
 import {OnBoardingScreens} from '../screens';
 import {mmkv} from '../../store/mmkv';
 import axios from 'axios';
-import {host} from '../../shared/constants';
 import {TokenResponse} from '../../shared/types';
 import authState from '../../store/authStore';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
 import {withKeyboard} from '../../utils/hoc';
 import {mainRoot} from '../../navigation/roots';
 import RNBootSplash from 'react-native-bootsplash';
+import {host} from '../../shared/requests/contants';
+import Button from '../../shared/components/Button';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
@@ -163,11 +164,15 @@ const Login: NavigationFunctionComponent = ({componentId}) => {
             </Pressable>
           </View>
 
-          <View style={styles.buttonContainer}>
+          <View>
             <Text style={styles.forgotPassword}>Forgot password?</Text>
-            <Pressable style={styles.loginButton} onPress={signIn}>
-              <Text style={styles.loginButtonText}>Login</Text>
-            </Pressable>
+            <Button
+              text="Login"
+              width={width * 0.9}
+              onPress={signIn}
+              extraStyle={styles.extraStyle}
+            />
+
             <View style={styles.newToContainer}>
               <Text style={styles.newText}>New to Kio?</Text>
               <Pressable hitSlop={20} onPress={pushToCreateAccount}>
@@ -234,7 +239,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     padding: 10,
   },
-
   icon: {
     marginRight: 10,
   },
@@ -250,22 +254,8 @@ const styles = StyleSheet.create({
     color: 'rgba(51, 102, 255, 0.65)',
     alignSelf: 'flex-end',
   },
-  buttonContainer: {
-    marginTop: 15,
-  },
-  loginButton: {
-    height: 45,
-    width: width * 0.9,
-    padding: 10,
-    marginVertical: 15,
-    backgroundColor: '#3366ff',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loginButtonText: {
-    fontFamily: 'UberBold',
-    color: '#fff',
+  extraStyle: {
+    marginVertical: 10,
   },
   newToContainer: {
     flexDirection: 'row',

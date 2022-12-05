@@ -17,7 +17,7 @@ import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import EffectIndicator from './EffectIndicator';
 import crop from '../utils/functions/crop';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import emitter from '../../shared/emitter';
+import {emitUpdateProfilePicture} from '../../shared/emitter';
 import {findLastByName} from '../../store/navigationStore';
 import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';
@@ -165,13 +165,13 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
         rotateImage.value,
       );
 
-      const {translateX, translateY} = pinch(
-        {x: layout.x.value / 2, y: layout.y.value / 2},
-        {x: offset.x.value, y: offset.y.value},
-        e,
+      const {translateX, translateY} = pinch({
+        center: {x: layout.x.value / 2, y: layout.y.value / 2},
+        offset: {x: offset.x.value, y: offset.y.value},
+        event: e,
         origin,
-        originAssign,
-      );
+        canAssignOrigin: originAssign,
+      });
 
       const x = offset.x.value + translateX;
       const y = offset.y.value + translateY;
@@ -259,7 +259,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
 
     await impactAsync(ImpactFeedbackStyle.Medium);
     popToEditProfile();
-    emitter.emit('np', uri);
+    emitUpdateProfilePicture(uri);
   };
 
   function popToEditProfile() {

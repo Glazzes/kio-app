@@ -69,7 +69,7 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
   };
 
   const openMenu = () => {
-    Navigation.showOverlay({
+    Navigation.showModal({
       component: {
         name: Modals.FILE_MENU,
         passProps: {

@@ -1,6 +1,5 @@
-import {apiFilesUrl} from '../../../../shared/constants';
 import {axiosInstance} from '../../../../shared/requests/axiosInstance';
-import {apiFolderById} from '../../../../shared/requests/contants';
+import {apiFilesUrl, apiFolderById} from '../../../../shared/requests/contants';
 import {FileDeleteRequest} from '../../../../shared/requests/types';
 import {
   deleteSelectionErrorMessage,
@@ -12,6 +11,7 @@ import {clearFileSelection} from '../../../../store/fileSelection';
 import {
   emitFolderDeleteFiles,
   emitFolderDeleteFolders,
+  emitFolderUpdatePreview,
 } from '../../../../shared/emitter';
 
 export const deleteSelection = async (
@@ -29,6 +29,7 @@ export const deleteSelection = async (
     if (files.length > 0) {
       await axiosInstance.delete(apiFilesUrl, {data: fileDeleteRequest});
       emitFolderDeleteFiles(from, fileIds);
+      emitFolderUpdatePreview(from, -1 * files.length, 0);
     }
 
     if (folders.length > 0) {
@@ -37,6 +38,7 @@ export const deleteSelection = async (
           const uri = apiFolderById(folder.id);
           await axiosInstance.delete(uri);
           emitFolderDeleteFolders(from, [folder.id]);
+          emitFolderUpdatePreview(from, 0, -1);
         } catch (e) {
           displayToast(deleteSelectionErrorMessage);
         }

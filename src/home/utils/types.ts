@@ -9,6 +9,8 @@ export enum UpdateFolderEvent {
   ADD_FOLDER = 'Add.Folder',
   DELETE_FOLDERS = 'Delete.Folders',
   UPDATE_PREVIEW = 'Update.Preview',
+  UPDATE_FILE = 'Update.File',
+  UPDATE_FOLDER = 'Update.Folder',
   UPDATE_APPBAR = 'Update.Appbar',
 }
 

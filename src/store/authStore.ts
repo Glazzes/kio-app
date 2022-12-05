@@ -1,11 +1,5 @@
 import {proxy} from 'valtio';
-
-type User = {
-  id: string;
-  username: string;
-  email: string;
-  profilePicture: string;
-};
+import {User} from '../shared/types';
 
 type Store = {
   user: User;

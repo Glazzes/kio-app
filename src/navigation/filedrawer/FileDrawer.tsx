@@ -12,7 +12,7 @@ import {useSnapshot} from 'valtio';
 import {navigationState} from '../../store/navigationStore';
 import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
 import authState from '../../store/authStore';
-import {File} from '../../shared/types';
+import {File, FileVisibility} from '../../shared/types';
 import {convertCurrentTimeToTextTime} from '../../audio_player/utils/functions/convertCurrentTimeToTextTime';
 import Avatar from '../../misc/Avatar';
 import {Screens} from '../../enums/screens';
@@ -34,6 +34,12 @@ type FileDrawerProps = {
 
 const {width} = Dimensions.get('window');
 const PREVIEW_SIZE = width * 0.75 - 15;
+
+const visibility = {
+  [FileVisibility.OWNER]: 'You only',
+  [FileVisibility.RESTRICTED]: 'You and co-owners only',
+  [FileVisibility.PUBLIC]: 'Everyone',
+};
 
 const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
   componentId,
@@ -141,7 +147,11 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Visibility</Text>
-        <Text style={styles.data}>Public</Text>
+        {(file || last !== undefined) && (
+          <Text style={styles.data}>
+            {visibility[file ? file.visibility : last.folder.visibility]}
+          </Text>
+        )}
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.item}>Location</Text>
@@ -221,6 +231,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Uber',
   },
   data: {
+    textTransform: 'capitalize',
     fontFamily: 'Uber',
     color: '#354259',
     flex: 1,

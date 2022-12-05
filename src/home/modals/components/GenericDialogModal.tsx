@@ -4,11 +4,12 @@ import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ModalWrapper from './ModalWrapper';
+import Button from '../../../shared/components/Button';
 
 type GenericModalProps = {
   title: string;
   message: string;
-  action: () => void;
+  action: () => Promise<void>;
 };
 
 const {width} = Dimensions.get('window');
@@ -21,7 +22,6 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
   message,
   action,
 }) => {
-  const [disabled, setDisabled] = useState<boolean>(false);
   const [selected, setSelected] = useState<boolean>(false);
 
   const toggleSelected = async () => {
@@ -29,19 +29,13 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
     setSelected(s => !s);
   };
 
-  const close = () => {
-    Navigation.dismissModal(componentId);
+  const actionWrapper = async () => {
+    await action();
+    close();
   };
 
-  const performAction = async () => {
-    setDisabled(true);
-    try {
-      await action();
-      close();
-    } catch (e) {
-    } finally {
-      setDisabled(false);
-    }
+  const close = () => {
+    Navigation.dismissModal(componentId);
   };
 
   return (
@@ -65,24 +59,19 @@ const GenericModal: NavigationFunctionComponent<GenericModalProps> = ({
         </Pressable>
 
         <View style={styles.buttonContainer}>
-          <Pressable
-            style={[styles.button, styles.cancelButton]}
-            onPress={close}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </Pressable>
-          <Pressable
-            style={[
-              styles.button,
-              disabled ? styles.cancelButton : styles.confirmButton,
-            ]}
-            onPress={performAction}>
-            <Text
-              style={
-                disabled ? styles.cancelButtonText : styles.confirmButtonText
-              }>
-              Confirm
-            </Text>
-          </Pressable>
+          <Button
+            text="Close"
+            width={MODAL_WIDTH / 2 - 15}
+            onPress={close as any}
+            extraStyle={styles.cancelButton}
+            extraTextStyle={styles.cancelButtonText}
+          />
+
+          <Button
+            text="Confirm"
+            width={MODAL_WIDTH / 2 - 15}
+            onPress={actionWrapper}
+          />
         </View>
       </ModalWrapper>
     </View>
@@ -134,13 +123,6 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontFamily: 'UberBold',
     color: '#c3c3c3',
-  },
-  confirmButton: {
-    backgroundColor: '#3366ff',
-  },
-  confirmButtonText: {
-    fontFamily: 'UberBold',
-    color: '#fff',
   },
   checkBoxContainer: {
     marginTop: 10,

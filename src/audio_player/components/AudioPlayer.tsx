@@ -31,6 +31,10 @@ import {staticFileUrl} from '../../shared/requests/contants';
 import {audioLoadErrorMessage, displayToast} from '../../shared/toast';
 import {shareFile} from '../../overlays/utils/share';
 import {Modals} from '../../navigation/screens/modals';
+import emitter, {
+  emitFavoriteFile,
+  getFavoriteEventName,
+} from '../../shared/emitter';
 
 Sound.setCategory('Playback');
 
@@ -54,7 +58,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   const [duration, setDuration] = useState<number>(0);
   const [loaded, setLoaded] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [isFavorite, setIsFavorite] = useState<boolean>(file.isFavorite);
   const [loop, setLoop] = useState<boolean>(false);
 
   const translateX = useSharedValue<number>(width / 2);
@@ -69,7 +73,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   }, [translateX]);
 
   const toggleFavorite = async () => {
-    setIsFavorite(f => !f);
+    emitFavoriteFile(file.id);
     await impactAsync(ImpactFeedbackStyle.Light);
   };
 
@@ -82,7 +86,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   };
 
   const openFileOptions = () => {
-    Navigation.showOverlay({
+    Navigation.showModal({
       component: {
         name: Modals.FILE_MENU,
         passProps: {
@@ -113,11 +117,16 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       setIsPlaying(false);
       sound.stop();
 
-      if (loop) {
-        sound.play();
-        animateTimeLine();
-        setIsPlaying(true);
-      }
+      setLoop(l => {
+        if (l) {
+          sound.play();
+          animateTimeLine();
+          setIsPlaying(true);
+          return l;
+        }
+
+        return false;
+      });
     }
   };
 
@@ -152,8 +161,14 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       })
       .catch(_ => displayToast(audioLoadErrorMessage));
 
+    const favoriteEventName = getFavoriteEventName(file.id);
+    const faveFile = emitter.addListener(favoriteEventName, () =>
+      setIsFavorite(f => !f),
+    );
+
     return () => {
-      RNFS.unlink(toFile);
+      RNFS.unlink(toFile).catch(_ => {});
+      faveFile.remove();
     };
   }, []);
 

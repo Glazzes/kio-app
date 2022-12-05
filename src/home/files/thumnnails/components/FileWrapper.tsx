@@ -6,7 +6,7 @@ import {
   ViewStyle,
   Pressable,
 } from 'react-native';
-import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {
   BounceIn,
@@ -18,12 +18,17 @@ import {Navigation} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import {Modals} from '../../../../navigation/screens/modals';
-import emitter, {getClearSelectionEventName} from '../../../../shared/emitter';
+import emitter, {
+  getClearSelectionEventName,
+  getClenTextSearchEventName,
+  getFavoriteEventName,
+  getTextSearchEndTypingEventName,
+  getTextSearchEventName,
+} from '../../../../shared/emitter';
 import {getSimpleMimeType} from '../../../../shared/functions/getMimeType';
 import {MimeType} from '../../../../shared/enum/MimeType';
 import {pushToScreen} from '../../../../shared/functions/navigation/pushToScreen';
 import {Screens} from '../../../../enums/screens';
-import {TypingEvent} from '../../../utils/types';
 import {convertBytesToRedableUnit} from '../../../../shared/functions/convertBytesToRedableUnit';
 import FileSkeleton from './FileSkeleton';
 import {File} from '../../../../shared/types';
@@ -39,16 +44,20 @@ import {useSnapshot} from 'valtio';
 type FileWrapperProps = {
   index: number;
   file: File;
+  searchTerm: string;
 };
 
 const {width} = Dimensions.get('window');
 
 const SIZE = (width * 0.9 - 10) / 2;
 
-const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
+const FileWrapper: React.FC<FileWrapperProps> = ({
+  children,
+  index,
+  file,
+  searchTerm,
+}) => {
   const selection = useSnapshot(fileSelectionState);
-
-  const searchTerm = useRef<string>('');
   const {componentId, folder} = useContext(NavigationContext);
 
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
@@ -89,6 +98,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
     const mimeType = getSimpleMimeType(file.contentType);
     switch (mimeType) {
       case MimeType.AUDIO:
+        file.isFavorite = isFavorite;
         pushToScreen(componentId, Screens.AUDIO_PLAYER, {file});
         return;
 
@@ -128,19 +138,33 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
   };
 
   useEffect(() => {
-    const onTyping = emitter.addListener(
-      TypingEvent.IS_TYPING,
-      (text: string) => {
-        setShowSkeleton(true);
-        searchTerm.current = text;
+    /*
+    const cleanTextSearchEventName = getClenTextSearchEventName(
+      folder?.id ?? '',
+    );
+    const clean = emitter.addListener(cleanTextSearchEventName, () => {
+      setSearchTerm('');
+    })
+    */
+
+    const textSearchEventName = getTextSearchEventName(folder?.id ?? '');
+    const onTyping = emitter.addListener(textSearchEventName, (_: string) => {
+      setShowSkeleton(true);
+      // setSearchTerm(text);
+    });
+
+    const textSearchEndTypingEventName = getTextSearchEndTypingEventName(
+      folder?.id ?? '',
+    );
+    const onEndTyping = emitter.addListener(
+      textSearchEndTypingEventName,
+      () => {
+        setShowSkeleton(false);
       },
     );
 
-    const onEndTyping = emitter.addListener(TypingEvent.END_TYPING, () => {
-      setShowSkeleton(false);
-    });
-
-    const favoriteFile = emitter.addListener(`favorite-${file.id}`, () => {
+    const favoriteEventName = getFavoriteEventName(file.id);
+    const favoriteFile = emitter.addListener(favoriteEventName, () => {
       setIsFavorite(s => !s);
     });
 
@@ -148,9 +172,10 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       onTyping.remove();
       onEndTyping.remove();
       favoriteFile.remove();
+      // clean.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [folder, file]);
 
   useEffect(() => {
     const unselectEventName = getClearSelectionEventName(folder?.id!!);
@@ -195,14 +220,14 @@ const FileWrapper: React.FC<FileWrapperProps> = ({children, index, file}) => {
       </Pressable>
       <View style={styles.infoContainer}>
         <View style={styles.flex}>
-          {searchTerm.current === '' ? (
+          {searchTerm === '' ? (
             <Text style={styles.title} numberOfLines={1} ellipsizeMode={'tail'}>
               {file.name}
             </Text>
           ) : (
             <SearchableText
               text={file.name}
-              searchTerm={searchTerm.current}
+              searchTerm={searchTerm}
               style={styles.title}
               selectedColor={'#3366ff'}
             />

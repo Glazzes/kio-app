@@ -6,12 +6,16 @@ import {
   Pressable,
   Keyboard,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import emitter from '../../../../shared/emitter';
+import {
+  emitCleanTextSearch,
+  emitTextSearch,
+  emitTextSearchEndTyping,
+} from '../../../../shared/emitter';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {withKeyboard} from '../../../../utils/hoc';
-import {TypingEvent} from '../../../utils/types';
+import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 
 const {width} = Dimensions.get('window');
 const CLOSE_ICON_SIZE = 20;
@@ -22,13 +26,16 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const SearchBar: React.FC = ({}) => {
   const ref = useRef<TextInput>(null);
 
+  const {folder} = useContext(NavigationContext);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [timer, setTimer] = useState<NodeJS.Timeout>();
   const lastTextLength = useRef<number>(0);
 
   const onChangeText = (text: string) => {
     if (Math.abs(lastTextLength.current - text.length) === 1) {
-      emitter.emit(TypingEvent.IS_TYPING, text);
+      if (folder) {
+        emitTextSearch(folder.id, text);
+      }
     }
 
     if (timer) {
@@ -36,7 +43,9 @@ const SearchBar: React.FC = ({}) => {
     }
 
     const showResults = setTimeout(() => {
-      emitter.emit(TypingEvent.END_TYPING);
+      if (folder) {
+        emitTextSearchEndTyping(folder.id, text);
+      }
     }, 1000);
 
     setSearchTerm(text);
@@ -48,6 +57,7 @@ const SearchBar: React.FC = ({}) => {
     ref.current?.clear();
     Keyboard.dismiss();
     setSearchTerm('');
+    emitCleanTextSearch(folder?.id ?? '');
   };
 
   useEffect(() => {

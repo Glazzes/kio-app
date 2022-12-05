@@ -1,6 +1,7 @@
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import React from 'react';
 import {User} from '../shared/types';
+import Avatar from '../shared/components/Avatar';
 
 type UserSearchProps = {
   user: User;
@@ -11,11 +12,8 @@ const SIZE = 50;
 const UserSearch: React.FC<UserSearchProps> = ({user}) => {
   return (
     <View style={styles.root}>
-      <Image
-        source={{uri: 'https://randomuser.me/api/portraits/men/32.jpg'}}
-        style={styles.image}
-      />
-      <View>
+      <Avatar user={user} includeBorder={false} size={45} />
+      <View style={styles.container}>
         <Text style={styles.username}>{user.username}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
@@ -30,15 +28,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 10,
   },
-  image: {
-    height: SIZE,
-    width: SIZE,
-    borderRadius: SIZE / 2,
-    marginRight: 10,
+  container: {
+    paddingHorizontal: 10,
   },
   username: {
     fontFamily: 'UberBold',
     color: '#000',
+    textTransform: 'capitalize',
   },
   email: {
     fontFamily: 'Uber',

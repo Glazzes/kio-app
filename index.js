@@ -35,7 +35,7 @@ import axios from 'axios';
 import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';
 import authState from './src/store/authStore';
-import {host} from './src/shared/constants';
+import {apiUsersMeUrl, host} from './src/shared/requests/contants';
 import {
   FileOptionsSheet,
   PictureInPictureVideo,
@@ -170,7 +170,7 @@ Navigation.events().registerAppLaunchedListener(async () => {
 
   try {
     if (authState.user.id === undefined) {
-      const {data: user} = await axiosInstance.get('/api/v1/users/me');
+      const {data: user} = await axiosInstance.get(apiUsersMeUrl);
 
       authState.user = user;
       authState.tokens = tokens;

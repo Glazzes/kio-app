@@ -1,13 +1,11 @@
 import axios, {AxiosError, AxiosResponse} from 'axios';
 import authState from '../../store/authStore';
 import {mmkv} from '../../store/mmkv';
-import {host} from '../constants';
 import {TokenResponse} from '../types';
-
-const baseURL = host;
+import {host} from './contants';
 
 const axiosInstance = axios.create({
-  baseURL,
+  baseURL: host,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,7 +14,7 @@ const axiosInstance = axios.create({
 const getNewtokenPair = (
   refreshToken: string,
 ): Promise<AxiosResponse<TokenResponse>> => {
-  return axios.post(`${baseURL}/api/v1/auth/token`, undefined, {
+  return axios.post(`${host}/api/v1/auth/token`, undefined, {
     params: {
       refresh_token: refreshToken,
     },

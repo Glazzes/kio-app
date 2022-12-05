@@ -2,20 +2,12 @@ import {StyleSheet, Dimensions, Pressable} from 'react-native';
 import React, {useContext} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
-import {
-  emitFolderAddFiles,
-  emitFolderUpdatePreview,
-} from '../../../shared/emitter';
 import {pickMultiple} from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
-import notifee from '@notifee/react-native';
 import {NavigationContext} from '../../../navigation/NavigationContextProvider';
-import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {uploadAudioFile} from '../../utils/functions/uploadAudioFile';
-import {getFileFormData} from '../../utils/functions/getFileFormData';
 import {Screens} from '../../../enums/screens';
-import {apiFilesUrl} from '../../../shared/requests/contants';
+import {uploadFiles} from '../../utils/functions/uploadFiles';
 
 type FABOptionProps = {
   action: {icon: string; angle: number};
@@ -70,36 +62,7 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       copyTo: 'cachesDirectory',
     });
 
-    const files = result.filter(r => !r.type?.startsWith('audio'));
-    const audioFiles = result.filter(r => r.type?.startsWith('audio'));
-
-    audioFiles.forEach(audioFile => uploadAudioFile(folder?.id!!, audioFile));
-
-    const formData = await getFileFormData(folder?.id!!, files);
-
-    try {
-      if (files.length > 0) {
-        const {data} = await axiosInstance.post(apiFilesUrl, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        emitFolderAddFiles(folder?.id!!, data);
-        emitFolderUpdatePreview(folder?.id!!, data.length, 0);
-
-        await notifee.displayNotification({
-          id: 'Upload',
-          title: 'Files uploded',
-          body: 'Your files have been uploaded successfully',
-          android: {
-            channelId: 'kio',
-          },
-        });
-      }
-    } catch (e) {
-      console.log(e);
-    }
+    uploadFiles(folder?.id!!, result);
   };
 
   const openShareModal = () => {

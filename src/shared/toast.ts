@@ -8,6 +8,10 @@ type ToastMessage = {
   type: NotificationType;
 };
 
+type CopyCut = 'copy' | 'cut';
+
+type FileType = 'file' | 'folder';
+
 export const displayToast = (content: ToastMessage) => {
   Navigation.showOverlay<ToastMessage>({
     component: {
@@ -19,6 +23,23 @@ export const displayToast = (content: ToastMessage) => {
       },
     },
   });
+};
+
+export const updateResourceSuccessMessage = (
+  prevName: string,
+  newName: string,
+  type: FileType,
+): ToastMessage => {
+  const message =
+    prevName === newName
+      ? `${prevName} was updated successfully`
+      : `${prevName} was renamed to ${newName} successfully`;
+
+  return {
+    title: type === 'file' ? 'File updated!' : 'Folder updated!',
+    message,
+    type: NotificationType.SUCCESS,
+  };
 };
 
 export const videoLoadErrorMessage: ToastMessage = {
@@ -55,6 +76,39 @@ export const uploadFilesErrorMessage: ToastMessage = {
   type: NotificationType.ERROR,
 };
 
+export const deleteSuccessMessage = (
+  name: string,
+  type: FileType,
+): ToastMessage => {
+  return {
+    title: `${type === 'file' ? 'File' : 'Folder'} deleted!`,
+    message: `${name} was deleted successfully`,
+    type: NotificationType.SUCCESS,
+  };
+};
+
+export const downloadSuccessMessage = (name: string): ToastMessage => {
+  return {
+    title: 'File downloaded!',
+    message: `${name} has been downloaded successfully`,
+    type: NotificationType.SUCCESS,
+  };
+};
+
+export const downloadErrorMessage: ToastMessage = {
+  title: 'Download error',
+  message: 'An error ocurred while downloading your file, try again later',
+  type: NotificationType.ERROR,
+};
+
+export const createFolderSuccessMessage = (name: string): ToastMessage => {
+  return {
+    title: 'Folder craeted!',
+    message: `"${name}" was created successfully!`,
+    type: NotificationType.SUCCESS,
+  };
+};
+
 export const deleteFolderSuccessMessage = (
   name: string,
   deleteLength: number,
@@ -87,8 +141,6 @@ export const deleteFolderErrorMessage = (
     type: NotificationType.ERROR,
   };
 };
-
-type CopyCut = 'copy' | 'cut';
 
 export const copySelectionSuccessMessage = (type: CopyCut): ToastMessage => {
   const title = type === 'copy' ? 'Selection copied' : 'Selection cut';
@@ -132,7 +184,7 @@ export const deleteSelectionErrorMessage: ToastMessage = {
 // Sharing
 export const shareInforMessage: ToastMessage = {
   title: 'Preparing file',
-  message: "We're preparing your file to be shared",
+  message: "Kio will shared your file as soon as it's ready",
   type: NotificationType.INFO,
 };
 
@@ -145,5 +197,23 @@ export const shareErrorMessage: ToastMessage = {
 export const shareNotAvialableErrorMessage: ToastMessage = {
   title: 'Sharing error',
   message: 'Your device does not have sharing capabilities',
+  type: NotificationType.ERROR,
+};
+
+export const savedProfileChangesSuccessMessage: ToastMessage = {
+  title: 'Saved changes',
+  message: 'Your account has been updated successfully',
+  type: NotificationType.SUCCESS,
+};
+
+export const logoutSuccessMessage: ToastMessage = {
+  title: 'See you later!',
+  message: "You've been logged out successfully",
+  type: NotificationType.SUCCESS,
+};
+
+export const genericErrorMessage: ToastMessage = {
+  title: 'Oops...',
+  message: 'An error ocurred, try again later',
   type: NotificationType.ERROR,
 };

@@ -17,16 +17,9 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
 import {withKeyboard} from '../../../utils/hoc';
-import {NotificationType} from '../../../enums/notification';
-import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {displayToast} from '../../../shared/navigation/displayToast';
 import ModalWrapper from './ModalWrapper';
-import {newFolderUrl} from '../../../shared/requests/contants';
-import {
-  emitFolderAddFolders,
-  emitFolderUpdatePreview,
-} from '../../../shared/emitter';
-import {Folder} from '../../../shared/types';
+import Button from '../../../shared/components/Button';
+import {createFolder} from '../utils/createFolder';
 
 type CreateFolderModalProps = {
   parentComponentId?: string;
@@ -43,47 +36,31 @@ const CreateFolderModal: NavigationFunctionComponent<
 > = ({componentId, folderId}) => {
   const ref = useRef<TextInput>(null);
 
+  const [isDisabled, setIsDisabled] = useState<boolean>(true);
   const [folderName, setFolderName] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isEditable, setIsEditable] = useState<boolean>(false);
 
   const clear = () => {
-    if (!loading) {
+    if (!isEditable) {
       ref.current?.clear();
       setFolderName('');
+      setIsDisabled(true);
     }
   };
 
   const onChangeText = (text: string): void => {
+    setIsDisabled(text.length === 0);
     setFolderName(text);
   };
 
-  const create = async () => {
-    setLoading(true);
+  const createFolderWrapper = async () => {
+    setIsEditable(true);
 
     try {
-      const uri = newFolderUrl(folderId);
-
-      const {data} = await axiosInstance.post<Folder>(uri, undefined, {
-        params: {
-          name: folderName,
-        },
-      });
-
-      emitFolderAddFolders(folderId, [data]);
-      emitFolderUpdatePreview(folderId, 0, 1);
-
-      Navigation.dismissModal(componentId);
-      displayToast(
-        'Folder created',
-        `Folder "${folderName}" was created successfully`,
-        NotificationType.SUCCESS,
-      );
+      await createFolder(folderId, folderName, componentId);
     } catch (e) {
-      displayToast(
-        'Creation error',
-        'This folder could not be created, try again later',
-        NotificationType.ERROR,
-      );
+    } finally {
+      setIsEditable(false);
     }
   };
 
@@ -106,7 +83,7 @@ const CreateFolderModal: NavigationFunctionComponent<
         <View style={styles.inputContainer}>
           <TextInput
             ref={ref}
-            editable={!loading}
+            editable={!isEditable}
             style={styles.input}
             placeholder={'Folder name'}
             keyboardType={'default'}
@@ -129,27 +106,20 @@ const CreateFolderModal: NavigationFunctionComponent<
           )}
         </View>
         <View style={styles.buttonContainer}>
-          <Pressable
-            style={
-              loading
-                ? [styles.button, styles.cancelDisabled]
-                : [styles.button, styles.cancelButton]
-            }
-            onPress={hideModal}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </Pressable>
-          <Pressable
-            style={
-              loading
-                ? [styles.button, styles.createDisabled]
-                : [styles.button, styles.confirmButton]
-            }>
-            <Text
-              style={loading ? styles.textDisabled : styles.confirmButtonText}
-              onPress={create}>
-              Confirm
-            </Text>
-          </Pressable>
+          <Button
+            text="Cancel"
+            width={MODAL_WIDTH / 2 - 15}
+            onPress={hideModal as any}
+            extraStyle={styles.cancelButton}
+            extraTextStyle={styles.cancelButtonText}
+          />
+
+          <Button
+            text="Confirm"
+            width={MODAL_WIDTH / 2 - 15}
+            onPress={createFolderWrapper}
+            disabled={isDisabled}
+          />
         </View>
       </ModalWrapper>
     </View>
@@ -237,45 +207,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  button: {
-    width: MODAL_WIDTH / 2 - 15,
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    height: 40,
-  },
-  confirmButton: {
-    backgroundColor: '#3366ff',
-  },
-  confirmButtonText: {
-    fontFamily: 'UberBold',
-    color: '#fff',
-  },
   cancelButton: {
     backgroundColor: '#EDF1F7',
   },
   cancelButtonText: {
     fontFamily: 'UberBold',
     color: '#c3c3c3',
-  },
-  createDisabled: {
-    backgroundColor: '#F3F3F4',
-    flexDirection: 'row',
-    borderWidth: 0.5,
-    borderColor: '#F3F3F4',
-  },
-  cancelDisabled: {
-    borderWidth: 0.5,
-    backgroundColor: '#F3F3F4',
-    borderColor: '#F3F3F4',
-  },
-  textDisabled: {
-    color: '#C5C8D7',
-    fontFamily: 'Uber',
-  },
-  activity: {
-    marginHorizontal: 10,
   },
 });
 

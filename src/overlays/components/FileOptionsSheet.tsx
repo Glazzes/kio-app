@@ -31,26 +31,19 @@ import {peekLastNavigationScreen} from '../../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {clamp} from '../../shared/functions/clamp';
 import {snapPoint} from 'react-native-redash';
-import emitter, {emitFolderDeleteFolders} from '../../shared/emitter';
-import {Modals} from '../../navigation/screens/modals';
+import emitter, {emitFavoriteFile} from '../../shared/emitter';
 import {Screens} from '../../enums/screens';
-import {NotificationType} from '../../enums/notification';
 import {File, Folder} from '../../shared/types';
 import {getSimpleMimeType} from '../../shared/functions/getMimeType';
 import {MimeType} from '../../shared/enum/MimeType';
 import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
-import {deleteFiles} from '../../shared/requests/functions/deleteFiles';
-import {UpdateFolderEvent} from '../../home/utils/types';
-import {deleteFolder} from '../../shared/functions/deleteFolder';
-import {downloadFile} from '../../shared/requests/functions/downloadFile';
-import {downloadFolder} from '../../shared/requests/functions/downloadFolder';
-import {
-  deleteFolderErrorMessage,
-  deleteFolderSuccessMessage,
-  displayToast,
-} from '../../shared/toast';
 import {shareFile} from '../utils/share';
 import {copyLinkToClipboard} from '../utils/copyToClipboard';
+import {deleteFile} from '../utils/deleteFile';
+import {deleteFolder} from '../utils/deleteFolder';
+import {displayGenericModal} from '../../shared/functions/navigation/displayGenericModal';
+import {Modals} from '../../navigation/screens/modals';
+import {downloadResource} from '../../shared/requests/functions/downloadResource';
 
 type FileOptionSheetProps = {
   parentFolderId: string;
@@ -202,6 +195,10 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
         faveFile();
         return;
 
+      case 'Rename':
+        edit();
+        return;
+
       case 'Download':
         download();
         return;
@@ -266,7 +263,6 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
     const lastFolderScreen = peekLastNavigationScreen();
 
     Navigation.updateProps(Screens.FILE_DRAWER, {file});
-
     Navigation.mergeOptions(lastFolderScreen.componentId, {
       sideMenu: {
         right: {
@@ -277,41 +273,37 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   };
 
   const faveFile = () => {
-    emitter.emit(`favorite-${file.id}`);
+    emitFavoriteFile(file.id);
   };
 
   const download = () => {
-    if (isFile) {
-      downloadFile(file as File);
-    } else {
-      downloadFolder(file as Folder);
-    }
+    downloadResource(file);
   };
 
-  const copyLink = () => {
-    Navigation.showOverlay({
+  const edit = () => {
+    Navigation.showModal({
       component: {
-        name: Screens.TOAST,
+        name: Modals.EDIT,
         passProps: {
-          title: 'Link copied',
-          message: 'Link has been copied to your clipboard.',
-          type: NotificationType.INFO,
+          file,
         },
       },
     });
   };
 
+  const copyLink = () => {
+    copyLinkToClipboard(file);
+  };
+
   const openDeleteModal = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.GENERIC_DIALOG,
-        passProps: {
-          title: `Delete "${file.name}"`,
-          message:
-            'Are you sure you want to delete this file? This action can not be undone',
-          action: deleteCurrentFile,
-        },
-      },
+    const message = isFile
+      ? 'Are you sure you want to delete this file? This action can not be undone'
+      : 'Deleting this folder will delete all inner files and folders, this action can not be undone';
+
+    displayGenericModal({
+      title: `Delete "${file.name}"`,
+      message,
+      action: deleteCurrentFile,
     });
   };
 
@@ -320,51 +312,13 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
 
     if (!isFile) {
       try {
-        await deleteFolder(file.id);
-        emitFolderDeleteFolders(parentFolderId, [file.id]);
-
-        const message = deleteFolderSuccessMessage(file.name, 1);
-        displayToast(message);
-      } catch (e) {
-        const message = deleteFolderErrorMessage(file.name, 1);
-        displayToast(message);
-      } finally {
-        return;
-      }
+        await deleteFolder(parentFolderId, file as Folder);
+      } catch (e) {}
     }
 
     try {
-      deleteFiles({
-        from: parentFolderId,
-        files: [file.id],
-      });
-
-      emitter.emit(`${UpdateFolderEvent.DELETE_FILES}-${parentFolderId}`, [
-        file.id,
-      ]);
-
-      Navigation.showOverlay({
-        component: {
-          name: Screens.TOAST,
-          passProps: {
-            title: 'File deleted',
-            message: 'The file has been successfully deleted',
-            type: NotificationType.SUCCESS,
-          },
-        },
-      });
-    } catch (e) {
-      Navigation.showOverlay({
-        component: {
-          name: Screens.TOAST,
-          passProps: {
-            title: 'File delete',
-            message: 'Could not delete your file',
-            type: NotificationType.ERROR,
-          },
-        },
-      });
-    }
+      await deleteFile(parentFolderId, file as File);
+    } catch (e) {}
   };
 
   const dissmiss = () => {

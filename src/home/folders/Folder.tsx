@@ -179,7 +179,8 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
           {folder.summary.folders > 0 && (
             <Text style={styles.itemSubtitle}>
               <Text style={styles.itemText}>{folder.summary.folders}</Text>{' '}
-              folders and{' '}
+              folder{folder.summary.folders > 1 ? 's' : ''}{' '}
+              {folder.summary.files > 0 ? 'and ' : ''}
             </Text>
           )}
           {folder.summary.files > 0 && (

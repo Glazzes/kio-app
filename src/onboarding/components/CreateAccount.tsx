@@ -13,23 +13,32 @@ import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {withKeyboard} from '../../utils/hoc';
-import {Screens} from '../../enums/screens';
 import {NotificationType} from '../../enums/notification';
 import axios, {AxiosResponse} from 'axios';
-import {host} from '../../shared/constants';
+import {apiUsersUrl, host} from '../../shared/requests/contants';
+import Button from '../../shared/components/Button';
+import {User} from '../../shared/types';
+import {displayToast} from '../../shared/toast';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
 
-type AccountErrors = {
-  [field: string]: string | undefined;
+type AccountCreationErrors = {
+  username: string | undefined;
+  email: string | undefined;
+  password: string | undefined;
 };
 
 const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
   const data = useRef({username: '', password: '', email: ''});
 
   const [isSecure, setIsSecure] = useState<boolean>(true);
-  const [fieldErrors, setFieldErrors] = useState<AccountErrors>({});
+  const [fieldErrors, setFieldErrors] = useState<AccountCreationErrors>({
+    username: undefined,
+    email: undefined,
+    password: undefined,
+  });
+
   const [timer, setTimer] = useState<NodeJS.Timeout>();
 
   const toggleIsSecure = async () => {
@@ -41,9 +50,9 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
     Navigation.pop(componentId);
   };
 
-  const onChangeEmail = (text: string) => {
-    data.current.username = text;
-    fieldErrors.email = undefined;
+  const onChangeWithCheck = (text: string, field: 'username' | 'email') => {
+    data.current[field] = text;
+    setFieldErrors(errors => ({...errors, [field]: undefined}));
 
     if (timer) {
       clearTimeout(timer);
@@ -51,10 +60,16 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
     const newTimer = setTimeout(async () => {
       try {
-        await axios.get(`${host}/api/v1/users`, {params: {q: text}});
-        setFieldErrors({
-          email: '* An account is already registered with this email',
+        await axios.get<User>(`${host}${apiUsersUrl}`, {
+          params: {q: text},
         });
+
+        const message =
+          field === 'username'
+            ? '* An account with this username already exists'
+            : '* An account has been already registered with this email';
+
+        setFieldErrors(errors => ({...errors, [field]: message}));
       } catch (e) {
         console.log(e);
       }
@@ -63,29 +78,22 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
     setTimer(newTimer);
   };
 
-  const onChangeText = (
-    text: string,
-    field: 'email' | 'username' | 'password',
-  ) => {
+  const onChangeText = (text: string, field: 'username' | 'password') => {
     data.current[field] = text;
   };
 
   const createAccount = async () => {
     try {
-      await axios.post(`${host}/api/v1/users`, data.current);
-      Navigation.pop(componentId);
+      await axios.post(`${host}${apiUsersUrl}`, data.current);
 
-      Navigation.showOverlay({
-        component: {
-          name: Screens.TOAST,
-          passProps: {
-            title: 'Account created',
-            message:
-              'Your account has been created successfuly, you can now login!',
-            type: NotificationType.SUCCESS,
-          },
-        },
+      displayToast({
+        title: 'Account created',
+        message:
+          'Your account has been created successfuly, you can now login!',
+        type: NotificationType.SUCCESS,
       });
+
+      Navigation.pop(componentId);
     } catch ({response}) {
       const {data: errorData} = response as AxiosResponse;
       fieldErrors.email = errorData.email;
@@ -119,7 +127,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
           <TextInput
             style={styles.textInput}
             placeholder={'Email'}
-            onChangeText={onChangeEmail}
+            onChangeText={text => onChangeWithCheck(text, 'email')}
             autoCapitalize={'none'}
           />
         </View>
@@ -139,7 +147,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
           <TextInput
             style={styles.textInput}
             placeholder={'Username'}
-            onChangeText={text => onChangeText(text, 'username')}
+            onChangeText={text => onChangeWithCheck(text, 'username')}
             autoCapitalize={'none'}
           />
         </View>
@@ -177,9 +185,14 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
           <Text style={styles.login}>terms and conditions</Text> and our{' '}
           <Text style={styles.login}>privicy policy.</Text>
         </Text>
-        <Pressable style={styles.confirmButton} onPress={createAccount}>
-          <Text style={styles.confirmButtonText}>Confirm</Text>
-        </Pressable>
+
+        <Button
+          text="Confirm"
+          width={width * 0.9}
+          onPress={createAccount}
+          extraStyle={styles.buttonMargin}
+        />
+
         <View style={styles.joinedContainer}>
           <Text style={styles.joined}>Joined us before?</Text>
           <Pressable hitSlop={20} onPress={goBack}>
@@ -240,7 +253,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     padding: 10,
   },
-
   icon: {
     marginRight: 10,
   },
@@ -261,19 +273,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: 10,
   },
-  confirmButton: {
-    height: 45,
-    width: width * 0.9,
-    padding: 10,
-    marginVertical: 15,
-    backgroundColor: '#3366ff',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  confirmButtonText: {
-    fontFamily: 'UberBold',
-    color: '#fff',
+  buttonMargin: {
+    marginVertical: 10,
   },
   joinedContainer: {
     flexDirection: 'row',

@@ -1,24 +1,4 @@
 // File
-export enum FileVisibility {
-  OWNER,
-  RESTRICTED,
-  PUBLIC,
-}
-
-export type User = {
-  id: string;
-  username: string;
-  email: string;
-  hasProfilePicture: boolean;
-};
-
-type FileDetails = {
-  dimensions: [number, number] | null;
-  duration: number | null;
-  audioSamples: number[] | null;
-  pages: string | null;
-};
-
 export type File = {
   id: string;
   ownerId: string;
@@ -30,6 +10,31 @@ export type File = {
   lastModified: string;
   visibility: FileVisibility;
   details: FileDetails;
+};
+
+type FileDetails = {
+  dimensions: [number, number] | null;
+  duration: number | null;
+  audioSamples: number[] | null;
+  pages: string | null;
+};
+
+export enum FileVisibility {
+  OWNER = 'OWNER',
+  RESTRICTED = 'RESTRICTED',
+  PUBLIC = 'PUBLIC',
+}
+
+export type UserExists = {
+  existsByUsername: boolean;
+  existsByEmail: boolean;
+};
+
+export type User = {
+  id: string;
+  username: string;
+  email: string;
+  hasProfilePicture: boolean;
 };
 
 export type Folder = {
@@ -52,6 +57,13 @@ export type UploadRequest = {
       thumbnailName: string | null;
     };
   };
+};
+
+export type EditResourceRequest = {
+  from: string;
+  resourceId: string;
+  name: string;
+  visibility: FileVisibility;
 };
 
 type FolderSummary = {
