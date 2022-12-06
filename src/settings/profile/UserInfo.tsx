@@ -28,6 +28,7 @@ const UserInfo: React.FC<UserInfoProps> = ({parentComponentId}) => {
   return (
     <View style={styles.infoContainer}>
       <Avatar
+        nativeId={'pfp'}
         user={user}
         size={IMAGE_SIZE}
         includeBorder={false}

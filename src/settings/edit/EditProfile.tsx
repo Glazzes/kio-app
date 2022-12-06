@@ -1,7 +1,6 @@
 import {
   View,
   StyleSheet,
-  Image,
   Pressable,
   Dimensions,
   Text,
@@ -30,17 +29,24 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {ScrollView} from 'react-native-gesture-handler';
-import {Folder, UserExists} from '../../shared/types';
+import {EditUserRequest, Folder, User, UserExists} from '../../shared/types';
 import {displayGenericModal} from '../../shared/functions/navigation/displayGenericModal';
 import {
   displayToast,
+  genericErrorMessage,
+  nothingToSaveInfoMessage,
   savedProfileChangesSuccessMessage,
 } from '../../shared/toast';
 import {useSnapshot} from 'valtio';
-import authState from '../../store/authStore';
+import authState, {updateUser} from '../../store/authStore';
 import Button from '../../shared/components/Button';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
-import {apiUsersUrl} from '../../shared/requests/contants';
+import {
+  apiUsersEditUrl,
+  apiUsersExistsUrl,
+} from '../../shared/requests/contants';
+import Avatar from '../../shared/components/Avatar';
+import {AxiosResponse} from 'axios';
 
 type EditProfileProps = {};
 
@@ -61,6 +67,7 @@ type Edit = {
 type Errors = {
   username: string | undefined;
   email: string | undefined;
+  password: string | undefined;
 };
 
 type Field = keyof Edit;
@@ -76,6 +83,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
   const [errors, setErrors] = useState<Errors>({
     username: undefined,
     email: undefined,
+    password: undefined,
   });
 
   const [info, setInfo] = useState<Edit>({
@@ -91,32 +99,40 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       return {...i};
     });
 
-    setErrors({username: undefined, email: undefined});
+    setErrors(prev => ({...prev, [field]: undefined}));
 
     if (timer) {
       clearTimeout(timer);
     }
 
     const newTimer = setTimeout(async () => {
+      const normalizedText = text.toLocaleLowerCase();
+      const normalizedUsername = user.username.toLocaleLowerCase();
+      const normalizedEmail = user.email.toLocaleLowerCase();
+
       try {
-        const {data} = await axiosInstance.get<UserExists>(apiUsersUrl, {
+        const {data} = await axiosInstance.get<UserExists>(apiUsersExistsUrl, {
           params: {
-            username: text,
-            email: text,
+            username: text.toLocaleLowerCase(),
+            email: text.toLocaleLowerCase(),
           },
         });
 
         setErrors(err => {
-          if (data.existsByUsername) {
+          if (
+            data.existsByUsername &&
+            field === 'username' &&
+            normalizedText !== normalizedUsername
+          ) {
             err.username = '* This username is already taken';
-          } else {
-            err.username = undefined;
           }
 
-          if (data.existsByUsername) {
+          if (
+            data.existsByEmail &&
+            field === 'email' &&
+            normalizedText !== normalizedEmail
+          ) {
             err.email = '* An account is already registered with this email';
-          } else {
-            err.email = undefined;
           }
 
           return {...err};
@@ -125,7 +141,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       } finally {
         clearTimeout(newTimer);
       }
-    }, 1000);
+    }, 500);
 
     setTimer(newTimer);
   };
@@ -135,6 +151,12 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       i[field] = text;
       return {...i};
     });
+
+    if (info.password !== info.confirmation) {
+      setErrors(err => ({...err, password: '* Passwords do not match'}));
+    } else {
+      setErrors(err => ({...err, password: undefined}));
+    }
   };
 
   const translateY = useSharedValue<number>(0);
@@ -157,8 +179,56 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
     Navigation.pop(componentId);
   };
 
-  const onSavedChanges = () => {
-    displayToast(savedProfileChangesSuccessMessage);
+  const onSavedChanges = async () => {
+    if (
+      newPic === undefined &&
+      user.username === info.username &&
+      user.email === info.email &&
+      info.password === '' &&
+      info.confirmation === ''
+    ) {
+      displayToast(nothingToSaveInfoMessage);
+      return;
+    }
+
+    try {
+      const request: EditUserRequest = {
+        username: info.username,
+        email: info.email,
+        password: info.password !== '' ? info.password : undefined,
+      };
+
+      const formData = new FormData();
+      formData.append('request', JSON.stringify(request));
+      if (newPic) {
+        formData.append('file', {
+          name: 'picture.jpg',
+          type: 'image/jpeg',
+          uri: newPic,
+        });
+      }
+
+      const {data} = await axiosInstance.patch<User>(
+        apiUsersEditUrl,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      updateUser(data);
+      displayToast(savedProfileChangesSuccessMessage);
+    } catch ({response}) {
+      const res = response as AxiosResponse;
+      if (res.status === 400) {
+        setErrors(err => ({...err, ...res.data}));
+        return;
+      }
+
+      displayToast(genericErrorMessage);
+    }
   };
 
   const openSheet = () => {
@@ -179,7 +249,12 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       });
     });
 
-    const listener = emitter.addListener(updatePictureEventName, setNewPic);
+    const listener = emitter.addListener(
+      updatePictureEventName,
+      (uri: string) => {
+        setNewPic(uri);
+      },
+    );
 
     const pushToCamera = emitter.addListener('push.camera', () => {
       Navigation.push(componentId, {
@@ -210,15 +285,26 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
     const componentListener: NavigationComponentListener = {
       navigationButtonPressed: ({buttonId}) => {
         if (buttonId === 'RNN.hardwareBackButton') {
-          if (info.username !== user.username || info.email !== user.email) {
+          console.log(newPic);
+          if (
+            info.username !== user.username ||
+            info.email !== user.email ||
+            newPic !== undefined ||
+            info.password !== '' ||
+            info.confirmation !== ''
+          ) {
             displayGenericModal({
               title: 'Discard changes',
               message:
                 "You've got unsaved changes. Do you want to discard these changes?",
               action: pop,
             });
+
+            return;
           }
         }
+
+        pop();
       },
     };
 
@@ -227,9 +313,14 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       componentId,
     );
 
-    return navigationListener.remove;
+    return () => {
+      navigationListener.remove();
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [info]);
+  }, [info, newPic, timer]);
 
   return (
     <View style={styles.root}>
@@ -244,13 +335,13 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
         />
         <View style={styles.imageContainer}>
           <Pressable onPress={openSheet}>
-            <Image
-              nativeID="pfp-dest"
-              style={styles.image}
-              source={{
-                uri: newPic ?? 'https://randomuser.me/api/portraits/men/32.jpg',
-              }}
-              resizeMode={'cover'}
+            <Avatar
+              size={IMAGE_SIZE}
+              user={user}
+              includeBorder={false}
+              listenToUpdateEvent={true}
+              fontSize={30}
+              nativeId={'pfp-dest'}
             />
             <Animated.View
               style={styles.badge}
@@ -277,8 +368,12 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               style={styles.textInput}
               placeholder={'Email'}
               value={info.email}
+              autoCapitalize={'none'}
             />
           </View>
+          {errors.email ? (
+            <Text style={styles.error}>{errors.email}</Text>
+          ) : null}
 
           <View style={styles.textInputContainer}>
             <Icon
@@ -292,8 +387,12 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               style={styles.textInput}
               placeholder={'Username'}
               value={info.username}
+              autoCapitalize={'none'}
             />
           </View>
+          {errors.username ? (
+            <Text style={styles.error}>{errors.username}</Text>
+          ) : null}
 
           <View style={styles.textInputContainer}>
             <Icon
@@ -307,6 +406,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               style={styles.textInput}
               placeholder={'Password'}
               secureTextEntry={isSecure}
+              autoCapitalize={'none'}
             />
             <Pressable onPress={toggleIsSecure} hitSlop={40}>
               <Icon
@@ -327,8 +427,9 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
             <TextInput
               onChangeText={text => onChangeText(text, 'confirmation')}
               style={styles.textInput}
-              placeholder={'Re-type Password'}
+              placeholder={'Password confirmation'}
               secureTextEntry={isSecure}
+              autoCapitalize={'none'}
             />
             <Pressable onPress={toggleIsSecure} hitSlop={40}>
               <Icon
@@ -338,12 +439,20 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
               />
             </Pressable>
           </View>
+          {errors.password ? (
+            <Text style={styles.error}>{errors.password}</Text>
+          ) : null}
 
           <View>
             <Button
               text="Save changes"
+              disabled={
+                (errors.email ||
+                  errors.username ||
+                  errors.password) as unknown as boolean
+              }
               width={width * 0.9}
-              onPress={async () => {}}
+              onPress={onSavedChanges}
               extraStyle={{marginVertical: 15}}
             />
 
@@ -425,12 +534,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  userContainer: {},
-  image: {
-    height: IMAGE_SIZE,
-    width: IMAGE_SIZE,
-    borderRadius: IMAGE_SIZE / 2,
-  },
   badge: {
     height: BAGDE_SIZE,
     width: BAGDE_SIZE,
@@ -475,7 +578,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     padding: 10,
   },
-
   icon: {
     marginRight: 10,
   },
@@ -485,6 +587,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Uber',
     backgroundColor: '#F3F3F4',
     color: '#C5C8D7',
+  },
+  error: {
+    fontFamily: 'UberBold',
+    marginLeft: 10,
+    marginBottom: 10,
+    color: '#ee3060',
+    fontSize: 12,
   },
   button: {
     height: 45,

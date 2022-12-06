@@ -35,6 +35,7 @@ import {
 import PickerPicture from './PickerPicture';
 import {snapPoint} from 'react-native-redash';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
+import emitter, {hideImagePicker} from '../../shared/emitter';
 
 type ImagePickerProps = {
   translateY: Animated.SharedValue<number>;
@@ -164,6 +165,17 @@ const ImagePicker: React.FC<ImagePickerProps> = ({translateY}) => {
         Alert.alert('Error xd');
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    const hidePicker = emitter.addListener(hideImagePicker, () => {
+      translateY.value = withTiming(0);
+    });
+
+    return () => {
+      hidePicker.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -17,7 +17,10 @@ import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import EffectIndicator from './EffectIndicator';
 import crop from '../utils/functions/crop';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import {emitUpdateProfilePicture} from '../../shared/emitter';
+import {
+  emitHideImagePicker,
+  emitUpdateProfilePicture,
+} from '../../shared/emitter';
 import {findLastByName} from '../../store/navigationStore';
 import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';
@@ -259,6 +262,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
 
     await impactAsync(ImpactFeedbackStyle.Medium);
     popToEditProfile();
+    emitHideImagePicker();
     emitUpdateProfilePicture(uri);
   };
 

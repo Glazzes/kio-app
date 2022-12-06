@@ -15,10 +15,14 @@ import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {withKeyboard} from '../../utils/hoc';
 import {NotificationType} from '../../enums/notification';
 import axios, {AxiosResponse} from 'axios';
-import {apiUsersUrl, host} from '../../shared/requests/contants';
+import {
+  apiUsersExistsUrl,
+  apiUsersUrl,
+  host,
+} from '../../shared/requests/contants';
 import Button from '../../shared/components/Button';
-import {User} from '../../shared/types';
-import {displayToast} from '../../shared/toast';
+import {UserExists} from '../../shared/types';
+import {displayToast, genericErrorMessage} from '../../shared/toast';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
@@ -30,7 +34,7 @@ type AccountCreationErrors = {
 };
 
 const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
-  const data = useRef({username: '', password: '', email: ''});
+  const info = useRef({username: '', password: '', email: ''});
 
   const [isSecure, setIsSecure] = useState<boolean>(true);
   const [fieldErrors, setFieldErrors] = useState<AccountCreationErrors>({
@@ -51,7 +55,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
   };
 
   const onChangeWithCheck = (text: string, field: 'username' | 'email') => {
-    data.current[field] = text;
+    info.current[field] = text;
     setFieldErrors(errors => ({...errors, [field]: undefined}));
 
     if (timer) {
@@ -60,16 +64,27 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
     const newTimer = setTimeout(async () => {
       try {
-        await axios.get<User>(`${host}${apiUsersUrl}`, {
-          params: {q: text},
+        const {data} = await axios.get<UserExists>(
+          `${host}${apiUsersExistsUrl}`,
+          {
+            params: {
+              username: text.toLocaleLowerCase(),
+              email: text.toLocaleLowerCase(),
+            },
+          },
+        );
+
+        setFieldErrors(err => {
+          if (data.existsByUsername && field === 'username') {
+            err.username = '* This username is already taken';
+          }
+
+          if (data.existsByEmail && field === 'email') {
+            err.email = '* An account is already registered with this email';
+          }
+
+          return {...err};
         });
-
-        const message =
-          field === 'username'
-            ? '* An account with this username already exists'
-            : '* An account has been already registered with this email';
-
-        setFieldErrors(errors => ({...errors, [field]: message}));
       } catch (e) {
         console.log(e);
       }
@@ -79,12 +94,13 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
   };
 
   const onChangeText = (text: string, field: 'username' | 'password') => {
-    data.current[field] = text;
+    info.current[field] = text;
+    setFieldErrors(err => ({...err, [field]: undefined}));
   };
 
   const createAccount = async () => {
     try {
-      await axios.post(`${host}${apiUsersUrl}`, data.current);
+      await axios.post(`${host}${apiUsersUrl}`, info.current);
 
       displayToast({
         title: 'Account created',
@@ -95,9 +111,13 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
       Navigation.pop(componentId);
     } catch ({response}) {
-      const {data: errorData} = response as AxiosResponse;
-      fieldErrors.email = errorData.email;
-      fieldErrors.username = errorData.username;
+      const res = response as AxiosResponse;
+      if (res.status === 400) {
+        setFieldErrors(err => ({...err, ...res.data}));
+        return;
+      }
+
+      displayToast(genericErrorMessage);
     }
   };
 
@@ -178,6 +198,9 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
           />
         </Pressable>
       </View>
+      {fieldErrors.password && (
+        <Text style={styles.error}>{fieldErrors.password}</Text>
+      )}
 
       <View style={styles.buttonContainer}>
         <Text style={styles.joined}>
@@ -188,6 +211,9 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
         <Button
           text="Confirm"
+          disabled={
+            (fieldErrors.username || fieldErrors.email) as unknown as boolean
+          }
           width={width * 0.9}
           onPress={createAccount}
           extraStyle={styles.buttonMargin}

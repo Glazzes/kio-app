@@ -1,10 +1,11 @@
-import {StyleSheet, Image, Pressable, View, Text} from 'react-native';
+import {StyleSheet, Pressable, View, Text} from 'react-native';
 import React, {useContext, useRef} from 'react';
 import Animated, {BounceIn, FadeOut} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
 import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
 import {useSnapshot} from 'valtio';
 import authState from '../../../../store/authStore';
+import Avatar from '../../../../shared/components/Avatar';
 
 const IMAGE_SIZE = 40;
 
@@ -30,14 +31,8 @@ const UserAvatar = () => {
 
   return (
     <Pressable ref={ref} hitSlop={40} onPress={openUserMenu}>
-      {state.user.profilePicture ? (
-        <Image
-          source={{
-            uri: state.user.profilePicture,
-          }}
-          style={styles.image}
-          resizeMode={'cover'}
-        />
+      {state.user.pictureId ? (
+        <Avatar size={IMAGE_SIZE} includeBorder={false} user={state.user} />
       ) : (
         <View style={styles.initialContainer}>
           <Text style={styles.initial}>{state.user.username.slice(0, 1)}</Text>
@@ -54,11 +49,6 @@ const UserAvatar = () => {
 };
 
 const styles = StyleSheet.create({
-  image: {
-    height: IMAGE_SIZE,
-    width: IMAGE_SIZE,
-    borderRadius: IMAGE_SIZE / 2,
-  },
   initialContainer: {
     height: IMAGE_SIZE,
     width: IMAGE_SIZE,

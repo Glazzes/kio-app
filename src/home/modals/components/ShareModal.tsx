@@ -62,8 +62,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
       try {
         const {data} = await axiosInstance.get<User>(apiUsersUrl, {
           params: {
-            username: text,
-            email: text,
+            q: text,
           },
         });
 

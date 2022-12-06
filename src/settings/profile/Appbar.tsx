@@ -23,11 +23,13 @@ const Appbar: React.FC<AppbarProps> = ({
 
   return (
     <View style={[styles.appbar, {backgroundColor}]}>
-      <Pressable onPress={goBack} style={styles.pressable} hitSlop={50}>
-        <Icon name={'ios-arrow-back'} size={22} color={'#000'} />
-      </Pressable>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>{title}</Text>
+      <View style={styles.container}>
+        <Pressable onPress={goBack} style={styles.pressable} hitSlop={50}>
+          <Icon name={'ios-arrow-back'} size={22} color={'#000'} />
+        </Pressable>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{title}</Text>
+        </View>
       </View>
     </View>
   );
@@ -36,11 +38,15 @@ const Appbar: React.FC<AppbarProps> = ({
 const styles = StyleSheet.create({
   appbar: {
     width,
-    marginTop: statusBarHeight,
-    height: statusBarHeight * 2,
-    flexDirection: 'row',
+    paddingTop: statusBarHeight,
+    height: statusBarHeight * 3,
+  },
+  container: {
+    width,
     paddingHorizontal: width * 0.05,
+    flexDirection: 'row',
     alignItems: 'center',
+    height: statusBarHeight * 2,
   },
   pressable: {
     position: 'absolute',

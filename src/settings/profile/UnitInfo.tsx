@@ -21,6 +21,7 @@ import {axiosInstance} from '../../shared/requests/axiosInstance';
 import {apiUnitSize} from '../../shared/requests/contants';
 import {UnitSize} from '../../shared/types';
 import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
+import {displayToast, unitSizeLoadErrorMessage} from '../../shared/toast';
 
 type UnitInfoProps = {};
 
@@ -74,10 +75,13 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
 
   useEffect(() => {
     if (uberBold) {
-      axiosInstance.get<UnitSize>(apiUnitSize).then(({data}) => {
-        animateArc(data.used / data.capacity);
-        setStorage(data);
-      });
+      axiosInstance
+        .get<UnitSize>(apiUnitSize)
+        .then(({data}) => {
+          animateArc(data.used / data.capacity);
+          setStorage(data);
+        })
+        .catch(_ => displayToast(unitSizeLoadErrorMessage));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uberBold]);

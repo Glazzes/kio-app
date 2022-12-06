@@ -1,18 +1,21 @@
-export const host = 'http://192.168.42.3:8080';
+export const host = 'http://192.168.42.130:8080';
 
 const apiAuthUrl = '/api/v1/auth';
 export const apiAuthRevokeUrl = `${apiAuthUrl}/revoke`;
 
 export const apiUsersUrl = '/api/v1/users';
+export const apiUsersEditUrl = `${apiUsersUrl}/edit`;
+export const apiUsersExistsUrl = `${apiUsersUrl}/exists`;
 export const apiUsersMeUrl = `${apiUsersUrl}/me`;
 export const apiUsersByIdUrl = (id: string) => {
   return `${apiUsersUrl}/${id}`;
 };
 
-export const apiProfilePicture = '/api/v1/pfp';
-export const apiProfilePictureMeUrl = `${apiProfilePicture}/me`;
-export const apiProfilePictureByUserIdUrl = (id: string) => {
-  return `${apiProfilePicture}/${id}`;
+export const apiProfilePictureByUserIdAndPictureId = (
+  userId: string,
+  pictureId: string,
+) => {
+  return `${host}/api/v1/pfp/${userId}/${pictureId}`;
 };
 
 export const apiFilesUrl = '/api/v1/files';

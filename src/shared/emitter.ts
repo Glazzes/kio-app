@@ -147,3 +147,9 @@ export const emitFolderUpdatePreview = (
   const eventName = getFolderUpdatePreviewEventName(folderId);
   emitter.emit(eventName, files, folders);
 };
+
+// Miscelaneous
+export const hideImagePicker = 'Hide.Image.Picker';
+export const emitHideImagePicker = () => {
+  emitter.emit(hideImagePicker);
+};

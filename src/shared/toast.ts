@@ -206,6 +206,12 @@ export const savedProfileChangesSuccessMessage: ToastMessage = {
   type: NotificationType.SUCCESS,
 };
 
+export const nothingToSaveInfoMessage: ToastMessage = {
+  title: 'Nothing to save',
+  message: "There's nothing to change as no changes have been made",
+  type: NotificationType.INFO,
+};
+
 export const logoutSuccessMessage: ToastMessage = {
   title: 'See you later!',
   message: "You've been logged out successfully",
@@ -215,5 +221,18 @@ export const logoutSuccessMessage: ToastMessage = {
 export const genericErrorMessage: ToastMessage = {
   title: 'Oops...',
   message: 'An error ocurred, try again later',
+  type: NotificationType.ERROR,
+};
+
+export const unitSizeLoadErrorMessage: ToastMessage = {
+  title: 'Load error',
+  message: 'Kio could not retrieve information about your unit',
+  type: NotificationType.ERROR,
+};
+
+// Edit
+export const passwordConfirmationErrorMessage: ToastMessage = {
+  title: 'Save error',
+  message: 'Passwords do not match',
   type: NotificationType.ERROR,
 };

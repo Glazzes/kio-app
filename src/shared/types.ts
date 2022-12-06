@@ -34,7 +34,7 @@ export type User = {
   id: string;
   username: string;
   email: string;
-  hasProfilePicture: boolean;
+  pictureId: string | undefined;
 };
 
 export type Folder = {
@@ -57,6 +57,12 @@ export type UploadRequest = {
       thumbnailName: string | null;
     };
   };
+};
+
+export type EditUserRequest = {
+  username: string;
+  email: string;
+  password: string | undefined;
 };
 
 export type EditResourceRequest = {

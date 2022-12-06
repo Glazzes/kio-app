@@ -3,7 +3,7 @@ const unitNames = ['Gb', 'Mb', 'Kb', 'b'];
 
 export function convertBytesToRedableUnit(bytes: number): string {
   if (bytes < 1) {
-    return 'N/A';
+    return '0';
   }
 
   let flag = true;
