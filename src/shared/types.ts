@@ -59,6 +59,11 @@ export type UploadRequest = {
   };
 };
 
+export type FavoriteRequest = {
+  resourceId: string;
+  favorite: boolean;
+};
+
 export type EditUserRequest = {
   username: string;
   email: string;

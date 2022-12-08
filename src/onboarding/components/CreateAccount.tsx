@@ -212,7 +212,9 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
         <Button
           text="Confirm"
           disabled={
-            (fieldErrors.username || fieldErrors.email) as unknown as boolean
+            (fieldErrors.username ||
+              fieldErrors.email ||
+              fieldErrors.password) as unknown as boolean
           }
           width={width * 0.9}
           onPress={createAccount}

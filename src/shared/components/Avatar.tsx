@@ -23,8 +23,6 @@ type AvatarProps = {
   fontSize?: number;
 };
 
-const HEIGHT = 50;
-
 const Avatar: React.FC<AvatarProps> = ({
   user,
   includeBorder,
@@ -54,9 +52,9 @@ const Avatar: React.FC<AvatarProps> = ({
   });
 
   const circle: ViewStyle & ImageStyle = {
-    width: size ?? HEIGHT,
-    height: size ?? HEIGHT,
-    borderRadius: (size ?? HEIGHT) / 2,
+    width: size,
+    height: size,
+    borderRadius: size / 2,
     justifyContent: 'center',
     alignItems: 'center',
   };

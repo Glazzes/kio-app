@@ -20,7 +20,6 @@ import {NavigationContext} from '../../../../navigation/NavigationContextProvide
 import {Modals} from '../../../../navigation/screens/modals';
 import emitter, {
   getClearSelectionEventName,
-  getClenTextSearchEventName,
   getFavoriteEventName,
   getTextSearchEndTypingEventName,
   getTextSearchEventName,

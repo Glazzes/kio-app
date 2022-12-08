@@ -19,18 +19,21 @@ import {axiosInstance} from '../../../shared/requests/axiosInstance';
 import {apiUsersUrl} from '../../../shared/requests/contants';
 import {User} from '../../../shared/types';
 import UserSearch from '../../../misc/UserSearch';
+import authState from '../../../store/authStore';
+import {
+  coownerAddDuplicateErrorMessage,
+  coownerAddSelfErrorMessage,
+  displayToast,
+} from '../../../shared/toast';
+import Button from '../../../shared/components/Button';
 
 type ShareModalProps = {};
 
 const {width} = Dimensions.get('window');
 const WIDTH = width * 0.8;
 
-function renderItem(info: ListRenderItemInfo<string>) {
-  return <Contributor index={info.index} imageUrl={info.item} name={'glaze'} />;
-}
-
-function keyExtractor(item: string, index: number): string {
-  return `${item}-${index}`;
+function keyExtractor(item: User): string {
+  return `possible-coowner-${item.id}`;
 }
 
 function SeperatorComponent() {
@@ -43,12 +46,29 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
   const inputRef = useRef<TextInput>(null);
 
   const [user, setUser] = useState<User | null>(null);
-
-  const [coowners, setCoowners] = useState<string[]>([]);
   const [text, setText] = useState<string>('');
   const [timer, setTimer] = useState<NodeJS.Timeout>();
   const [isStyping, setIsStyping] = useState<boolean>(false);
   const [hasFetched, setHasFetched] = useState<boolean>(false);
+  const [coowners, setCoowners] = useState<User[]>([]);
+
+  const renderItem = (info: ListRenderItemInfo<User>) => {
+    const onPress = () => {
+      setCoowners(c => c.filter(it => it.id !== info.item.id));
+    };
+
+    return (
+      <Contributor
+        index={info.index}
+        user={info.item}
+        imageUrl={
+          'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.LVUsQvGdfnFcFKg-gzyYPQHaHa%26pid%3DApi&f=1&ipt=6be12d8c86e995e4d9b3dbbd629edd3a7af2e072c0968cccedf082b8ebc67829&ipo=images'
+        }
+        name={'glaze'}
+        onPress={onPress}
+      />
+    );
+  };
 
   const onChangeText = (value: string) => {
     setIsStyping(true);
@@ -62,7 +82,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
       try {
         const {data} = await axiosInstance.get<User>(apiUsersUrl, {
           params: {
-            q: text,
+            q: value,
           },
         });
 
@@ -74,25 +94,46 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
         setIsStyping(false);
         clearTimeout(newTimer);
       }
-    }, 1000);
+    }, 600);
 
     setTimer(newTimer);
   };
 
   const addCoowner = () => {
+    Keyboard.dismiss();
+
+    if (
+      text.toLocaleLowerCase() === authState.user.username.toLocaleLowerCase()
+    ) {
+      displayToast(coownerAddSelfErrorMessage);
+      return;
+    }
+
+    const duplicate = coowners.some(c => c.id === user?.id);
+    if (duplicate) {
+      displayToast(coownerAddDuplicateErrorMessage);
+      return;
+    }
+
     inputRef.current?.clear();
     setText('');
 
-    setCoowners(c => [
-      ...c,
-      'https://randomuser.me/api/portraits/women/10.jpg',
-    ]);
+    setCoowners(prev => {
+      if (user) {
+        return [user, ...prev];
+      }
+
+      return prev;
+    });
+    setUser(null);
   };
 
   const dissmis = () => {
     Navigation.dismissModal(componentId);
     Keyboard.dismiss();
   };
+
+  const share = async () => {};
 
   return (
     <View style={styles.root}>
@@ -116,9 +157,13 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
               autoCapitalize={'none'}
             />
           </View>
-          <Pressable style={styles.addButton} onPress={addCoowner}>
-            <Text style={styles.buttonText}>Add</Text>
-          </Pressable>
+          <Button
+            text={'Add'}
+            disabled={user === null || isStyping}
+            width={60}
+            extraStyle={styles.addButton}
+            onPress={addCoowner as any}
+          />
         </View>
 
         {isStyping && (
@@ -179,9 +224,13 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
             onPress={dissmis}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </Pressable>
-          <Pressable style={[styles.button, styles.confirmButton]}>
-            <Text style={styles.confirmButtonText}>Confirm</Text>
-          </Pressable>
+          <Button
+            width={WIDTH / 2 - 15}
+            disabled={coowners.length === 0}
+            text={'Confirm'}
+            onPress={share}
+            extraStyle={styles.button}
+          />
         </View>
       </ModalWrapper>
     </View>
@@ -247,7 +296,6 @@ const styles = StyleSheet.create({
     color: '#C5C8D7',
   },
   addButton: {
-    backgroundColor: '#3366ff',
     borderRadius: 5,
     height: 40,
     width: 60,

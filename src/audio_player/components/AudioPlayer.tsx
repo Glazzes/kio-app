@@ -35,6 +35,7 @@ import emitter, {
   emitFavoriteFile,
   getFavoriteEventName,
 } from '../../shared/emitter';
+import {favoriteResource} from '../../shared/requests/functions/favoriteResource';
 
 Sound.setCategory('Playback');
 
@@ -187,6 +188,12 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       }
     };
   }, [sound]);
+
+  useEffect(() => {
+    if (isFavorite !== file.isFavorite) {
+      favoriteResource(file, isFavorite);
+    }
+  }, [isFavorite]);
 
   return (
     <View style={styles.root}>

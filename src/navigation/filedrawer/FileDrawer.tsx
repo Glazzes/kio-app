@@ -14,11 +14,11 @@ import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRe
 import authState from '../../store/authStore';
 import {File, FileVisibility} from '../../shared/types';
 import {convertCurrentTimeToTextTime} from '../../audio_player/utils/functions/convertCurrentTimeToTextTime';
-import Avatar from '../../misc/Avatar';
 import {Screens} from '../../enums/screens';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
 import {folderSizeUrl} from '../../shared/requests/contants';
 import emitter from '../../shared/emitter';
+import Avatar from '../../shared/components/Avatar';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (
@@ -174,9 +174,14 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
       <View style={styles.textContainer}>
         <Text style={styles.item}>Owner</Text>
         <View style={styles.ownerContainer}>
-          <Avatar username={user.username} size={35} />
+          <Avatar user={user} size={35} includeBorder={false} />
+          <View style={styles.spacer} />
           <CollapsableText
-            text={file?.ownerId === user.id ? 'You' : user.username}
+            text={
+              file?.ownerId === user.id || last?.folder.ownerId === user.id
+                ? 'You'
+                : user.username
+            }
           />
         </View>
       </View>
@@ -240,6 +245,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  spacer: {
+    width: 10,
   },
   margin: {
     marginRight: 10,

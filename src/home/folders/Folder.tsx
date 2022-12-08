@@ -68,7 +68,7 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
   };
 
   const onLongPress = () => {
-    if (selection.locked) {
+    if (selection.locked || !selection.inProgress) {
       return;
     }
 

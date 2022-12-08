@@ -230,9 +230,35 @@ export const unitSizeLoadErrorMessage: ToastMessage = {
   type: NotificationType.ERROR,
 };
 
-// Edit
 export const passwordConfirmationErrorMessage: ToastMessage = {
   title: 'Save error',
   message: 'Passwords do not match',
   type: NotificationType.ERROR,
+};
+
+export const favoriteResourceSuccessMessage = (name: string): ToastMessage => {
+  return {
+    title: 'Favorited!',
+    message: `${name} has been favorited successfully`,
+    type: NotificationType.SUCCESS,
+  };
+};
+
+// Coowner
+export const coownerAddSelfErrorMessage: ToastMessage = {
+  title: 'Add error',
+  message: 'You can not add yourself as a coowner of this folder',
+  type: NotificationType.WARNING,
+};
+
+export const coownerAddDuplicateErrorMessage: ToastMessage = {
+  title: 'Add error',
+  message: 'You can not add a coowner twice',
+  type: NotificationType.WARNING,
+};
+
+export const coownerNothingToAddMessage: ToastMessage = {
+  title: 'Nothing?',
+  message: 'No coowners have been added',
+  type: NotificationType.INFO,
 };

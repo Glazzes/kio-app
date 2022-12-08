@@ -1,4 +1,4 @@
-import {View, Text, Image, StyleSheet} from 'react-native';
+import {Image, StyleSheet, Pressable} from 'react-native';
 import React from 'react';
 import {
   Canvas,
@@ -7,11 +7,15 @@ import {
   Paint,
   vec,
 } from '@shopify/react-native-skia';
+import {User} from '../shared/types';
+import Avatar from '../shared/components/Avatar';
 
 type ContributorProps = {
+  user: User;
   index: number;
   imageUrl: string;
   name?: string;
+  onPress?: () => void;
 };
 
 const gradients = [
@@ -24,9 +28,15 @@ const STROKE_WIDTH = 1.5;
 const SIZE = 45 - STROKE_WIDTH * 2.5;
 const CANVAS_SIZE = 50;
 
-const Contributor: React.FC<ContributorProps> = ({index, imageUrl, name}) => {
+const Contributor: React.FC<ContributorProps> = ({
+  index,
+  imageUrl,
+  name,
+  onPress,
+  user,
+}) => {
   return (
-    <View style={styles.photoContainer}>
+    <Pressable style={styles.photoContainer} onPress={onPress}>
       <Canvas style={styles.canvas}>
         <Circle
           r={CANVAS_SIZE / 2 - STROKE_WIDTH}
@@ -42,8 +52,12 @@ const Contributor: React.FC<ContributorProps> = ({index, imageUrl, name}) => {
           </Paint>
         </Circle>
       </Canvas>
-      <Image source={{uri: imageUrl}} style={styles.photo} />
-    </View>
+      {user ? (
+        <Avatar size={SIZE} includeBorder={false} user={user} />
+      ) : (
+        <Image source={{uri: imageUrl}} style={styles.photo} />
+      )}
+    </Pressable>
   );
 };
 
@@ -63,10 +77,6 @@ const styles = StyleSheet.create({
     height: SIZE,
     width: SIZE,
     borderRadius: SIZE / 2,
-  },
-  username: {
-    marginTop: 20,
-    fontFamily: 'bold',
   },
 });
 

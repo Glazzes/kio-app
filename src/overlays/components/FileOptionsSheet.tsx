@@ -44,6 +44,18 @@ import {deleteFolder} from '../utils/deleteFolder';
 import {displayGenericModal} from '../../shared/functions/navigation/displayGenericModal';
 import {Modals} from '../../navigation/screens/modals';
 import {downloadResource} from '../../shared/requests/functions/downloadResource';
+import {favoriteResource} from '../../shared/requests/functions/favoriteResource';
+import {CopyType} from '../../shared/enums';
+import {
+  addFileToSelection,
+  addFolderToSelection,
+  toggleSelectionLock,
+} from '../../store/fileSelection';
+import {
+  displayToast,
+  favoriteResourceSuccessMessage,
+  genericErrorMessage,
+} from '../../shared/toast';
 
 type FileOptionSheetProps = {
   parentFolderId: string;
@@ -74,7 +86,7 @@ const sections: {title: string; data: Action[]}[] = [
   {
     title: 'Copy',
     data: [
-      {icon: 'ios-copy', text: 'Copy '},
+      {icon: 'ios-copy', text: 'Copy'},
       {icon: 'ios-cut', text: 'Cut'},
     ],
   },
@@ -199,6 +211,14 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
         edit();
         return;
 
+      case 'Copy':
+        copyCutResource(CopyType.COPY);
+        return;
+
+      case 'Cut':
+        copyCutResource(CopyType.CUT);
+        return;
+
       case 'Download':
         download();
         return;
@@ -274,6 +294,13 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
 
   const faveFile = () => {
     emitFavoriteFile(file.id);
+    try {
+      await favoriteResource(file, !file.isFavorite);
+      const message = favoriteResourceSuccessMessage(file.name);
+      displayToast(message);
+    } catch (e) {
+      displayToast(genericErrorMessage);
+    }
   };
 
   const download = () => {
@@ -304,6 +331,25 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
       title: `Delete "${file.name}"`,
       message,
       action: deleteCurrentFile,
+    });
+  };
+
+  const copyCutResource = (type: CopyType) => {
+    if (isFile) {
+      addFileToSelection(file as File);
+    } else {
+      addFolderToSelection(file as Folder);
+    }
+
+    toggleSelectionLock();
+
+    Navigation.showOverlay({
+      component: {
+        name: Modals.COPY,
+        passProps: {
+          copyType: type,
+        },
+      },
     });
   };
 
