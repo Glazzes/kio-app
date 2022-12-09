@@ -2,7 +2,7 @@
 import {StyleSheet, Dimensions, View} from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
-import AppHeader from './misc/header/components/AppHeader';
+import AppHeader from './header/components/AppHeader';
 import {
   FlashList,
   FlashListProps,
@@ -12,7 +12,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
-import Appbar from './misc/header/components/Appbar';
+import Appbar from './header/components/Appbar';
 import FAB from './misc/filefab/FAB';
 import {Dimension, File, Folder, Page} from '../shared/types';
 import FileWrapper from './files/thumnnails/components/FileWrapper';
@@ -47,6 +47,7 @@ import {
   pushNavigationScreen,
   removeByComponentId,
 } from '../store/navigationStore';
+import {displayToast, loadContentError} from '../shared/toast';
 
 type HomeProps = {
   folder?: Folder;
@@ -91,8 +92,9 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     }
 
     if (folder) {
-      getFolderFiles(folder, filesPage.pageNumber + 1, page => {
-        const content = [...filesPage.content, ...page.content];
+      const {data} = await getFolderFiles(folder, filesPage.pageNumber + 1);
+      setFilesPage(page => {
+        const content = [...filesPage.content, ...data.content];
         return {...page, content};
       });
     }
@@ -306,18 +308,21 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
 
   useEffect(() => {
     if (folder) {
-      getFolderFiles(folder, 0, page => {
-        setFilesPage(page);
-        setFilteredPageContent(page.content);
-        setFetchedFiles(true);
-      });
+      const filesPromise = getFolderFiles(folder, 0);
+      const subFoldersPromise = getFolderSubFolders(folder, 0);
+      Promise.all([filesPromise, subFoldersPromise])
+        .then(([filesResponse, subFoldersReponse]) => {
+          setFilesPage(filesResponse.data);
+          setFilteredPageContent(filesResponse.data.content);
+          setSubFolders(subFoldersReponse.data.content);
 
-      if (folder.summary.folders > 0) {
-        getFolderSubFolders(folder, 0, page => {
-          setSubFolders(page.content);
           setFetchedFolders(true);
+          setFetchedFiles(true);
+        })
+        .catch(_ => {
+          const message = loadContentError(folder.name);
+          displayToast(message);
         });
-      }
     }
   }, [folder]);
 

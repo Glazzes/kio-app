@@ -12,10 +12,10 @@ import {
   emitCleanTextSearch,
   emitTextSearch,
   emitTextSearchEndTyping,
-} from '../../../../shared/emitter';
+} from '../../../shared/emitter';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
-import {withKeyboard} from '../../../../utils/hoc';
-import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {withKeyboard} from '../../../shared/hoc';
+import {NavigationContext} from '../../../navigation/components/NavigationContextProvider';
 
 const {width} = Dimensions.get('window');
 const CLOSE_ICON_SIZE = 20;

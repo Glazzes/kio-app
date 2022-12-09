@@ -20,24 +20,24 @@ import Animated, {
 import emitter, {
   emitClearSelection,
   getFolderUpdatePreviewEventName,
-} from '../../../../shared/emitter';
+} from '../../../shared/emitter';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../navigation/components/NavigationContextProvider';
 import UserAvatar from './UserAvatar';
-import {Modals} from '../../../../navigation/screens/modals';
+import {Modals} from '../../../navigation/screens/modals';
 import {useSnapshot} from 'valtio';
-import authState from '../../../../store/authStore';
+import authState from '../../../store/authStore';
 import {
   clearFileSelection,
   fileSelectionState,
   toggleSelectionLock,
-} from '../../../../store/fileSelection';
-import {CopyType} from '../../../../shared/enums';
-import {File, Folder} from '../../../../shared/types';
-import {Screens} from '../../../../enums/screens';
+} from '../../../store/fileSelection';
+import {CopyType} from '../../../shared/enums';
+import {File, Folder} from '../../../shared/types';
+import {Screens} from '../../../enums/screens';
 import {donwloadSelection} from '../utils/downloadSelection';
 import {deleteSelection} from '../utils/deleteSelection';
-import {displayGenericModal} from '../../../../shared/functions/navigation/displayGenericModal';
+import {displayGenericModal} from '../../../navigation/functionts/displayGenericModal';
 
 type AppbarProps = {
   scrollY: Animated.SharedValue<number>;

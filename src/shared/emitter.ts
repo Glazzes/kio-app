@@ -1,6 +1,6 @@
 import {EventEmitter} from 'fbemitter';
 import {UpdateFolderEvent} from '../home/utils/types';
-import {File, Folder} from './types';
+import {File, Folder, User} from './types';
 
 const emitter = new EventEmitter();
 export default emitter;
@@ -146,6 +146,35 @@ export const emitFolderUpdatePreview = (
 ) => {
   const eventName = getFolderUpdatePreviewEventName(folderId);
   emitter.emit(eventName, files, folders);
+};
+
+// Coowner events
+export const getAddCoownerEventName = (parentFolderId: string) => {
+  return `coowner-add-${parentFolderId}`;
+};
+
+export const emitAddCoowner = (parentFolderId: string, user: User) => {
+  const eventName = getAddCoownerEventName(parentFolderId);
+  emitter.emit(eventName, user);
+};
+
+export const getDeleteCoownerEventName = (parentFolderId: string) => {
+  return `coowner-delete-${parentFolderId}`;
+};
+
+export const emitDeleteCoowner = (parentFolderId: string, userId: string) => {
+  const eventName = getDeleteCoownerEventName(parentFolderId);
+  emitter.emit(eventName, userId);
+};
+
+// Push to Image Details
+export const getPushToImageDetailsEventName = (id: string) => {
+  return `push-image-${id}`;
+};
+
+export const emitPushToImageDetails = (id: string) => {
+  const eventName = getPushToImageDetailsEventName(id);
+  emitter.emit(eventName);
 };
 
 // Miscelaneous

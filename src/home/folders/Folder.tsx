@@ -11,7 +11,7 @@ import {
 import AvatarGroup from './AvatarGroup';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../navigation/screens/modals';
-import {NavigationContext} from '../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../navigation/components/NavigationContextProvider';
 import {Screens} from '../../enums/screens';
 import {Folder as FolderType} from '../../shared/types';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';

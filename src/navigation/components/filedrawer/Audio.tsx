@@ -9,8 +9,8 @@ import {
   Path,
   vec,
 } from '@shopify/react-native-skia';
-import {convertAudioPointsToBarPoints} from '../../audio_player/utils/functions/convertAudioPointsToBarPoints';
-import {createWaveFormPath} from '../../audio_player/utils/functions/createWaveFormPath';
+import {convertAudioPointsToBarPoints} from '../../../audio_player/utils/functions/convertAudioPointsToBarPoints';
+import {createWaveFormPath} from '../../../audio_player/utils/functions/createWaveFormPath';
 
 type AudioProps = {
   height: number;

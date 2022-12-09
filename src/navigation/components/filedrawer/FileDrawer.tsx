@@ -9,16 +9,16 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import DrawerImageThumbnail from './DrawerImageThumbnail';
 import {useSnapshot} from 'valtio';
-import {navigationState} from '../../store/navigationStore';
-import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
-import authState from '../../store/authStore';
-import {File, FileVisibility} from '../../shared/types';
-import {convertCurrentTimeToTextTime} from '../../audio_player/utils/functions/convertCurrentTimeToTextTime';
-import {Screens} from '../../enums/screens';
-import {axiosInstance} from '../../shared/requests/axiosInstance';
-import {folderSizeUrl} from '../../shared/requests/contants';
-import emitter from '../../shared/emitter';
-import Avatar from '../../shared/components/Avatar';
+import {navigationState} from '../../../store/navigationStore';
+import {convertBytesToRedableUnit} from '../../../shared/functions/convertBytesToRedableUnit';
+import authState from '../../../store/authStore';
+import {File, FileVisibility} from '../../../shared/types';
+import {convertCurrentTimeToTextTime} from '../../../audio_player/utils/functions/convertCurrentTimeToTextTime';
+import {Screens} from '../../../enums/screens';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {folderSizeUrl} from '../../../shared/requests/contants';
+import emitter from '../../../shared/emitter';
+import Avatar from '../../../shared/components/Avatar';
 
 const CollapsableText: React.FC<{text: string}> = ({text}) => {
   return (

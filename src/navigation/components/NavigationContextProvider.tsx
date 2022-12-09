@@ -1,5 +1,5 @@
 import React, {createContext} from 'react';
-import {Folder} from '../shared/types';
+import {Folder} from '../../shared/types';
 
 type Context = {
   componentId: string;

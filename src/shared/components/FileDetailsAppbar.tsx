@@ -9,15 +9,15 @@ import {Navigation} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import emitter, {emitDissLastModal, hideAppbarEventName} from '../emitter';
 import {Overlays} from '../enum/Overlays';
-import {Modals} from '../../navigation/screens/modals';
 import {File} from '../types';
 import {shareFile} from '../../overlays/utils/share';
 
 type FileDetailsAppbarProps = {
   file: File;
-  parentComponentId: string;
+  componentId: string;
+  isModal: true;
+  openMenu: () => void;
   isVideoReadyForDisplay?: boolean;
-  isModal: boolean;
 };
 
 const {width} = Dimensions.get('window');
@@ -25,10 +25,11 @@ const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
 
 const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
-  parentComponentId,
-  isModal,
-  isVideoReadyForDisplay,
   file,
+  componentId,
+  isModal,
+  openMenu,
+  isVideoReadyForDisplay,
 }) => {
   const isHidden = useRef<boolean>(false);
 
@@ -45,33 +46,22 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
       return;
     }
 
-    Navigation.pop(parentComponentId);
+    Navigation.pop(componentId);
   };
 
   const openPIP = () => {
     if (isVideoReadyForDisplay) {
       const tout = setTimeout(() => {
-        Navigation.pop(parentComponentId);
+        Navigation.pop(componentId);
         clearTimeout(tout);
       }, 1000);
     } else {
-      Navigation.pop(parentComponentId);
+      Navigation.pop(componentId);
     }
 
     Navigation.showOverlay({
       component: {
         name: Overlays.PICTURE_IN_PICTURE_VIDEO,
-        passProps: {
-          file,
-        },
-      },
-    });
-  };
-
-  const openMenu = () => {
-    Navigation.showModal({
-      component: {
-        name: Modals.FILE_MENU,
         passProps: {
           file,
         },
@@ -85,7 +75,7 @@ const FileDetailsAppbar: React.FC<FileDetailsAppbarProps> = ({
         translateY.value === 0 ? -statusBarHeight * 3 : 0,
       );
 
-      Navigation.mergeOptions(parentComponentId, {
+      Navigation.mergeOptions(componentId, {
         statusBar: {
           visible: isHidden.current,
         },

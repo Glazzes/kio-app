@@ -44,7 +44,7 @@ const VideoPlayer: NavigationFunctionComponent<VideoPlayerProps> = ({
       {!ready && <ThumbnailLoadingIndicator file={file} />}
       <FileDetailsAppbar
         file={file}
-        parentComponentId={componentId}
+        componentId={componentId}
         isModal={false}
         isVideoReadyForDisplay={ready}
       />

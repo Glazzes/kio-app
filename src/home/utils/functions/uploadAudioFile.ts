@@ -52,8 +52,7 @@ export const uploadAudioFile = (
 
       emitFolderAddFiles(folderId, data);
     } catch (e) {
-      const uploadError = uploadFilesErrorMessage;
-      displayToast(uploadError);
+      displayToast(uploadFilesErrorMessage);
     } finally {
       sound.release();
     }

@@ -200,6 +200,7 @@ export const shareNotAvialableErrorMessage: ToastMessage = {
   type: NotificationType.ERROR,
 };
 
+// Edit Profile
 export const savedProfileChangesSuccessMessage: ToastMessage = {
   title: 'Saved changes',
   message: 'Your account has been updated successfully',
@@ -210,6 +211,15 @@ export const nothingToSaveInfoMessage: ToastMessage = {
   title: 'Nothing to save',
   message: "There's nothing to change as no changes have been made",
   type: NotificationType.INFO,
+};
+
+// Miscelaneous
+export const loadContentError = (name: string): ToastMessage => {
+  return {
+    title: 'Load error',
+    message: `Kio was not able to load ${name}'s contents`,
+    type: NotificationType.ERROR,
+  };
 };
 
 export const logoutSuccessMessage: ToastMessage = {
@@ -236,10 +246,15 @@ export const passwordConfirmationErrorMessage: ToastMessage = {
   type: NotificationType.ERROR,
 };
 
-export const favoriteResourceSuccessMessage = (name: string): ToastMessage => {
+export const favoriteResourceSuccessMessage = (
+  name: string,
+  state: boolean,
+): ToastMessage => {
   return {
-    title: 'Favorited!',
-    message: `${name} has been favorited successfully`,
+    title: state ? 'Favorited!' : 'Unfavorited!',
+    message: `${name} has been ${
+      state ? 'favorited' : 'unfavorited'
+    } successfully`,
     type: NotificationType.SUCCESS,
   };
 };

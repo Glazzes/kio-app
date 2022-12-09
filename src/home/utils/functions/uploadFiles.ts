@@ -30,7 +30,6 @@ export const uploadFiles = async (
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      onUploadProgress: e => console.log(e),
     });
 
     emitFolderAddFiles(parentFolderId, data);

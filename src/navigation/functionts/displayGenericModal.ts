@@ -1,5 +1,5 @@
 import {Navigation} from 'react-native-navigation';
-import {Modals} from '../../../navigation/screens/modals';
+import {Modals} from '../screens/modals';
 
 type GenericModalProps = {
   title: string;

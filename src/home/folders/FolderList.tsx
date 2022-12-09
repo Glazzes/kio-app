@@ -8,7 +8,7 @@ import emitter, {
 } from '../../shared/emitter';
 import FolderSkeleton from '../../misc/skeleton/FolderSkeleton';
 import {Folder as FolderType} from '../../shared/types';
-import {NavigationContext} from '../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../navigation/components/NavigationContextProvider';
 
 type FolderListProps = {
   folders: FolderType[];

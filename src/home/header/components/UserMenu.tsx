@@ -17,9 +17,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {Screens} from '../../../../enums/screens';
-import {Modals} from '../../../../navigation/screens/modals';
-import {logout} from '../../../../shared/requests/functions/logout';
+import {Screens} from '../../../enums/screens';
+import {Modals} from '../../../navigation/screens/modals';
+import {logout} from '../../../shared/requests/functions/logout';
 
 type UserMenuProps = {
   x: number;

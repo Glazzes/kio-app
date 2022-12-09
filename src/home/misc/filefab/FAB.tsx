@@ -14,7 +14,7 @@ import FABOption from './FABOption';
 import emitter from '../../../shared/emitter';
 import {Event} from '../../../enums/events';
 import {FabAction} from './types';
-import {NavigationContext} from '../../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../navigation/components/NavigationContextProvider';
 import {SelectAction} from '../../utils/enums';
 
 type FABProps = {

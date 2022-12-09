@@ -20,7 +20,7 @@ import {snapPoint} from 'react-native-redash';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Screens} from '../../enums/screens';
 import {NotificationType} from '../../enums/notification';
-import {clamp} from '../../shared/functions/clamp';
+import {clamp} from '../../shared/functions/animations/clamp';
 
 type PricingSheetProps = {};
 

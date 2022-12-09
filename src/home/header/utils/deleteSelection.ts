@@ -1,18 +1,18 @@
-import {axiosInstance} from '../../../../shared/requests/axiosInstance';
-import {apiFilesUrl, apiFolderById} from '../../../../shared/requests/contants';
-import {FileDeleteRequest} from '../../../../shared/requests/types';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {apiFilesUrl, apiFolderById} from '../../../shared/requests/contants';
+import {FileDeleteRequest} from '../../../shared/requests/types';
 import {
   deleteSelectionErrorMessage,
   deleteSelectionSuccessMessage,
   displayToast,
-} from '../../../../shared/toast';
-import {File, Folder} from '../../../../shared/types';
-import {clearFileSelection} from '../../../../store/fileSelection';
+} from '../../../shared/toast';
+import {File, Folder} from '../../../shared/types';
+import {clearFileSelection} from '../../../store/fileSelection';
 import {
   emitFolderDeleteFiles,
   emitFolderDeleteFolders,
   emitFolderUpdatePreview,
-} from '../../../../shared/emitter';
+} from '../../../shared/emitter';
 
 export const deleteSelection = async (
   from: string,

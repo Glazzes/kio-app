@@ -14,7 +14,7 @@ import {
 } from 'react-native-navigation';
 import Appbar from '../profile/Appbar';
 import emitter, {updatePictureEventName} from '../../shared/emitter';
-import ImagePicker from '../picker/ImagePicker';
+import ImagePicker from './ImagePicker';
 import Animated, {
   BounceIn,
   useSharedValue,
@@ -30,7 +30,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {ScrollView} from 'react-native-gesture-handler';
 import {EditUserRequest, Folder, User, UserExists} from '../../shared/types';
-import {displayGenericModal} from '../../shared/functions/navigation/displayGenericModal';
+import {displayGenericModal} from '../../navigation/functionts/displayGenericModal';
 import {
   displayToast,
   genericErrorMessage,

@@ -16,7 +16,7 @@ import {
 } from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {ZoomIn, ZoomOut} from 'react-native-reanimated';
-import {withKeyboard} from '../../../utils/hoc';
+import {withKeyboard} from '../../../shared/hoc';
 import ModalWrapper from './ModalWrapper';
 import Button from '../../../shared/components/Button';
 import {createFolder} from '../utils/createFolder';

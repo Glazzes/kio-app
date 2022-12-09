@@ -12,7 +12,7 @@ import React, {useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import {withKeyboard} from '../../utils/hoc';
+import {withKeyboard} from '../../shared/hoc';
 import {NotificationType} from '../../enums/notification';
 import axios, {AxiosResponse} from 'axios';
 import {

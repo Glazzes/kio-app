@@ -31,10 +31,7 @@ import {staticFileUrl} from '../../shared/requests/contants';
 import {audioLoadErrorMessage, displayToast} from '../../shared/toast';
 import {shareFile} from '../../overlays/utils/share';
 import {Modals} from '../../navigation/screens/modals';
-import emitter, {
-  emitFavoriteFile,
-  getFavoriteEventName,
-} from '../../shared/emitter';
+import {emitFavoriteFile} from '../../shared/emitter';
 import {favoriteResource} from '../../shared/requests/functions/favoriteResource';
 
 Sound.setCategory('Playback');
@@ -75,6 +72,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
 
   const toggleFavorite = async () => {
     emitFavoriteFile(file.id);
+    setIsFavorite(f => !f);
     await impactAsync(ImpactFeedbackStyle.Light);
   };
 
@@ -162,14 +160,8 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       })
       .catch(_ => displayToast(audioLoadErrorMessage));
 
-    const favoriteEventName = getFavoriteEventName(file.id);
-    const faveFile = emitter.addListener(favoriteEventName, () =>
-      setIsFavorite(f => !f),
-    );
-
     return () => {
       RNFS.unlink(toFile).catch(_ => {});
-      faveFile.remove();
     };
   }, []);
 
@@ -190,9 +182,12 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   }, [sound]);
 
   useEffect(() => {
-    if (isFavorite !== file.isFavorite) {
-      favoriteResource(file, isFavorite);
-    }
+    return () => {
+      if (isFavorite !== file.isFavorite) {
+        favoriteResource(file, isFavorite);
+        emitFavoriteFile(file.id);
+      }
+    };
   }, [isFavorite]);
 
   return (

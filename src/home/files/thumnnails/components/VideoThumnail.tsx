@@ -5,7 +5,7 @@ import {Navigation} from 'react-native-navigation';
 import {Screens} from '../../../../enums/screens';
 import {SIZE} from '../utils/constants';
 import emitter from '../../../../shared/emitter';
-import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../../navigation/components/NavigationContextProvider';
 import {File} from '../../../../shared/types';
 import {useSnapshot} from 'valtio';
 import authState from '../../../../store/authStore';

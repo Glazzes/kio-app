@@ -1,7 +1,10 @@
 import {AxiosResponse} from 'axios';
-import {CopyRequest, File, Folder} from '../../types';
-import {axiosInstance} from '../axiosInstance';
-import {apiCopyFilesUrl, apiCopyFoldersUrl} from '../contants';
+import {axiosInstance} from '../../../shared/requests/axiosInstance';
+import {
+  apiCopyFilesUrl,
+  apiCopyFoldersUrl,
+} from '../../../shared/requests/contants';
+import {File, Folder, CopyRequest} from '../../../shared/types';
 
 type ItemType = 'files' | 'folders';
 type CopyResult<T extends ItemType> = T extends 'files' ? File[] : Folder[];

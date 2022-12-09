@@ -19,7 +19,7 @@ import axios from 'axios';
 import {TokenResponse} from '../../shared/types';
 import authState from '../../store/authStore';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
-import {withKeyboard} from '../../utils/hoc';
+import {withKeyboard} from '../../shared/hoc';
 import {mainRoot} from '../../navigation/roots';
 import RNBootSplash from 'react-native-bootsplash';
 import {host} from '../../shared/requests/contants';

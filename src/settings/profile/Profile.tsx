@@ -1,12 +1,12 @@
 import {View, StyleSheet, Dimensions, Text, Pressable} from 'react-native';
 import React from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
-import Appbar from './profile/Appbar';
-import UserInfo from './profile/UserInfo';
-import UnitInfo from './profile/UnitInfo';
+import Appbar from './Appbar';
+import UserInfo from './UserInfo';
+import UnitInfo from './UnitInfo';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
-import {logout} from '../shared/requests/functions/logout';
+import {logout} from '../../shared/requests/functions/logout';
 
 const {width} = Dimensions.get('window');
 
@@ -30,7 +30,7 @@ const actions: Action[] = [
   },
 ];
 
-const Settings: NavigationFunctionComponent = ({componentId}) => {
+const Profile: NavigationFunctionComponent = ({componentId}) => {
   return (
     <View style={styles.root}>
       <Appbar title={'Settings'} parentComponentId={componentId} />
@@ -70,7 +70,7 @@ const Settings: NavigationFunctionComponent = ({componentId}) => {
   );
 };
 
-Settings.options = {
+Profile.options = {
   statusBar: {
     visible: true,
     drawBehind: true,
@@ -131,4 +131,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Settings;
+export default Profile;

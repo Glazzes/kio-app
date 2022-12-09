@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useVector} from 'react-native-redash';
-import {clamp, pinch, set} from '../../utils/animations';
+import {set} from '../../utils/animations';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {FlipType, manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import EffectIndicator from './EffectIndicator';
@@ -26,6 +26,8 @@ import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';
 import {Canvas, Skia, Path} from '@shopify/react-native-skia';
 import {Screens} from '../../enums/screens';
+import {clamp} from '../../shared/functions/animations/clamp';
+import {pinch} from '../../shared/functions/animations/pinch';
 
 type CropEditorProps = {
   uri: string;

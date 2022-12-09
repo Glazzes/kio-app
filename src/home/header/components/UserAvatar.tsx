@@ -2,10 +2,10 @@ import {StyleSheet, Pressable, View, Text} from 'react-native';
 import React, {useContext, useRef} from 'react';
 import Animated, {BounceIn, FadeOut} from 'react-native-reanimated';
 import {Navigation} from 'react-native-navigation';
-import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../navigation/components/NavigationContextProvider';
 import {useSnapshot} from 'valtio';
-import authState from '../../../../store/authStore';
-import Avatar from '../../../../shared/components/Avatar';
+import authState from '../../../store/authStore';
+import Avatar from '../../../shared/components/Avatar';
 
 const IMAGE_SIZE = 40;
 

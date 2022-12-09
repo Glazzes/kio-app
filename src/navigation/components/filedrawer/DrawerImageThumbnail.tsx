@@ -8,10 +8,10 @@ import {
 import React, {useMemo} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useSnapshot} from 'valtio';
-import authState from '../../store/authStore';
+import authState from '../../../store/authStore';
 import Audio from './Audio';
-import {File} from '../../shared/types';
-import {staticFileUrl} from '../../shared/requests/contants';
+import {File} from '../../../shared/types';
+import {staticFileUrl} from '../../../shared/requests/contants';
 
 type DrawerImageThumbnailProps = {
   file: File;

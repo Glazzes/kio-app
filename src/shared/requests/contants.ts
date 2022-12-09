@@ -1,4 +1,4 @@
-export const host = 'http://192.168.42.148:8080';
+export const host = 'http://192.168.42.130:8080';
 
 const apiAuthUrl = '/api/v1/auth';
 export const apiAuthRevokeUrl = `${apiAuthUrl}/revoke`;

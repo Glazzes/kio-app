@@ -24,7 +24,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import {clamp} from '../../utils/animations';
 import {
   Asset,
   getAlbumsAsync,
@@ -36,6 +35,7 @@ import PickerPicture from './PickerPicture';
 import {snapPoint} from 'react-native-redash';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import emitter, {hideImagePicker} from '../../shared/emitter';
+import {clamp} from '../../shared/functions/animations/clamp';
 
 type ImagePickerProps = {
   translateY: Animated.SharedValue<number>;

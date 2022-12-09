@@ -4,12 +4,7 @@ import RNFS from 'react-native-fs';
 import {staticFileUrl, staticFolderUrl} from '../contants';
 import {displayNotification} from '../../functions/displayNotification';
 import authState from '../../../store/authStore';
-import {
-  displayToast,
-  downloadErrorMessage,
-  downloadSuccessMessage,
-} from '../../toast';
-import notifee from '@notifee/react-native';
+import {displayToast, downloadErrorMessage} from '../../toast';
 
 export const downloadResource = async (file: File | Folder) => {
   const isFile = (file as File).contentType !== undefined;
@@ -31,10 +26,12 @@ export const downloadResource = async (file: File | Folder) => {
       Authorization: `Bearer ${authState.tokens.accessToken}`,
     },
   })
-    .promise.then(_ => {
-      notifee.cancelDisplayedNotification(id);
-      const message = downloadSuccessMessage(file.name);
-      displayToast(message);
+    .promise.then(async _ => {
+      await displayNotification({
+        id,
+        title: 'Download completed',
+        body: `${file.name} was downloaded successfully`,
+      });
     })
     .catch(_ => {
       displayToast(downloadErrorMessage);

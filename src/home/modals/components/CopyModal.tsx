@@ -6,7 +6,7 @@ import {
   View,
   Pressable,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Animated, {
   runOnJS,
@@ -36,13 +36,13 @@ import {
 } from '../../../store/navigationStore';
 import {CopyType} from '../../../shared/enums';
 import {CopyRequest} from '../../../shared/types';
-import {cutSelection} from '../../../shared/requests/functions/cutSelection';
-import {copySelection} from '../../../shared/requests/functions/copySelection';
+import {cutSelection} from '../../header/utils/cutSelection';
 import {
   copySelectionErrorMessage,
   copySelectionSuccessMessage,
   displayToast,
 } from '../../../shared/toast';
+import {copySelection} from '../../header/utils/copySelection';
 
 type CopyModalProps = {
   copyType: CopyType;
@@ -56,7 +56,7 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
 }) => {
   const navigation = useSnapshot(navigationState);
   const selection = useSnapshot(fileSelectionState);
-  const [isCopying, setIsCopying] = useState<boolean>(false);
+  // const [isCopying, setIsCopying] = useState<boolean>(false);
 
   const isMeasured = useRef<boolean>(false);
 

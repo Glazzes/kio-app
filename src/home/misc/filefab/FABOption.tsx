@@ -5,7 +5,7 @@ import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {pickMultiple} from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../../navigation/screens/modals';
-import {NavigationContext} from '../../../navigation/NavigationContextProvider';
+import {NavigationContext} from '../../../navigation/components/NavigationContextProvider';
 import {Screens} from '../../../enums/screens';
 import {uploadFiles} from '../../utils/functions/uploadFiles';
 

@@ -1,12 +1,12 @@
-import {File, Folder} from '../../../../shared/types';
+import {File, Folder} from '../../../shared/types';
 import {
   staticFileUrl,
   staticFolderUrl,
-} from '../../../../shared/requests/contants';
+} from '../../../shared/requests/contants';
 import RNFS from 'react-native-fs';
 import {Platform} from 'react-native';
 import notifee from '@notifee/react-native';
-import authState from '../../../../store/authStore';
+import authState from '../../../store/authStore';
 
 type DownloadFile = {
   uri: string;

@@ -1,5 +1,5 @@
 import {Dimensions, StyleSheet, View} from 'react-native';
-import React, {useEffect, useRef} from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
 import {useVector} from 'react-native-redash';
 import Animated, {
   measure,
@@ -11,15 +11,18 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import emitter from '../../../../shared/emitter';
+import emitter, {
+  getPushToImageDetailsEventName,
+} from '../../../../shared/emitter';
 import authState from '../../../../store/authStore';
-import {clamp} from '../../../../shared/functions/clamp';
-import {pinch} from '../../../../utils/animations';
+import {clamp} from '../../../../shared/functions/animations/clamp';
 import {Dimension, File} from '../../../../shared/types';
 import {useSnapshot} from 'valtio';
 import {SIZE} from '../utils/constants';
-import {pushToImageDetails} from '../../../../shared/functions/navigation/pushToImageDetails';
+import {pushToImageDetails} from '../../../../navigation/functionts/pushToImageDetails';
 import {staticFileUrl} from '../../../../shared/requests/contants';
+import {NavigationContext} from '../../../../navigation/components/NavigationContextProvider';
+import {pinch} from '../../../../shared/functions/animations/pinch';
 
 type Reflection = {
   dimensions: Animated.SharedValue<Dimension>;
@@ -51,6 +54,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   dimensions,
 }) => {
   const uri = staticFileUrl(file.id);
+  const {folder} = useContext(NavigationContext);
 
   const {accessToken} = useSnapshot(authState.tokens);
   const imageDimensions = useRef<Dimension>({
@@ -128,8 +132,17 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
   }));
 
   useEffect(() => {
-    const push = emitter.addListener(`push-${file.id}-image`, () => {
-      pushToImageDetails(file, uri, opacity, imageDimensions.current);
+    const eventName = getPushToImageDetailsEventName(file.id);
+    const push = emitter.addListener(eventName, () => {
+      pushToImageDetails({
+        file: file,
+        dimensions: {
+          width: file.details.dimensions?.[0] ?? SIZE,
+          height: file.details.dimensions?.[1] ?? SIZE,
+        },
+        opacity,
+        parentFolderId: folder?.id ?? '',
+      });
     });
 
     return () => {
@@ -137,7 +150,7 @@ const ImageThumbnail: React.FC<ImageThumbnailProps & Reflection> = ({
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [folder]);
 
   return (
     <View style={styles.root} ref={aref}>

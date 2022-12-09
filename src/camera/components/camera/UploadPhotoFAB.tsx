@@ -15,7 +15,7 @@ import emitter, {
   emitFolderUpdatePreview,
 } from '../../../shared/emitter';
 import {PicturePickerEvent} from '../../utils/enums';
-import {displayGenericModal} from '../../../shared/functions/navigation/displayGenericModal';
+import {displayGenericModal} from '../../../navigation/functionts/displayGenericModal';
 import {displayToast} from '../../../shared/toast';
 
 type UploadPhotoFABProps = {

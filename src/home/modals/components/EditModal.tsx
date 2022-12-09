@@ -13,7 +13,7 @@ import {File, FileVisibility, Folder, Point} from '../../../shared/types';
 import ModalWrapper from './ModalWrapper';
 import Button from '../../../shared/components/Button';
 import {peekLastNavigationScreen} from '../../../store/navigationStore';
-import {withKeyboard} from '../../../utils/hoc';
+import {withKeyboard} from '../../../shared/hoc';
 import {editResource} from '../utils/editResource';
 
 type EditModalProps = {

@@ -17,7 +17,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {snapPoint, useVector} from 'react-native-redash';
-import {clamp, imageStyles, pinch, set} from '../../../utils/animations';
+import {imageStyles, set} from '../../../utils/animations';
+import {pinch} from '../../../shared/functions/animations/pinch';
 import {Dimension, File} from '../../../shared/types';
 import {getMaxImageScale} from '../../../crop_editor/utils/functions/getMaxImageScale';
 import emitter, {
@@ -27,10 +28,13 @@ import emitter, {
 import FileDetailsAppbar from '../../../shared/components/FileDetailsAppbar';
 import {useSnapshot} from 'valtio';
 import authState from '../../../store/authStore';
+import {displayFileOptions} from '../../../navigation/functionts/displayFileOptions';
+import {staticFileUrl} from '../../../shared/requests/contants';
+import {clamp} from '../../../shared/functions/animations/clamp';
 
 type ImageDetailsProps = {
   file: File;
-  uri: string;
+  parentFolderId: string;
   opacity: Animated.SharedValue<number>;
   dimensions: Dimension;
 };
@@ -38,12 +42,13 @@ type ImageDetailsProps = {
 const {width, height} = Dimensions.get('window');
 
 const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
+  file,
+  parentFolderId,
   componentId,
-  uri,
   opacity,
   dimensions,
-  file,
 }) => {
+  const uri = staticFileUrl(file.id);
   const {accessToken} = useSnapshot(authState.tokens);
 
   const imageS: ViewStyle = imageStyles(dimensions);
@@ -89,6 +94,16 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
   const dismissModal = () => {
     Navigation.dismissModal(componentId);
     setTimeout(() => (opacity.value = 1), 15);
+  };
+
+  const openMenu = () => {
+    displayFileOptions({
+      file,
+      isModal: true,
+      fromDetails: true,
+      parentFolderId: parentFolderId,
+      previousComponentId: componentId,
+    });
   };
 
   const sendHideAppbarEvent = () => {
@@ -275,8 +290,9 @@ const ImageDetails: NavigationFunctionComponent<ImageDetailsProps> = ({
       </GestureDetector>
       <FileDetailsAppbar
         file={file}
-        parentComponentId={componentId}
+        componentId={componentId}
         isModal={true}
+        openMenu={openMenu}
       />
     </Animated.View>
   );

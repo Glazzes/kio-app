@@ -29,19 +29,22 @@ import Animated, {
 } from 'react-native-reanimated';
 import {peekLastNavigationScreen} from '../../store/navigationStore';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {clamp} from '../../shared/functions/clamp';
+import {clamp} from '../../shared/functions/animations/clamp';
 import {snapPoint} from 'react-native-redash';
-import emitter, {emitFavoriteFile} from '../../shared/emitter';
+import emitter, {
+  emitFavoriteFile,
+  emitPushToImageDetails,
+} from '../../shared/emitter';
 import {Screens} from '../../enums/screens';
 import {File, Folder} from '../../shared/types';
 import {getSimpleMimeType} from '../../shared/functions/getMimeType';
 import {MimeType} from '../../shared/enum/MimeType';
-import {pushToScreen} from '../../shared/functions/navigation/pushToScreen';
+import {pushToScreen} from '../../navigation/functionts/pushToScreen';
 import {shareFile} from '../utils/share';
 import {copyLinkToClipboard} from '../utils/copyToClipboard';
 import {deleteFile} from '../utils/deleteFile';
 import {deleteFolder} from '../utils/deleteFolder';
-import {displayGenericModal} from '../../shared/functions/navigation/displayGenericModal';
+import {displayGenericModal} from '../../navigation/functionts/displayGenericModal';
 import {Modals} from '../../navigation/screens/modals';
 import {downloadResource} from '../../shared/requests/functions/downloadResource';
 import {favoriteResource} from '../../shared/requests/functions/favoriteResource';
@@ -58,8 +61,11 @@ import {
 } from '../../shared/toast';
 
 type FileOptionSheetProps = {
-  parentFolderId: string;
   file: File | Folder;
+  isModal: boolean;
+  fromDetails: boolean;
+  parentFolderId: string;
+  previousComponentId: string;
 };
 
 type Action = {
@@ -106,30 +112,8 @@ const sections: {title: string; data: Action[]}[] = [
 const {width, height} = Dimensions.get('window');
 const BORDER_RADIUS = 10;
 
-const estimatedSheetHeight = 30 * 10 + 10 * 14 + 50;
-
 // const AnimatedPresable = Animated.createAnimatedComponent(Pressable);
 const {statusBarHeight} = Navigation.constantsSync();
-
-function renderItem(info: SectionListRenderItemInfo<Action>) {
-  const color = {
-    color: info.item.text === 'Delete' ? '#ee3060' : '#000',
-  };
-
-  return (
-    <Pressable
-      style={styles.actionContainer}
-      onPress={() => emitter.emit('bs', info.item.text)}>
-      <Icon
-        name={info.item.icon}
-        color={info.item.text === 'Delete' ? '#ee3060' : '#aaa'}
-        size={22}
-        style={styles.icon}
-      />
-      <Text style={[styles.actionText, color]}>{info.item.text}</Text>
-    </Pressable>
-  );
-}
 
 function renderSectionHeader(info: SectionListData<Action>) {
   return <Text style={styles.sectionTitle}>{info.section.title}</Text>;
@@ -140,16 +124,45 @@ function sectionSeparator() {
 }
 
 const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
+  file,
+  isModal,
+  fromDetails,
   componentId,
   parentFolderId,
-  file,
+  previousComponentId,
 }) => {
   const aRef = useAnimatedRef<SectionList>();
   const isFile = (file as File).contentType !== undefined;
 
+  const estimatedSheetHeight = 30 * 10 + 10 * 14 + 50 - (fromDetails ? 30 : 0);
+
+  const renderItem = (info: SectionListRenderItemInfo<Action>) => {
+    const color = {
+      color: info.item.text === 'Delete' ? '#ee3060' : '#000',
+    };
+
+    if (info.item.text === 'Open' && fromDetails) {
+      return <View />;
+    }
+
+    return (
+      <Pressable
+        style={styles.actionContainer}
+        onPress={() => emitter.emit('bs', info.item.text)}>
+        <Icon
+          name={info.item.icon}
+          color={info.item.text === 'Delete' ? '#ee3060' : '#aaa'}
+          size={22}
+          style={styles.icon}
+        />
+        <Text style={[styles.actionText, color]}>{info.item.text}</Text>
+      </Pressable>
+    );
+  };
+
   const close = (text: string) => {
     backgroundColor.value = withTiming('transparent');
-    translateY.value = withTiming(height, {duration: 450}, finished => {
+    translateY.value = withTiming(height, {duration: 300}, finished => {
       if (finished) {
         runOnJS(performAction)(text);
       }
@@ -266,7 +279,7 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
         return;
 
       case MimeType.IMAGE:
-        emitter.emit(`push-${file.id}-image`);
+        emitPushToImageDetails(file.id);
         return;
 
       case MimeType.PDF:
@@ -292,11 +305,14 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
     });
   };
 
-  const faveFile = () => {
-    emitFavoriteFile(file.id);
+  const faveFile = async () => {
     try {
       await favoriteResource(file, !file.isFavorite);
-      const message = favoriteResourceSuccessMessage(file.name);
+      const message = favoriteResourceSuccessMessage(
+        file.name,
+        !file.isFavorite,
+      );
+      emitFavoriteFile(file.id);
       displayToast(message);
     } catch (e) {
       displayToast(genericErrorMessage);
@@ -356,15 +372,22 @@ const FileOptionSheet: NavigationFunctionComponent<FileOptionSheetProps> = ({
   const deleteCurrentFile = async () => {
     dissmiss();
 
-    if (!isFile) {
-      try {
-        await deleteFolder(parentFolderId, file as Folder);
-      } catch (e) {}
-    }
-
     try {
-      await deleteFile(parentFolderId, file as File);
-    } catch (e) {}
+      if (isFile) {
+        await deleteFile(parentFolderId, file as File);
+        if (isModal) {
+          Navigation.dismissAllModals();
+          return;
+        }
+
+        Navigation.pop(previousComponentId);
+        return;
+      }
+
+      await deleteFolder(parentFolderId, file as Folder);
+    } catch (e) {
+      displayToast(genericErrorMessage);
+    }
   };
 
   const dissmiss = () => {

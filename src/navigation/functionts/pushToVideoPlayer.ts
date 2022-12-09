@@ -1,6 +1,6 @@
 import {Navigation} from 'react-native-navigation';
-import {Screens} from '../../../enums/screens';
-import {File} from '../../types';
+import {Screens} from '../../enums/screens';
+import {File} from '../../shared/types';
 
 export function pushToVideoPlayer(
   componentId: string,

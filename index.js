@@ -4,12 +4,11 @@ import {Navigation} from 'react-native-navigation';
 import {Screens} from './src/enums/screens';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import Notifications from './src/notifications/Notifications';
-import {Settings} from './src/settings';
+import {Profile, EditProfile} from './src/settings';
 import ImageDetails from './src/home/files/details/ImageDetails';
 import Shared from './src/shared/Shared';
 import {Home} from './src/home';
 import {Toast} from './src/misc';
-import EditProfile from './src/settings/edit/EditProfile';
 import {AudioPlayer} from './src/audio_player';
 import VideoPlayer from './src/video_player/VideoPlayer';
 import {CropEditor} from './src/crop_editor';
@@ -41,7 +40,7 @@ import {
   PictureInPictureVideo,
   PricingSheet,
 } from './src/overlays';
-import UserMenu from './src/home/misc/header/components/UserMenu';
+import UserMenu from './src/home/header/components/UserMenu';
 import {Camera} from './src/camera';
 
 LogBox.ignoreLogs(['ViewPropTypes', 'source.uri']);
@@ -107,9 +106,8 @@ Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
   gestureHandlerRootHOC(Notifications),
 );
 
-// Settings tab Stack
 Navigation.registerComponent(Screens.SETTINGS, () =>
-  gestureHandlerRootHOC(Settings),
+  gestureHandlerRootHOC(Profile),
 );
 
 Navigation.registerComponent(Screens.EDIT_PROFILE, () =>

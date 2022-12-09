@@ -6,7 +6,7 @@ import {
   ViewStyle,
   Pressable,
 } from 'react-native';
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {
   BounceIn,
@@ -14,11 +14,10 @@ import Animated, {
   FadeOut,
   ZoomOut,
 } from 'react-native-reanimated';
-import {Navigation} from 'react-native-navigation';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
-import {NavigationContext} from '../../../../navigation/NavigationContextProvider';
-import {Modals} from '../../../../navigation/screens/modals';
+import {NavigationContext} from '../../../../navigation/components/NavigationContextProvider';
 import emitter, {
+  emitPushToImageDetails,
   getClearSelectionEventName,
   getFavoriteEventName,
   getTextSearchEndTypingEventName,
@@ -26,7 +25,7 @@ import emitter, {
 } from '../../../../shared/emitter';
 import {getSimpleMimeType} from '../../../../shared/functions/getMimeType';
 import {MimeType} from '../../../../shared/enum/MimeType';
-import {pushToScreen} from '../../../../shared/functions/navigation/pushToScreen';
+import {pushToScreen} from '../../../../navigation/functionts/pushToScreen';
 import {Screens} from '../../../../enums/screens';
 import {convertBytesToRedableUnit} from '../../../../shared/functions/convertBytesToRedableUnit';
 import FileSkeleton from './FileSkeleton';
@@ -39,6 +38,7 @@ import {
   updateSourceSelection,
 } from '../../../../store/fileSelection';
 import {useSnapshot} from 'valtio';
+import {displayFileOptions} from '../../../../navigation/functionts/displayFileOptions';
 
 type FileWrapperProps = {
   index: number;
@@ -59,27 +59,25 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
   const selection = useSnapshot(fileSelectionState);
   const {componentId, folder} = useContext(NavigationContext);
 
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [isFavorite, setIsFavorite] = useState<boolean>(file.isFavorite);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
+  const wrapperMargin: ViewStyle = {
+    marginLeft: index % 2 === 0 ? width * 0.05 : 10,
+  };
+
   const openMenu = async () => {
     if (folder && !selection.inProgress) {
-      Navigation.showModal({
-        component: {
-          name: Modals.FILE_MENU,
-          passProps: {
-            file,
-            parentFolderId: folder.id,
-          },
-        },
+      displayFileOptions({
+        file,
+        parentFolderId: folder.id,
+        previousComponentId: componentId,
+        isModal: false,
+        fromDetails: false,
       });
     }
   };
-
-  const wrapperMargin: ViewStyle = useMemo(() => {
-    return {marginLeft: index % 2 === 0 ? width * 0.05 : 10};
-  }, [index]);
 
   const onPress = () => {
     if (selection.inProgress) {
@@ -102,7 +100,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
         return;
 
       case MimeType.IMAGE:
-        emitter.emit(`push-${file.id}-image`);
+        emitPushToImageDetails(file.id);
         return;
 
       case MimeType.PDF:
