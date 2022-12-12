@@ -25,7 +25,9 @@ Here are so features!
 #### Onboarding
 
 [<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/01.png" alt="Login screen">]("")
-<img style="float: left; margin-right: 10px" width="200px" src="../assets/screenshots/onboarding/02.png" alt="Register screen">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/02.png" alt="Register screen">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/03.png" alt="Register failed">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/04.png" alt="Register failed 2">
 
 ### Home
 
