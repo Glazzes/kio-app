@@ -1,70 +1,97 @@
-import {View, StyleSheet, Dimensions, Text} from 'react-native';
-import React from 'react';
+import {View, StyleSheet, Dimensions, Text, Pressable} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
-  scrollTo,
   useAnimatedRef,
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
-import {snapPoint} from 'react-native-redash';
 import {
   FlashList,
   FlashListProps,
   ListRenderItemInfo,
 } from '@shopify/flash-list';
 import Contributor from './Contributor';
+import {User} from '../shared/types';
+import {FlatList} from 'react-native-gesture-handler';
+import {NavigationContext} from '../navigation/components/NavigationContextProvider';
+import {Modals} from '../navigation/screens/modals';
+import {Navigation} from 'react-native-navigation';
+import emitter, {getAddContributorsEventName} from '../shared/emitter';
 
-type ContributorsProps = {};
+type ContributorsProps = {
+  coowners: User[];
+};
 
 const {width} = Dimensions.get('window');
-
-const photos = [
-  'https://randomuser.me/api/portraits/women/10.jpg',
-  'https://randomuser.me/api/portraits/women/21.jpg',
-  'https://randomuser.me/api/portraits/women/10.jpg',
-  'https://randomuser.me/api/portraits/men/81.jpg',
-  'https://randomuser.me/api/portraits/men/68.jpg',
-];
 
 const STROKE_WIDTH = 1.5;
 const SIZE = 45 - STROKE_WIDTH * 2.5;
 const CANVAS_SIZE = 50;
 
 const AnimatedFlashList =
-  Animated.createAnimatedComponent<FlashListProps<string>>(FlashList);
+  Animated.createAnimatedComponent<FlashListProps<User>>(FlashList);
 
-function keyExtractor(item: string, index: number): string {
-  return `${item}-${index}`;
+function keyExtractor(item: User, index: number): string {
+  return `${item.id}-${index}`;
 }
 
-function renderItem(info: ListRenderItemInfo<string>) {
-  return <Contributor index={info.index} imageUrl={info.item} />;
+function renderItem(info: ListRenderItemInfo<User>) {
+  return <Contributor user={info.item} index={info.index} imageUrl={''} />;
 }
 
 function separatorComponent() {
   return <View style={styles.separator} />;
 }
 
-const Contributors: React.FC<ContributorsProps> = ({}) => {
-  const ref = useAnimatedRef();
+const Contributors: React.FC<ContributorsProps> = ({
+  coowners: startCoowners,
+}) => {
+  const ref = useAnimatedRef<FlatList<User>>();
+  const {folder} = useContext(NavigationContext);
+
+  const [coowners, setCoowners] = useState<User[]>(startCoowners);
+
+  const openShareModal = () => {
+    Navigation.showModal({
+      component: {
+        name: Modals.SHARE,
+        passProps: {
+          folder,
+        },
+      },
+    });
+  };
 
   const onScroll = useAnimatedScrollHandler<{x: number}>({
     onScroll: (e, ctx) => {
       ctx.x = e.contentOffset.x;
     },
-    onEndDrag: (e, ctx) => {
-      const points = photos.map((_, index) => (SIZE + 10) * index);
-      const x = snapPoint(ctx.x, e.velocity?.x ?? 0, points);
-      scrollTo(ref, x, 0, true);
-    },
   });
+
+  const addCoowners = (users: User[]) => {
+    setCoowners(c => [...c, ...users]);
+  };
+
+  useEffect(() => {
+    const addContributorsFromParentEventName = getAddContributorsEventName(
+      folder?.id ?? '',
+    );
+    const addContributorsFromParentListener = emitter.addListener(
+      addContributorsFromParentEventName,
+      addCoowners,
+    );
+
+    return () => {
+      addContributorsFromParentListener.remove();
+    };
+  }, [folder?.id]);
 
   return (
     <View style={styles.root}>
       <Text style={styles.title}>Co-owners</Text>
       <AnimatedFlashList
-        ref={ref}
-        data={photos}
+        ref={ref as any}
+        data={coowners}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         estimatedItemSize={SIZE}
@@ -75,9 +102,13 @@ const Contributors: React.FC<ContributorsProps> = ({}) => {
         ItemSeparatorComponent={separatorComponent}
         ListHeaderComponent={() => {
           return (
-            <View style={styles.plus}>
+            <Pressable
+              onPress={openShareModal}
+              style={({pressed}) => {
+                return {...styles.plus, opacity: pressed ? 0.5 : 1};
+              }}>
               <Icon name={'plus'} size={25} color={'#C5C8D7'} />
-            </View>
+            </Pressable>
           );
         }}
       />
@@ -112,7 +143,7 @@ const styles = StyleSheet.create({
     borderRadius: CANVAS_SIZE / 2,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 5,
+    marginRight: 10,
   },
   photoContainer: {
     width: CANVAS_SIZE,

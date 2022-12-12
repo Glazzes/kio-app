@@ -69,6 +69,9 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
     Navigation.showModal({
       component: {
         name: Modals.SHARE,
+        passProps: {
+          folder,
+        },
       },
     });
   };

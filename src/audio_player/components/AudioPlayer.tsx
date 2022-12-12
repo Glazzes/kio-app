@@ -23,7 +23,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import AuidoControls from './Controls';
 import Waves from './Waves';
-import {File} from '../../shared/types';
+import {File, Folder} from '../../shared/types';
 import RNFS from 'react-native-fs';
 import {useSnapshot} from 'valtio';
 import authState from '../../store/authStore';
@@ -33,6 +33,11 @@ import {shareFile} from '../../overlays/utils/share';
 import {Modals} from '../../navigation/screens/modals';
 import {emitFavoriteFile} from '../../shared/emitter';
 import {favoriteResource} from '../../shared/requests/functions/favoriteResource';
+import {
+  pushNavigationScreen,
+  removeNavigationScreenByComponentId,
+} from '../../store/navigationStore';
+import {Screens} from '../../enums/screens';
 
 Sound.setCategory('Playback');
 
@@ -180,6 +185,19 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
       }
     };
   }, [sound]);
+
+  useEffect(() => {
+    pushNavigationScreen({
+      componentId: Screens.AUDIO_PLAYER,
+      folder: {id: '2', name: 'Audio'} as Folder,
+    });
+
+    Navigation.updateProps(Screens.FILE_DRAWER, {file});
+
+    return () => {
+      removeNavigationScreenByComponentId(Screens.AUDIO_PLAYER);
+    };
+  }, []);
 
   useEffect(() => {
     return () => {

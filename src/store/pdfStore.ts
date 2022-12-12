@@ -19,14 +19,20 @@ export type Indexes = {
 };
 
 type State = {
+  name: string;
   content: PdfContent[];
   indexes: Indexes;
 };
 
 export const pdfState = proxy<State>({
+  name: '',
   content: [],
   indexes: {},
 });
+
+export const setPdfName = (name: string) => {
+  pdfState.name = name;
+};
 
 export function setPdfContents(contents: PdfContent[]) {
   pdfState.content = contents;

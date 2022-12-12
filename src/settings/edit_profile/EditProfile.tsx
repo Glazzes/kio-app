@@ -24,7 +24,7 @@ import {Screens} from '../../enums/screens';
 import {Asset} from 'expo-media-library';
 import {
   pushNavigationScreen,
-  removeByComponentId,
+  removeNavigationScreenByComponentId,
 } from '../../store/navigationStore';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
@@ -276,7 +276,7 @@ const EditProfile: NavigationFunctionComponent<EditProfileProps> = ({
       listener.remove();
       pushToCamera.remove();
       sub.remove();
-      removeByComponentId(componentId);
+      removeNavigationScreenByComponentId(componentId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

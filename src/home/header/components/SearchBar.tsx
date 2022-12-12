@@ -66,8 +66,7 @@ const SearchBar: React.FC = ({}) => {
         clearTimeout(timer);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [timer]);
 
   return (
     <View style={styles.root}>

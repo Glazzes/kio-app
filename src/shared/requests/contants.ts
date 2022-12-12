@@ -1,4 +1,4 @@
-export const host = 'http://192.168.42.130:8080';
+export const host = 'http://192.168.42.64:8080';
 
 const apiAuthUrl = '/api/v1/auth';
 export const apiAuthRevokeUrl = `${apiAuthUrl}/revoke`;
@@ -25,6 +25,15 @@ export const apiFilesFavoriteUrl = `${apiFilesUrl}/favorite`;
 export const apiFoldersUrl = '/api/v1/folders';
 export const apiFoldersEditUril = `${apiFoldersUrl}/edit`;
 export const apiFoldersFavoriteUrl = `${apiFoldersUrl}/favorite`;
+
+export const apiFoldersContributorsUrl = `${apiFoldersUrl}/contributors`;
+export const apiFoldersContributorExistsUrl = `${apiFoldersUrl}/contributors/exists`;
+export const apiFolderContributorsByIdUrl = (folderId: string) => {
+  return `${apiFoldersUrl}/${folderId}/contributors`;
+};
+export const apiFolderContributorsPreviewByIdUrl = (folderId: string) => {
+  return `${apiFoldersUrl}/${folderId}/contributors/preview`;
+};
 
 export const apiUnitUrl = `${apiFoldersUrl}/my-unit`;
 export const apiUnitSize = `${apiFoldersUrl}/unit/size`;

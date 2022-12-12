@@ -1,53 +1,116 @@
-import {View, Text, StyleSheet, ViewStyle} from 'react-native';
-import React, {useRef} from 'react';
-import FastImage from 'react-native-fast-image';
+import {View, Text, StyleSheet, ViewStyle, ImageStyle} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {User} from '../../shared/types';
+import Avatar from '../../shared/components/Avatar';
+import emitter, {getAddContributorsEventName} from '../../shared/emitter';
+import {getFolderCoowners} from '../utils/functions/getFolderCoowners';
 
 type AvatarGroupProps = {
-  photos: string[];
+  parentFolderId: string;
+  folderId: string;
+  total: number;
 };
 
 const SIZE = 35;
 const SPACER = 0.6;
 
-const photos = [
-  'https://randomuser.me/api/portraits/women/10.jpg',
-  'https://randomuser.me/api/portraits/women/21.jpg',
-  'https://randomuser.me/api/portraits/women/10.jpg',
-  'https://randomuser.me/api/portraits/men/81.jpg',
-  'https://randomuser.me/api/portraits/men/68.jpg',
-];
+const AvatarGroup: React.FC<AvatarGroupProps> = ({
+  total: startTotal,
+  folderId,
+  parentFolderId,
+}) => {
+  const [total, setTotal] = useState<number>(startTotal);
+  const [coowners, setCoowners] = useState<User[]>([]);
 
-const AvatarGroup: React.FC<AvatarGroupProps> = ({}) => {
-  const uris = useRef<string[]>(
-    photos.slice(photos.length - 4, photos.length).reverse(),
-  );
+  const containerStyles: ViewStyle = {
+    height: SIZE,
+    width:
+      coowners.length <= 1
+        ? SIZE
+        : SIZE * coowners.length -
+          SIZE * (coowners.length - 1) * (1 - SPACER) +
+          (coowners.length > 4 ? SIZE * SPACER : 0),
+  };
 
-  const containerStyles = useRef<ViewStyle>({
-    width: uris.current.length * SIZE,
-    maxWidth: SIZE + uris.current.length * (SIZE * SPACER),
-  });
+  const plusStyles: ViewStyle = {
+    justifyContent: 'center',
+    alignItems: 'center',
+    left: (containerStyles.width as number) - SIZE,
+    backgroundColor: '#4389FE',
+    padding: 5,
+  };
+
+  const addCoowners = (users: User[]) => {
+    setTotal(t => t + users.length);
+    setCoowners(c => {
+      if (coowners.length >= 4) {
+        return users.reverse().slice(0, 4);
+      }
+
+      const start = c.length;
+      const end = Math.min(4, users.length);
+      for (let i = start; i <= end; i++) {
+        c.push(users[i - start]);
+      }
+
+      return c.reverse();
+    });
+  };
+
+  useEffect(() => {
+    const addContributorsFromParentEventName =
+      getAddContributorsEventName(parentFolderId);
+    const addContributorsFromParentListener = emitter.addListener(
+      addContributorsFromParentEventName,
+      addCoowners,
+    );
+
+    const addContributorsToFolderEventName =
+      getAddContributorsEventName(folderId);
+    const addContributorsToFolderListener = emitter.addListener(
+      addContributorsToFolderEventName,
+      addCoowners,
+    );
+
+    return () => {
+      addContributorsFromParentListener.remove();
+      addContributorsToFolderListener.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folderId, parentFolderId]);
+
+  useEffect(() => {
+    getFolderCoowners(folderId, 0).then(({data}) => {
+      setCoowners(data.content);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <View style={[styles.container, containerStyles.current]}>
-      {uris.current.map((uri, index) => {
-        const position = {
+    <View style={[styles.container, containerStyles]}>
+      {coowners.map((user, index) => {
+        const position: ViewStyle & ImageStyle = {
+          position: 'absolute',
+          top: 0,
           left: index * (SIZE * SPACER),
         };
 
         return (
-          <FastImage
-            key={`${uri}${index}`}
-            source={{uri}}
-            style={[styles.circle, position]}
-            resizeMode={'cover'}
+          <Avatar
+            key={`coowner-${user.id}-${folderId}`}
+            size={SIZE}
+            user={user}
+            listenToUpdateEvent={false}
+            includeBorder={true}
+            extraStyle={position}
           />
         );
       })}
-      {photos.length >= 4 && (
-        <View style={[styles.circle, styles.plus]}>
-          <Text style={styles.text}>{photos.length - 4}+</Text>
+      {total > 4 ? (
+        <View style={[styles.circle, plusStyles]}>
+          <Text style={styles.text}>{`${total - 4}+`}</Text>
         </View>
-      )}
+      ) : null}
     </View>
   );
 };
@@ -66,17 +129,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  plus: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    left: SIZE * SPACER * 4,
-    backgroundColor: '#4389FE',
-    padding: 5,
-  },
   text: {
     fontFamily: 'UberBold',
     color: '#fff',
   },
 });
 
-export default React.memo(AvatarGroup);
+export default AvatarGroup;

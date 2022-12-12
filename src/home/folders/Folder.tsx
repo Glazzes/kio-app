@@ -13,7 +13,7 @@ import {Navigation} from 'react-native-navigation';
 import {Modals} from '../../navigation/screens/modals';
 import {NavigationContext} from '../../navigation/components/NavigationContextProvider';
 import {Screens} from '../../enums/screens';
-import {Folder as FolderType} from '../../shared/types';
+import {Folder as FolderType, User} from '../../shared/types';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import emitter, {
@@ -27,6 +27,7 @@ import {
   updateSourceSelection,
 } from '../../store/fileSelection';
 import {useSnapshot} from 'valtio';
+import {getCoownersPreview} from './getCoownersPreview';
 
 type FolderProps = {
   folder: FolderType;
@@ -42,6 +43,9 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
   const [folder, setFolder] = useState<FolderType>(currentFolder);
   const selection = useSnapshot(fileSelectionState);
   const {componentId, folder: parentFolder} = useContext(NavigationContext);
+
+  const [coowners, setCoowners] = useState<User[]>([]);
+  const [totalCoowners, setTotalCoowners] = useState<number>(0);
 
   const pushFolder = () => {
     if (selection.inProgress) {
@@ -125,7 +129,16 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
       listener.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [folder]);
+
+  useEffect(() => {
+    getCoownersPreview(folder.id)
+      .then(({data}) => {
+        setCoowners(data.content);
+        setTotalCoowners(data.totalContributors);
+      })
+      .catch(() => {});
+  }, [folder.id]);
 
   return (
     <Pressable
@@ -152,7 +165,11 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
 
       <View style={styles.decorationContainer}>
         <Icon name="ios-folder-open" color={'#fff'} size={40} />
-        <AvatarGroup photos={[]} />
+        <AvatarGroup
+          total={totalCoowners}
+          parentFolderId={parentFolder?.id ?? ''}
+          folderId={folder.id}
+        />
       </View>
 
       <View style={styles.titleContainer}>

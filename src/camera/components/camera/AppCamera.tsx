@@ -28,7 +28,6 @@ import {useVector} from 'react-native-redash';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Controls from './Controls';
 import PhotoPicker from '../picker/PhotoPicker';
-import {clamp} from '../../../utils/animations';
 import PictureThumbnail from '../picker/PictureThumbnail';
 import emitter from '../../../shared/emitter';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
@@ -41,6 +40,7 @@ import {
 } from '../../../store/photoStore';
 import {getPictureName} from '../../utils/functions/getPictureName';
 import {PicturePickerEvent} from '../../utils/enums';
+import {clamp} from '../../../shared/functions/animations/clamp';
 
 type AppCameraProps = {
   folderId: string;

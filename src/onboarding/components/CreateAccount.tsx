@@ -256,12 +256,16 @@ const styles = StyleSheet.create({
   topbar: {
     width,
     height: statusBarHeight * 3,
+    flexDirection: 'row',
     paddingTop: statusBarHeight,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   logo: {
     width: 100,
     height: 100,
+    marginTop: 20,
     marginBottom: 30,
     alignSelf: 'center',
   },

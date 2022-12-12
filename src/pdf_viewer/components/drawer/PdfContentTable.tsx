@@ -16,7 +16,7 @@ const PdfContentTable: NavigationFunctionComponent<
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <Text style={styles.text}>Clean coder's contents</Text>
+      <Text style={styles.text}>{pdf.name}'s contents</Text>
       {pdf.content.map((content, index) => {
         return (
           <PdfIndexView

@@ -167,6 +167,28 @@ export const emitDeleteCoowner = (parentFolderId: string, userId: string) => {
   emitter.emit(eventName, userId);
 };
 
+// contributors
+export const getAddContributorsEventName = (folderId: string) => {
+  return `contributor-add-${folderId}`;
+};
+
+export const emitAddContributors = (folderId: string, contributors: User[]) => {
+  const eventName = getAddContributorsEventName(folderId);
+  emitter.emit(eventName, contributors);
+};
+
+export const getDeleteContributorsEventName = (folderId: string) => {
+  return `contributor-delete-${folderId}`;
+};
+
+export const emitDeleteContributor = (
+  folderId: string,
+  contributorId: string,
+) => {
+  const eventName = getDeleteContributorsEventName(folderId);
+  emitter.emit(eventName, contributorId);
+};
+
 // Push to Image Details
 export const getPushToImageDetailsEventName = (id: string) => {
   return `push-image-${id}`;

@@ -2,16 +2,26 @@ import {Dimensions, StyleSheet, View} from 'react-native';
 import React, {useEffect, useRef} from 'react';
 import Pdf from 'react-native-pdf';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {pdfState, setPdfContents, setPdfIndexes} from '../../../store/pdfStore';
+import {
+  pdfState,
+  setPdfContents,
+  setPdfIndexes,
+  setPdfName,
+} from '../../../store/pdfStore';
 import emitter from '../../../shared/emitter';
 import {PdfEvent} from '../../utils/enums';
 import {convertTableContentsIntoIndexes} from '../../utils/functions/convertTableContentsIntoIndexes';
 import PageIndicator from '../drawer/PageIndicator';
 import {useSnapshot} from 'valtio';
-import {File} from '../../../shared/types';
+import {File, Folder} from '../../../shared/types';
 import authState from '../../../store/authStore';
 import {staticFileUrl} from '../../../shared/requests/contants';
 import ThumbnailLoadingIndicator from '../../../shared/components/ThumbnailLoadingIndicator';
+import {
+  pushNavigationScreen,
+  removeNavigationScreenByComponentId,
+} from '../../../store/navigationStore';
+import {Screens} from '../../../enums/screens';
 
 type PDFViewerProps = {
   file: File;
@@ -45,6 +55,13 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
   };
 
   useEffect(() => {
+    pushNavigationScreen({
+      componentId: Screens.PDF_READER,
+      folder: {id: '1', name: 'PDF'} as Folder,
+    });
+
+    Navigation.updateProps(Screens.FILE_DRAWER, {file});
+
     const listener = emitter.addListener(
       PdfEvent.SET_PAGE,
       (pageNumber: number) => {
@@ -52,7 +69,11 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
       },
     );
 
-    return () => listener.remove();
+    return () => {
+      listener.remove();
+      removeNavigationScreenByComponentId(Screens.PDF_READER);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -84,6 +105,8 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
         onLoadComplete={(pages, path, size, contents) => {
           if (contents !== undefined) {
             const indexes = convertTableContentsIntoIndexes(contents, pages);
+            const pdfExtension = file.name.lastIndexOf('.pdf');
+            setPdfName(file.name.slice(0, pdfExtension));
             setPdfContents(contents);
             setPdfIndexes(indexes);
 
@@ -114,15 +137,6 @@ PDFViewer.options = ({file}) => ({
         {
           fromId: `pdf-${file.id}`,
           toId: `pdf-${file.id}-dest`,
-          duration: 300,
-        },
-      ],
-    },
-    pop: {
-      sharedElementTransitions: [
-        {
-          fromId: `pdf-${file.id}-dest`,
-          toId: `pdf-${file.id}`,
           duration: 300,
         },
       ],

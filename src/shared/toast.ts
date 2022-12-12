@@ -260,9 +260,21 @@ export const favoriteResourceSuccessMessage = (
 };
 
 // Coowner
+export const coownerAddSuccessMessage: ToastMessage = {
+  title: 'Coowner added!',
+  message: 'Folder coowners have been added successfully',
+  type: NotificationType.SUCCESS,
+};
+
 export const coownerAddSelfErrorMessage: ToastMessage = {
   title: 'Add error',
   message: 'You can not add yourself as a coowner of this folder',
+  type: NotificationType.WARNING,
+};
+
+export const coownerAlreadyExist: ToastMessage = {
+  title: 'Oops!',
+  message: 'This user is already a coowner of this folder',
   type: NotificationType.WARNING,
 };
 

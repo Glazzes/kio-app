@@ -54,7 +54,15 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
   useEffect(() => {
     const listener: NavigationComponentListener = {
       componentDidDisappear: _ => {
-        Navigation.updateProps(Screens.FILE_DRAWER, {file: undefined});
+        if (
+          last.componentId === Screens.AUDIO_PLAYER ||
+          last.componentId === Screens.PDF_READER
+        ) {
+          return;
+        } else {
+          Navigation.updateProps(Screens.FILE_DRAWER, {file: undefined});
+        }
+
         emitter.emit('show');
       },
       componentWillAppear: _ => {
@@ -70,7 +78,7 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
     return () => {
       s.remove();
     };
-  }, []);
+  }, [last]);
 
   useEffect(() => {
     if (last) {
@@ -164,9 +172,9 @@ const FileDrawer: NavigationFunctionComponent<FileDrawerProps> = ({
           />
           <CollapsableText
             text={
-              folders[folders.length - 1]
-                ? folders[folders.length - 1].folder.name
-                : 'Root folder'
+              folders[folders.length - 2]
+                ? folders[folders.length - 2].folder.name
+                : 'Root'
             }
           />
         </View>

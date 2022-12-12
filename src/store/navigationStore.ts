@@ -37,7 +37,7 @@ export function removeLastNavigationScreen() {
   navigationState.folders.pop();
 }
 
-export function findLastByName(name: string): string {
+export function findLastNavigationScreenByName(name: string): string {
   let componentId: string | null = null;
   for (let s of navigationState.folders) {
     if (s.folder.name === name) {
@@ -52,13 +52,13 @@ export function findLastByName(name: string): string {
   return componentId;
 }
 
-export function removeByComponentId(componentId: string) {
+export function removeNavigationScreenByComponentId(componentId: string) {
   navigationState.folders = navigationState.folders.filter(
     s => s.componentId !== componentId,
   );
 }
 
-export function takeUntil(componentId: string) {
+export function takeNavigationScreensUntil(componentId: string) {
   const remainingScreens = [];
   for (let screen of navigationState.folders) {
     remainingScreens.push(screen);

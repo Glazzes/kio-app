@@ -21,7 +21,7 @@ import {
   emitHideImagePicker,
   emitUpdateProfilePicture,
 } from '../../shared/emitter';
-import {findLastByName} from '../../store/navigationStore';
+import {findLastNavigationScreenByName} from '../../store/navigationStore';
 import getImageStyles from '../utils/functions/getImageStyles';
 import {getMaxImageScale} from '../utils/functions/getMaxImageScale';
 import {Canvas, Skia, Path} from '@shopify/react-native-skia';
@@ -269,7 +269,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   };
 
   function popToEditProfile() {
-    const editProfile = findLastByName(Screens.EDIT_PROFILE);
+    const editProfile = findLastNavigationScreenByName(Screens.EDIT_PROFILE);
     if (editProfile) {
       Navigation.popTo(editProfile);
     }

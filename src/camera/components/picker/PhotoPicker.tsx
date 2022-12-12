@@ -23,10 +23,10 @@ import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
 import {Navigation} from 'react-native-navigation';
 import PickerPhoto from './PickerPhoto';
-import {clamp} from '../../../utils/animations';
 import {Canvas, RoundedRect, Shadow} from '@shopify/react-native-skia';
 import {useSnapshot} from 'valtio';
 import {pictureSelectionState} from '../../../store/photoStore';
+import {clamp} from '../../../shared/functions/animations/clamp';
 
 type PhotoPickerProps = {
   snap: Animated.SharedValue<boolean>;

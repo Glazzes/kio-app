@@ -6,7 +6,7 @@ import {
   LayoutChangeEvent,
   ViewStyle,
 } from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, {
   Easing,
@@ -39,16 +39,19 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
 }) => {
   const [dimensions, setDimensions] = useState({width: 1, height: 1});
 
-  const canvaStyles: ViewStyle = useMemo(
-    () => ({
-      width: dimensions.width + 60,
-      height: dimensions.height + 60,
-      position: 'absolute',
-      transform: [{translateX: -10}, {translateY: -10}],
-      backgroundColor: '#fff',
-    }),
-    [dimensions],
-  );
+  const canvaStyles: ViewStyle = {
+    width: dimensions.width + 60,
+    height: dimensions.height + 60,
+    position: 'absolute',
+    transform: [{translateX: -10}, {translateY: -10}],
+    backgroundColor: '#fff',
+  };
+
+  const positionStyles: ViewStyle = {
+    position: 'absolute',
+    top: y,
+    left: x - MENU_WIDTH,
+  };
 
   const onLayout = (e: LayoutChangeEvent) => {
     const {width: w, height: h} = e.nativeEvent.layout;
@@ -104,11 +107,7 @@ const UserMenu: NavigationFunctionComponent<UserMenuProps> = ({
   return (
     <Pressable style={styles.root} onPress={close}>
       <Animated.View
-        style={[
-          rStyle,
-          styles.menu,
-          {position: 'absolute', top: y, left: x - MENU_WIDTH},
-        ]}
+        style={[rStyle, styles.menu, positionStyles]}
         onLayout={onLayout}>
         {dimensions.width !== 1 && (
           <Canvas style={canvaStyles}>

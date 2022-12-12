@@ -16,18 +16,34 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {FlatList} from 'react-native-gesture-handler';
 import ModalWrapper from './ModalWrapper';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {apiUsersUrl} from '../../../shared/requests/contants';
-import {User} from '../../../shared/types';
+import {
+  apiFoldersContributorExistsUrl,
+  apiFoldersContributorsUrl,
+  apiUsersUrl,
+} from '../../../shared/requests/contants';
+import {Folder, User} from '../../../shared/types';
 import UserSearch from '../../../misc/UserSearch';
 import authState from '../../../store/authStore';
 import {
   coownerAddDuplicateErrorMessage,
   coownerAddSelfErrorMessage,
+  coownerAddSuccessMessage,
+  coownerAlreadyExist,
   displayToast,
+  genericErrorMessage,
 } from '../../../shared/toast';
 import Button from '../../../shared/components/Button';
+import {
+  ContributorAddRequest,
+  ContributorExistsRequest,
+} from '../../../shared/requests/types';
+import {Permissions} from '../../../shared/enums';
+import {emitAddContributors} from '../../../shared/emitter';
+import {AxiosResponse} from 'axios';
 
-type ShareModalProps = {};
+type ShareModalProps = {
+  folder: Folder;
+};
 
 const {width} = Dimensions.get('window');
 const WIDTH = width * 0.8;
@@ -42,6 +58,7 @@ function SeperatorComponent() {
 
 const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
   componentId,
+  folder,
 }) => {
   const inputRef = useRef<TextInput>(null);
 
@@ -99,7 +116,7 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
     setTimer(newTimer);
   };
 
-  const addCoowner = () => {
+  const addCoowner = async () => {
     Keyboard.dismiss();
 
     if (
@@ -109,23 +126,32 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
       return;
     }
 
-    const duplicate = coowners.some(c => c.id === user?.id);
-    if (duplicate) {
+    const isDuplicate = coowners.some(c => c.id === user?.id);
+    if (isDuplicate) {
       displayToast(coownerAddDuplicateErrorMessage);
       return;
     }
 
-    inputRef.current?.clear();
-    setText('');
+    try {
+      inputRef.current?.clear();
+      setText('');
 
-    setCoowners(prev => {
-      if (user) {
-        return [user, ...prev];
+      setCoowners(prev => {
+        if (user) {
+          return [user, ...prev];
+        }
+
+        return prev;
+      });
+      setUser(null);
+      return;
+    } catch ({response}) {
+      const res = response as AxiosResponse;
+      if (res.status === 404) {
+        displayToast(coownerAlreadyExist);
+        return;
       }
-
-      return prev;
-    });
-    setUser(null);
+    }
   };
 
   const dissmis = () => {
@@ -133,13 +159,32 @@ const ShareModal: NavigationFunctionComponent<ShareModalProps> = ({
     Keyboard.dismiss();
   };
 
-  const share = async () => {};
+  const share = async () => {
+    try {
+      const request: ContributorAddRequest = {
+        folderId: folder.id,
+        contributorIds: coowners.map(u => u.id),
+        permissions: [Permissions.READ_ONLY],
+      };
+
+      const {data} = await axiosInstance.post<User[]>(
+        apiFoldersContributorsUrl,
+        request,
+      );
+
+      dissmis();
+      displayToast(coownerAddSuccessMessage);
+      emitAddContributors(folder.id, data);
+    } catch (e) {
+      displayToast(genericErrorMessage);
+    }
+  };
 
   return (
     <View style={styles.root}>
       <ModalWrapper style={styles.modal} witdh={WIDTH}>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>Share file</Text>
+          <Text style={styles.title}>Share "{folder.name}"</Text>
         </View>
         <View style={styles.inputContainer}>
           <View style={styles.textInputContainer}>

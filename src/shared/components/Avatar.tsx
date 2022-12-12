@@ -18,6 +18,7 @@ type AvatarProps = {
   user: User;
   size: number;
   includeBorder: boolean;
+  extraStyle?: ViewStyle & ImageStyle;
   listenToUpdateEvent?: boolean;
   nativeId?: string;
   fontSize?: number;
@@ -27,6 +28,7 @@ const Avatar: React.FC<AvatarProps> = ({
   user,
   includeBorder,
   size,
+  extraStyle,
   listenToUpdateEvent,
   nativeId,
   fontSize,
@@ -57,6 +59,7 @@ const Avatar: React.FC<AvatarProps> = ({
     borderRadius: size / 2,
     justifyContent: 'center',
     alignItems: 'center',
+    ...extraStyle,
   };
 
   useEffect(() => {
