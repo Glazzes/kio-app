@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Dimensions,
   Pressable,
+  ViewStyle,
 } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -12,15 +13,18 @@ import {useSnapshot} from 'valtio';
 import {navigationState} from '../store/navigationStore';
 import {Navigation} from 'react-native-navigation';
 
-type BreadCrumbsProps = {};
+type BreadCrumbsProps = {
+  isOnTopOfFolders: boolean;
+};
 
 const {width} = Dimensions.get('window');
 
-const BreadCrumbs: React.FC<BreadCrumbsProps> = ({}) => {
+const BreadCrumbs: React.FC<BreadCrumbsProps> = ({isOnTopOfFolders}) => {
   const snap = useSnapshot(navigationState);
+  const style: ViewStyle = {marginBottom: isOnTopOfFolders ? 20 : 0};
 
   return (
-    <View>
+    <View style={style}>
       <ScrollView
         showsHorizontalScrollIndicator={false}
         horizontal={true}

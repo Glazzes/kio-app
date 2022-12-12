@@ -72,7 +72,7 @@ const Folder: React.FC<FolderProps> = ({folder: currentFolder}) => {
   };
 
   const onLongPress = () => {
-    if (selection.locked || !selection.inProgress) {
+    if (selection.locked) {
       return;
     }
 
@@ -256,6 +256,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontFamily: 'UberBold',
+    textTransform: 'capitalize',
   },
   itemContainer: {
     flexDirection: 'row',

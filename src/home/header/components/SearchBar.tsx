@@ -33,9 +33,7 @@ const SearchBar: React.FC = ({}) => {
 
   const onChangeText = (text: string) => {
     if (Math.abs(lastTextLength.current - text.length) === 1) {
-      if (folder) {
-        emitTextSearch(folder.id, text);
-      }
+      emitTextSearch(folder?.id ?? '', text);
     }
 
     if (timer) {
@@ -43,9 +41,7 @@ const SearchBar: React.FC = ({}) => {
     }
 
     const showResults = setTimeout(() => {
-      if (folder) {
-        emitTextSearchEndTyping(folder.id, text);
-      }
+      emitTextSearchEndTyping(folder?.id ?? '', text);
     }, 1000);
 
     setSearchTerm(text);
@@ -76,6 +72,7 @@ const SearchBar: React.FC = ({}) => {
         onChangeText={onChangeText}
         placeholder="Search"
         style={styles.searchbar}
+        autoCapitalize={'none'}
       />
       {searchTerm.length > 0 && (
         <AnimatedPressable

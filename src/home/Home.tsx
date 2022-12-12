@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {StyleSheet, Dimensions, View} from 'react-native';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import AppHeader from './header/components/AppHeader';
 import {
@@ -114,6 +114,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       <AppHeader
         coowners={coownersPage.content}
         folders={filteredFolderPageContent}
+        numberOfFiles={filteredFilesPageContent.length}
         isFetching={isFetching}
       />
     );
@@ -171,56 +172,53 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
     },
   });
 
-  const renderItem = useCallback(
-    (info: ListRenderItemInfo<File>) => {
-      const mimeType = getSimpleMimeType(info.item.contentType);
+  const renderItem = (info: ListRenderItemInfo<File>) => {
+    const mimeType = getSimpleMimeType(info.item.contentType);
 
-      const defineComponent = () => {
-        switch (mimeType) {
-          case MimeType.IMAGE:
-            return (
-              <ImageThumbnail
-                file={info.item}
-                dimensions={dimensions}
-                translateX={translateX}
-                translateY={translateY}
-                x={x}
-                y={y}
-                scale={scale}
-              />
-            );
+    const defineComponent = () => {
+      switch (mimeType) {
+        case MimeType.IMAGE:
+          return (
+            <ImageThumbnail
+              file={info.item}
+              dimensions={dimensions}
+              translateX={translateX}
+              translateY={translateY}
+              x={x}
+              y={y}
+              scale={scale}
+            />
+          );
 
-          case MimeType.AUDIO:
-            return <AudioThumbnail samples={info.item.details.audioSamples} />;
+        case MimeType.AUDIO:
+          return <AudioThumbnail samples={info.item.details.audioSamples} />;
 
-          case MimeType.VIDEO:
-            return <VideoThumbnail index={info.index} file={info.item} />;
+        case MimeType.VIDEO:
+          return <VideoThumbnail index={info.index} file={info.item} />;
 
-          case MimeType.PDF:
-            return <PdfThumnail file={info.item} />;
+        case MimeType.PDF:
+          return <PdfThumnail file={info.item} />;
 
-          default:
-            return <GenericThumbnail mimeType="image" />;
-        }
-      };
+        default:
+          return <GenericThumbnail mimeType="image" />;
+      }
+    };
 
-      return (
-        // @ts-ignore
-        <FileWrapper
-          index={info.index}
-          file={info.item}
-          searchTerm={searchTerm}>
-          {defineComponent()}
-        </FileWrapper>
-      );
-    },
-    [searchTerm],
-  );
+    const children = defineComponent();
+
+    return (
+      // @ts-ignore
+      <FileWrapper index={info.index} file={info.item} searchTerm={searchTerm}>
+        {children}
+      </FileWrapper>
+    );
+  };
 
   useEffect(() => {
     const eventName = getTextSearchEndTypingEventName(folder?.id ?? '');
     const onEndTyping = emitter.addListener(eventName, (text: string) => {
       setSearchTerm(text);
+
       setFilteredFilesPageContent(files => {
         return files.filter(f =>
           f.name.toLocaleLowerCase().includes(text.toLocaleLowerCase()),
@@ -245,7 +243,7 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       onEndTyping.remove();
       cleanSearch.remove();
     };
-  }, [folder]);
+  }, [folder, filesPage, foldersPage]);
 
   useEffect(() => {
     const addFilesEventName = getFolderAddFilesEventName(folder?.id!!);
@@ -407,8 +405,8 @@ const Home: NavigationFunctionComponent<HomeProps> = ({
       <View style={styles.root}>
         <Appbar scrollY={scrollY} />
 
-        {filteredFilesPageContent.length > 0 &&
-        filteredFolderPageContent.length > 0 &&
+        {(filteredFilesPageContent.length > 0 ||
+          filteredFolderPageContent.length > 0) &&
         !isFetching ? (
           <AnimatedFlashList
             ref={ref}

@@ -3,7 +3,6 @@ import React, {useEffect, useRef} from 'react';
 import Pdf from 'react-native-pdf';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {
-  pdfState,
   setPdfContents,
   setPdfIndexes,
   setPdfName,
@@ -39,8 +38,6 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
 }) => {
   const uri = staticFileUrl(file.id);
   const {accessToken} = useSnapshot(authState.tokens);
-
-  const pdf = useSnapshot(pdfState);
   const ref = useRef<Pdf>();
 
   const mergeOptions = () => {
@@ -75,16 +72,6 @@ const PDFViewer: NavigationFunctionComponent<PDFViewerProps> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    Navigation.mergeOptions(componentId, {
-      sideMenu: {
-        left: {
-          enabled: pdf.content.length !== 0,
-        },
-      },
-    });
-  }, [pdf.content, componentId]);
 
   return (
     <View style={styles.root}>
@@ -128,6 +115,9 @@ PDFViewer.options = ({file}) => ({
   },
   sideMenu: {
     right: {
+      enabled: true,
+    },
+    left: {
       enabled: true,
     },
   },

@@ -202,7 +202,7 @@ const AudioPlayer: NavigationFunctionComponent<AudioPlayerProps> = ({
   useEffect(() => {
     return () => {
       if (isFavorite !== file.isFavorite) {
-        favoriteResource(file, isFavorite);
+        favoriteResource(file, isFavorite).catch(() => {});
         emitFavoriteFile(file.id);
       }
     };

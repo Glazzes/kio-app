@@ -36,7 +36,7 @@ const SearchableText: React.FC<SearchableTextProps> = ({
 
     setFragments(newFragments);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchTerm]);
 
   return (
     <Text style={style} numberOfLines={1} ellipsizeMode={'tail'}>

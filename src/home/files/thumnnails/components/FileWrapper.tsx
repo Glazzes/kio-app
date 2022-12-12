@@ -56,6 +56,8 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
   file,
   searchTerm,
 }) => {
+  const size = convertBytesToRedableUnit(file.size);
+
   const selection = useSnapshot(fileSelectionState);
   const {componentId, folder} = useContext(NavigationContext);
 
@@ -135,19 +137,9 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
   };
 
   useEffect(() => {
-    /*
-    const cleanTextSearchEventName = getClenTextSearchEventName(
-      folder?.id ?? '',
-    );
-    const clean = emitter.addListener(cleanTextSearchEventName, () => {
-      setSearchTerm('');
-    })
-    */
-
     const textSearchEventName = getTextSearchEventName(folder?.id ?? '');
     const onTyping = emitter.addListener(textSearchEventName, (_: string) => {
       setShowSkeleton(true);
-      // setSearchTerm(text);
     });
 
     const textSearchEndTypingEventName = getTextSearchEndTypingEventName(
@@ -229,9 +221,7 @@ const FileWrapper: React.FC<FileWrapperProps> = ({
               selectedColor={'#3366ff'}
             />
           )}
-          <Text style={styles.subtitle}>
-            {convertBytesToRedableUnit(file.size)}
-          </Text>
+          <Text style={styles.subtitle}>{size}</Text>
         </View>
         <Pressable
           onPress={openMenu}

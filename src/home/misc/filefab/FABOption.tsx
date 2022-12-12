@@ -62,6 +62,8 @@ const FABOption: React.FC<FABOptionProps> = ({action, progress, toggle}) => {
       copyTo: 'cachesDirectory',
     });
 
+    console.log(result);
+
     uploadFiles(folder?.id!!, result);
   };
 

@@ -10,29 +10,33 @@ import {Screens} from '../../../enums/screens';
 
 type AppHeaderProps = {
   folders: Folder[];
+  numberOfFiles: number;
   coowners: User[];
   isFetching: boolean;
 };
 
 const AppHeader: React.FC<AppHeaderProps> = ({
   folders,
+  numberOfFiles,
   isFetching,
   coowners,
 }) => {
-  const {folder, componentId} = useContext(NavigationContext);
+  const {componentId} = useContext(NavigationContext);
 
   return (
     <View style={styles.root}>
-      {componentId !== Screens.MY_UNIT ? <BreadCrumbs /> : null}
-      {!isFetching && (folder?.summary.folders ?? 0) > 0 ? (
+      {componentId !== Screens.MY_UNIT ? (
+        <BreadCrumbs isOnTopOfFolders={folders.length > 0} />
+      ) : null}
+      {!isFetching && folders.length > 0 ? (
         <FolderList folders={folders} />
       ) : null}
 
-      {!isFetching && folders.length > 0 && coowners.length > 0 ? (
+      {!isFetching && coowners.length > 0 ? (
         <Contributors coowners={coowners} />
       ) : null}
 
-      {!isFetching && (folder?.summary.files ?? 0) > 0 ? (
+      {!isFetching && numberOfFiles > 0 ? (
         <FileHeader title={'Files'} itemLength={8} />
       ) : null}
     </View>

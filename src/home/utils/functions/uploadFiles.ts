@@ -45,6 +45,7 @@ export const uploadFiles = async (
       },
     });
   } catch (e) {
+    console.log(e);
     displayToast(genericErrorMessage);
   }
 };

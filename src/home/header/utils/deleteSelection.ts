@@ -9,6 +9,7 @@ import {
 import {File, Folder} from '../../../shared/types';
 import {clearFileSelection} from '../../../store/fileSelection';
 import {
+  emitClearSelection,
   emitFolderDeleteFiles,
   emitFolderDeleteFolders,
   emitFolderUpdatePreview,
@@ -40,6 +41,7 @@ export const deleteSelection = async (
           emitFolderDeleteFolders(from, [folder.id]);
           emitFolderUpdatePreview(from, 0, -1);
         } catch (e) {
+          console.log(e);
           displayToast(deleteSelectionErrorMessage);
         }
       }
@@ -49,6 +51,7 @@ export const deleteSelection = async (
   } catch (e) {
     displayToast(deleteSelectionErrorMessage);
   } finally {
+    emitClearSelection(from);
     clearFileSelection();
   }
 };

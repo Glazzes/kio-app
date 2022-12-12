@@ -34,10 +34,10 @@ import {
   UPPER_BAR_HEIGHT,
   WAVEFORMS_MARGIN,
 } from '../utils/constants';
-import {clamp} from '../../utils/animations';
 import {convertCurrentTimeToTextTime} from '../utils/functions/convertCurrentTimeToTextTime';
 import {ReText} from 'react-native-redash';
 import Sound from 'react-native-sound';
+import {clamp} from '../../shared/functions/animations/clamp';
 
 type WavesProps = {
   sound: Sound | undefined;
