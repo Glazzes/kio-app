@@ -46,6 +46,8 @@ path.addArc(
 
 const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
   const [storage, setStorage] = useState<UnitSize>({capacity: 0, used: 0});
+  const used = convertBytesToRedableUnit(storage.used);
+  const capacity = convertBytesToRedableUnit(storage.capacity);
 
   const end = useValue(0);
   const uberBold = useFont(require('../../assets/UberBold.otf'), 20);
@@ -53,7 +55,7 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
   const x = useComputedValue(() => {
     return (
       center.x -
-      (uberBold?.getTextWidth(`${Math.floor(end.current * 100)}%`) ?? 0) / 2
+      (uberBold?.getTextWidth(`${Math.round(end.current * 100)}%`) ?? 0) / 2
     );
   }, [end, uberBold]);
 
@@ -141,10 +143,7 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
       <View style={styles.storage}>
         <Text style={styles.title}>My Unit</Text>
         <Text style={styles.space}>
-          <Text style={styles.used}>
-            {convertBytesToRedableUnit(storage.used)}
-          </Text>{' '}
-          of {convertBytesToRedableUnit(storage.capacity)} used
+          <Text style={styles.used}>{used}</Text> of {capacity} used
         </Text>
         <Pressable style={styles.button} onPress={showPricingSheet}>
           <Text style={styles.buttonText}>Buy Storage</Text>

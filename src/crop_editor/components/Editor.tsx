@@ -1,5 +1,11 @@
-import {View, Dimensions, StyleSheet, Pressable} from 'react-native';
-import React, {useEffect, useMemo} from 'react';
+import {
+  View,
+  Dimensions,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
@@ -54,6 +60,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   width: imageWidth,
   height: imageHeight,
 }) => {
+  const [isCropping, setIsCropping] = useState<boolean>(false);
   const imageStyle = useMemo(() => {
     return getImageStyles({width: imageWidth, height: imageHeight}, R);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,6 +226,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
   });
 
   const cropImage = async () => {
+    setIsCropping(true);
     const actions = [];
 
     if (rotate.y.value === Math.PI) {
@@ -266,6 +274,7 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
     popToEditProfile();
     emitHideImagePicker();
     emitUpdateProfilePicture(uri);
+    setIsCropping(false);
   };
 
   function popToEditProfile() {
@@ -353,7 +362,11 @@ const CropEditor: NavigationFunctionComponent<CropEditorProps> = ({
         />
 
         <Pressable onPress={cropImage} style={styles.check}>
-          <MaterialCommunityIcons name="check" size={30} color={'#fff'} />
+          {isCropping ? (
+            <ActivityIndicator size={'small'} color={'#fff'} />
+          ) : (
+            <MaterialCommunityIcons name="check" size={30} color={'#fff'} />
+          )}
         </Pressable>
       </View>
     </View>

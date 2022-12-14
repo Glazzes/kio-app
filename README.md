@@ -30,23 +30,41 @@ Here are so features!
 
 ### Footage
 
-#### Onboarding
+##### Onboarding
 
-[<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/01.png" alt="Login screen">]("")
+[<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/00.png" alt="Login screen">](")
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/01.png" alt="Login screen">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/02.png" alt="Register screen">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/03.png" alt="Register failed">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/04.png" alt="Register failed 2">
 
-#### Home
+##### Home
 
 [<img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/home.gif" alt="Home screen">]("")
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/home2.gif" alt="Home screen 2">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/pinch-home.gif" alt="Home screen 2">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/details.gif" alt="Fab open">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/upload.gif" alt="No results found">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/newfolder.gif" alt="New folder">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/share.png" alt="Share folder">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/pinch.gif" alt="User menu">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/audio.gif" alt="File options">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/video.gif" alt="Empty folder">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/pdf.gif" alt="Share resource">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/generic.gif" alt="Image pinch to zoom 1">
-<img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/deleteselection.gif" alt="Image pinch to zoom 2">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/copy.gif" alt="Copy selection">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/deleteselection.gif" alt="Delete selection">
+
+##### Camera
+
+[<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/camera/01.png" alt="Camera">](")
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/camera/02.png" alt="Login screen">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/camera/03.png" alt="Register screen">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/camera/04.png" alt="Register failed">
+
+##### Edit
+
+[<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/edit/01.png" alt="Edit profile">]("")
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/edit/02.png" alt="Edit profile failed">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/edit/03.png" alt="Pricing">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/edit/04.gif" alt="Crop image">

@@ -6,7 +6,7 @@ import {
   View,
   Pressable,
 } from 'react-native';
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Animated, {
   runOnJS,
@@ -56,8 +56,7 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
 }) => {
   const navigation = useSnapshot(navigationState);
   const selection = useSnapshot(fileSelectionState);
-  // const [isCopying, setIsCopying] = useState<boolean>(false);
-
+  const [isCopying, setIsCopying] = useState<boolean>(false);
   const isMeasured = useRef<boolean>(false);
 
   const onLayout = ({
@@ -72,7 +71,9 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   };
 
   const dissmis = () => {
-    Navigation.dismissOverlay(componentId);
+    if (!isCopying) {
+      Navigation.dismissOverlay(componentId);
+    }
   };
 
   const dissmisSelection = () => {
@@ -88,6 +89,7 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
   };
 
   const performSelection = async () => {
+    setIsCopying(true);
     const lastFolder = peekLastNavigationScreen().folder;
 
     const folderCopyRequest: CopyRequest = {
@@ -107,6 +109,8 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
     } else {
       cut(fileCopyRequest, folderCopyRequest);
     }
+
+    setIsCopying(false);
   };
 
   const copy = async (fileRequest: CopyRequest, folderRequest: CopyRequest) => {
@@ -220,17 +224,17 @@ const CopyModal: NavigationFunctionComponent<CopyModalProps> = ({
           <View style={styles.row}>
             <Pressable onPress={dissmisSelection}>
               <Icon
-                name={'ios-close-circle-outline'}
-                size={30}
-                color={'#000'}
+                name={'ios-close'}
+                size={25}
+                color={isCopying ? '#f3f3f3' : '#000'}
                 style={styles.icon}
               />
             </Pressable>
             <Pressable onPress={performSelection}>
               <Icon
-                name={'ios-checkmark-circle-outline'}
-                size={30}
-                color={'#3366ff'}
+                name={'ios-checkmark'}
+                size={25}
+                color={isCopying ? '#f3f3f3' : '#3366ff'}
               />
             </Pressable>
           </View>
