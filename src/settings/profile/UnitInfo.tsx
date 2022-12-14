@@ -22,6 +22,7 @@ import {apiUnitSize} from '../../shared/requests/contants';
 import {UnitSize} from '../../shared/types';
 import {convertBytesToRedableUnit} from '../../shared/functions/convertBytesToRedableUnit';
 import {displayToast, unitSizeLoadErrorMessage} from '../../shared/toast';
+import emitter, {updatedStoragePlanEventName} from '../../shared/emitter';
 
 type UnitInfoProps = {};
 
@@ -74,6 +75,23 @@ const UnitInfo: React.FC<UnitInfoProps> = ({}) => {
       },
     });
   };
+
+  useEffect(() => {
+    const updateStorage = emitter.addListener(
+      updatedStoragePlanEventName,
+      (newCapacity: number) => {
+        setStorage(s => ({...s, capacity: newCapacity}));
+        runTiming(end, {
+          from: end.current,
+          to: Math.min(storage.used / newCapacity, 1),
+        });
+      },
+    );
+
+    return () => {
+      updateStorage.remove();
+    };
+  }, [end, storage]);
 
   useEffect(() => {
     if (uberBold) {

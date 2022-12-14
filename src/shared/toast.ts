@@ -289,3 +289,17 @@ export const coownerNothingToAddMessage: ToastMessage = {
   message: 'No coowners have been added',
   type: NotificationType.INFO,
 };
+
+export const insufficientStorageMessage: ToastMessage = {
+  title: 'Insufficient storage',
+  message: "You've ran out of space, consider upgrading your plan",
+  type: NotificationType.ERROR,
+};
+
+export const storagePlanUpdatedMessage = (planName: string): ToastMessage => {
+  return {
+    title: 'Plan updated',
+    message: `Your plan has been successfully changed to ${planName.toLocaleLowerCase()}`,
+    type: NotificationType.SUCCESS,
+  };
+};

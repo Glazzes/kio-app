@@ -38,11 +38,12 @@ Here are so features!
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/03.png" alt="Register failed">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/onboarding/04.png" alt="Register failed 2">
 
-##### Home
+##### Main screen
 
 [<img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/home.gif" alt="Home screen">]("")
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/home2.gif" alt="Home screen 2">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/pinch-home.gif" alt="Home screen 2">
+<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/home/01.png" alt="Home screen 2">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/details.gif" alt="Fab open">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/upload.gif" alt="No results found">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/gifs/newfolder.gif" alt="New folder">
@@ -62,7 +63,7 @@ Here are so features!
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/camera/03.png" alt="Register screen">
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/camera/04.png" alt="Register failed">
 
-##### Edit
+##### Settings
 
 [<img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/edit/01.png" alt="Edit profile">]("")
 <img style="float: left; margin-right: 10px" width="200px" src="./assets/screenshots/edit/02.png" alt="Edit profile failed">

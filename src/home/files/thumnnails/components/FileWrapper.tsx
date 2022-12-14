@@ -30,7 +30,7 @@ import {Screens} from '../../../../enums/screens';
 import {convertBytesToRedableUnit} from '../../../../shared/functions/convertBytesToRedableUnit';
 import FileSkeleton from './FileSkeleton';
 import {File} from '../../../../shared/types';
-import SearchableText from '../../../../misc/SearchableText';
+import SearchableText from '../../../misc/SearchableText';
 import {
   addFileToSelection,
   fileSelectionState,

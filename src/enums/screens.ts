@@ -2,7 +2,6 @@ export enum Screens {
   CAMERA = 'Camera',
   MY_UNIT = 'My.Unit',
   IMAGE_DETAILS = 'Image.Details',
-  SHARED = 'Shared',
   NOTIFICATIONS = 'Notifications',
   SETTINGS = 'Settings',
 

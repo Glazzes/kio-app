@@ -1,7 +1,6 @@
-import {StyleSheet, Dimensions} from 'react-native';
+import {StyleSheet, Dimensions, Image} from 'react-native';
 import React from 'react';
 import Animated, {Keyframe, useAnimatedStyle} from 'react-native-reanimated';
-import FastImage from 'react-native-fast-image';
 
 type PictureThumnailProps = {
   uri: string;
@@ -32,7 +31,7 @@ const PictureThumbnail: React.FC<PictureThumnailProps> = ({uri, opacity}) => {
       style={[styles.thumbnail, rStyle]}
       entering={entering.duration(500)}
       key={`asset-${uri}`}>
-      <FastImage source={{uri}} style={styles.image} />
+      <Image source={{uri}} style={styles.image} />
     </Animated.View>
   );
 };

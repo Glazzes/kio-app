@@ -8,7 +8,12 @@ import {
   emitFolderUpdatePreview,
 } from '../../../shared/emitter';
 import {DocumentPickerResponse} from 'react-native-document-picker';
-import {displayToast, genericErrorMessage} from '../../../shared/toast';
+import {
+  displayToast,
+  genericErrorMessage,
+  insufficientStorageMessage,
+} from '../../../shared/toast';
+import {AxiosResponse} from 'axios';
 
 export const uploadFiles = async (
   parentFolderId: string,
@@ -45,7 +50,13 @@ export const uploadFiles = async (
       },
     });
   } catch (e) {
-    console.log(e);
+    // @ts-ignore
+    const response = e.response as AxiosResponse;
+    if (response.status === 409) {
+      displayToast(insufficientStorageMessage);
+      return;
+    }
+
     displayToast(genericErrorMessage);
   }
 };

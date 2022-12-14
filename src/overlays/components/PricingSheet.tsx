@@ -18,9 +18,16 @@ import Animated, {
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {snapPoint} from 'react-native-redash';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Screens} from '../../enums/screens';
-import {NotificationType} from '../../enums/notification';
 import {clamp} from '../../shared/functions/animations/clamp';
+import Button from '../../shared/components/Button';
+import {PricingPlan} from '../../shared/enums';
+import {updatePlan} from '../utils/updatePlan';
+import {
+  displayToast,
+  genericErrorMessage,
+  storagePlanUpdatedMessage,
+} from '../../shared/toast';
+import {emitUpdatedStorage} from '../../shared/emitter';
 
 type PricingSheetProps = {};
 
@@ -35,19 +42,19 @@ const {width, height} = Dimensions.get('window');
 
 const plans: Plan[] = [
   {
-    name: 'Basic',
+    name: PricingPlan.BASIC,
     price: 0,
     message: '1Gb free of storage',
     isPopular: false,
   },
   {
-    name: 'Pro',
+    name: PricingPlan.PRO,
     price: 9.99,
     message: '5Gb storage, cancel at anytime',
     isPopular: true,
   },
   {
-    name: 'Premium',
+    name: PricingPlan.PREMIUM,
     price: 14.99,
     message: '10Gb storage, cancel at anytime',
     isPopular: false,
@@ -57,6 +64,7 @@ const plans: Plan[] = [
 const PricingSheet: NavigationFunctionComponent<PricingSheetProps> = ({
   componentId,
 }) => {
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [sheetHeight, setsheetHeight] = useState<number>(0);
   const [plan, setPlan] = useState<'Basic' | 'Pro' | 'Premium'>('Basic');
 
@@ -74,22 +82,29 @@ const PricingSheet: NavigationFunctionComponent<PricingSheetProps> = ({
     Navigation.dismissModal(componentId);
   };
 
-  const showNotification = () => {
-    Navigation.showOverlay({
-      component: {
-        name: Screens.TOAST,
-        passProps: {
-          title: 'Plan updated',
-          message: `Your plan has been sucessfully changed to ${plan} plan!`,
-          type: NotificationType.SUCCESS,
-        },
-      },
-    });
-  };
-
   const backgroundColor = useSharedValue<string>('transparent');
   const translateY = useSharedValue<number>(0);
   const offsetY = useSharedValue<number>(0);
+
+  const changePlan = () => {
+    setIsUpdating(true);
+    updatePlan(plan.toUpperCase())
+      .then(({data}) => {
+        const message = storagePlanUpdatedMessage(plan);
+        displayToast(message);
+        emitUpdatedStorage(data);
+
+        translateY.value = withTiming(0, undefined, finished => {
+          if (finished) {
+            runOnJS(dissmis)();
+          }
+        });
+      })
+      .catch(_ => {
+        displayToast(genericErrorMessage);
+      })
+      .finally(() => setIsUpdating(false));
+  };
 
   const translation = useDerivedValue(() => {
     return clamp(translateY.value, -sheetHeight, 0);
@@ -182,9 +197,13 @@ const PricingSheet: NavigationFunctionComponent<PricingSheetProps> = ({
               </Pressable>
             );
           })}
-          <Pressable style={styles.button} onPress={showNotification}>
-            <Text style={styles.buttonText}>Confirm</Text>
-          </Pressable>
+          <Button
+            text={'Confirm'}
+            width={width * 0.9}
+            disabled={isUpdating}
+            onPress={changePlan as any}
+            extraStyle={styles.button}
+          />
         </Animated.View>
       </GestureDetector>
     </Animated.View>
@@ -245,6 +264,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   planName: {
+    textTransform: 'capitalize',
     fontFamily: 'UberBold',
     color: '#000',
     fontSize: 15,
@@ -283,17 +303,7 @@ const styles = StyleSheet.create({
     fontFamily: 'UberBold',
   },
   button: {
-    backgroundColor: '#3366ff',
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontFamily: 'UberBold',
+    marginTop: 10,
   },
 });
 

@@ -204,3 +204,8 @@ export const hideImagePicker = 'Hide.Image.Picker';
 export const emitHideImagePicker = () => {
   emitter.emit(hideImagePicker);
 };
+
+export const updatedStoragePlanEventName = 'Update.Stoarge.Plan';
+export const emitUpdatedStorage = (capacity: number) => {
+  emitter.emit(updatedStoragePlanEventName, capacity);
+};

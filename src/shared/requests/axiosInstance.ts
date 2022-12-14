@@ -2,7 +2,7 @@ import axios, {AxiosError, AxiosResponse} from 'axios';
 import authState from '../../store/authStore';
 import {mmkv} from '../../store/mmkv';
 import {TokenResponse} from '../types';
-import {host} from './contants';
+import {HOST as host} from '@env';
 
 const axiosInstance = axios.create({
   baseURL: host,

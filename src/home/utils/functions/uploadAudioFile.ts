@@ -1,7 +1,11 @@
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import Sound from 'react-native-sound';
 import {axiosInstance} from '../../../shared/requests/axiosInstance';
-import {displayToast, uploadFilesErrorMessage} from '../../../shared/toast';
+import {
+  displayToast,
+  insufficientStorageMessage,
+  uploadFilesErrorMessage,
+} from '../../../shared/toast';
 import {File, UploadRequest} from '../../../shared/types';
 import {emitFolderAddFiles} from '../../../shared/emitter';
 import {apiFilesUrl} from '../../../shared/requests/contants';
@@ -52,6 +56,13 @@ export const uploadAudioFile = (
 
       emitFolderAddFiles(folderId, data);
     } catch (e) {
+      // @ts-ignore
+      const response = e.response as AxiosResponse;
+      if (response.status === 409) {
+        displayToast(insufficientStorageMessage);
+        return;
+      }
+
       displayToast(uploadFilesErrorMessage);
     } finally {
       sound.release();

@@ -1,12 +1,12 @@
 import {StyleSheet, View} from 'react-native';
 import React, {useContext} from 'react';
-import Contributors from '../../../misc/Contributors';
-import FolderList from '../../folders/FolderList';
-import FileHeader from '../../../misc/FileHeader';
-import BreadCrumbs from '../../../misc/BreadCrumbs';
+import Contributors from '../../../shared/components/Contributors';
+import FileHeader from './FileHeader';
+import BreadCrumbs from './BreadCrumbs';
 import {Folder, User} from '../../../shared/types';
 import {NavigationContext} from '../../../navigation/components/NavigationContextProvider';
 import {Screens} from '../../../enums/screens';
+import FolderList from '../../folders/components/FolderList';
 
 type AppHeaderProps = {
   folders: Folder[];

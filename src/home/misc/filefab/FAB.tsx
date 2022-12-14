@@ -9,13 +9,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {Folder} from '../../../utils/types';
 import FABOption from './FABOption';
 import emitter from '../../../shared/emitter';
 import {Event} from '../../../enums/events';
 import {FabAction} from './types';
 import {NavigationContext} from '../../../navigation/components/NavigationContextProvider';
 import {SelectAction} from '../../utils/enums';
+import {Folder} from '../../../shared/types';
 
 type FABProps = {
   parent?: Folder;
@@ -120,7 +120,7 @@ const FAB: React.FC<FABProps> = () => {
           );
         })}
         <Animated.View style={[rStyle, styles.icon]}>
-          <Icon name={'plus'} size={30} color={'#fff'} />
+          <Icon name={'plus'} size={FAB_RADIUS} color={'#fff'} />
         </Animated.View>
       </AnimatedPressable>
     </View>

@@ -11,7 +11,7 @@ import {
 import React, {useState, useRef} from 'react';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Contributor from '../../../misc/Contributor';
+import Contributor from '../../../shared/components/Contributor';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {FlatList} from 'react-native-gesture-handler';
 import ModalWrapper from './ModalWrapper';
@@ -22,7 +22,7 @@ import {
   apiUsersUrl,
 } from '../../../shared/requests/contants';
 import {Folder, User} from '../../../shared/types';
-import UserSearch from '../../../misc/UserSearch';
+import UserSearch from '../../../shared/components/UserSearch';
 import authState from '../../../store/authStore';
 import {
   coownerAddDuplicateErrorMessage,

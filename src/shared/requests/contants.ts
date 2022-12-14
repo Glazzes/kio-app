@@ -1,9 +1,10 @@
-export const host = 'http://192.168.42.200:8080';
+import {HOST as host} from '@env';
 
 const apiAuthUrl = '/api/v1/auth';
 export const apiAuthRevokeUrl = `${apiAuthUrl}/revoke`;
 
 export const apiUsersUrl = '/api/v1/users';
+export const apiUsersPlanUrl = `${apiUsersUrl}/plan`;
 export const apiUsersEditUrl = `${apiUsersUrl}/edit`;
 export const apiUsersExistsUrl = `${apiUsersUrl}/exists`;
 export const apiUsersMeUrl = `${apiUsersUrl}/me`;

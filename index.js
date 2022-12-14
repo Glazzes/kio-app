@@ -6,7 +6,6 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import Notifications from './src/notifications/Notifications';
 import {Profile, EditProfile} from './src/settings';
 import ImageDetails from './src/home/files/details/ImageDetails';
-import Shared from './src/shared/Shared';
 import {Home} from './src/home';
 import {Toast} from './src/misc';
 import {AudioPlayer} from './src/audio_player';
@@ -28,13 +27,13 @@ import {FileDrawer} from './src/navigation';
 import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
 import GenericFileDetails from './src/home/files/details/GenericFileDetails';
-import ProgressIndicator from './src/misc/ProgressIndicator';
 import emitter from './src/shared/emitter';
 import axios from 'axios';
 import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';
 import authState from './src/store/authStore';
-import {apiUsersMeUrl, host} from './src/shared/requests/contants';
+import {apiUsersMeUrl} from './src/shared/requests/contants';
+import {HOST as host} from '@env';
 import {
   FileOptionsSheet,
   PictureInPictureVideo,
@@ -98,10 +97,6 @@ Navigation.registerComponent(Screens.IMAGE_DETAILS, () =>
   gestureHandlerRootHOC(ImageDetails),
 );
 
-Navigation.registerComponent(Screens.SHARED, () =>
-  gestureHandlerRootHOC(Shared),
-);
-
 Navigation.registerComponent(Screens.NOTIFICATIONS, () =>
   gestureHandlerRootHOC(Notifications),
 );
@@ -122,11 +117,6 @@ Navigation.registerComponent(Screens.EDITOR, () =>
 Navigation.registerComponent(Screens.TOAST, () => Toast);
 
 Navigation.registerComponent(Screens.GENERIC_DETAILS, () => GenericFileDetails);
-
-Navigation.registerComponent(
-  Overlays.PROGRESS_INDICATOR,
-  () => ProgressIndicator,
-);
 
 Navigation.registerComponent(Screens.FILE_DRAWER, () => FileDrawer);
 Navigation.registerComponent('UserMenu', () => UserMenu);
