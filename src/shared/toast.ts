@@ -25,6 +25,12 @@ export const displayToast = (content: ToastMessage) => {
   });
 };
 
+export const failedLoginMessage: ToastMessage = {
+  title: 'Failed Login',
+  message: 'You provided invalid credentials, invalid username or password',
+  type: NotificationType.ERROR,
+};
+
 export const updateResourceSuccessMessage = (
   prevName: string,
   newName: string,

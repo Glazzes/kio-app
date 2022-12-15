@@ -8,9 +8,9 @@ import com.reactnativenavigation.NavigationActivity;
 
 public class MainActivity extends NavigationActivity {
 
-     @Override
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        // RNBootSplash.init(this);
+        RNBootSplash.init(this);
         super.onCreate(savedInstanceState);
     }
 

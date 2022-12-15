@@ -33,7 +33,13 @@ const GetStarted: NavigationFunctionComponent = ({componentId}) => {
   };
 
   useEffect(() => {
-    RNBootSplash.hide({fade: true});
+    RNBootSplash.getVisibilityStatus()
+      .then(value => {
+        if (value === 'visible') {
+          RNBootSplash.hide({fade: true});
+        }
+      })
+      .catch(() => {});
   }, []);
 
   return (

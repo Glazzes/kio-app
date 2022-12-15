@@ -1,7 +1,10 @@
 import {HOST as host} from '@env';
 
 const apiAuthUrl = '/api/v1/auth';
+export const apiAuthLogin = `${apiAuthUrl}/login`;
+export const apiAuthTokenUrl = `${apiAuthLogin}/token`;
 export const apiAuthRevokeUrl = `${apiAuthUrl}/revoke`;
+export const apiAuthTokenIntrospectUrl = `${apiAuthUrl}/introspect`;
 
 export const apiUsersUrl = '/api/v1/users';
 export const apiUsersPlanUrl = `${apiUsersUrl}/plan`;

@@ -3,6 +3,7 @@ import authState from '../../store/authStore';
 import {mmkv} from '../../store/mmkv';
 import {TokenResponse} from '../types';
 import {HOST as host} from '@env';
+import {apiAuthTokenUrl} from './contants';
 
 const axiosInstance = axios.create({
   baseURL: host,
@@ -14,7 +15,7 @@ const axiosInstance = axios.create({
 const getNewtokenPair = (
   refreshToken: string,
 ): Promise<AxiosResponse<TokenResponse>> => {
-  return axios.post(`${host}/api/v1/auth/token`, undefined, {
+  return axios.post(`${host}${apiAuthTokenUrl}`, undefined, {
     params: {
       refresh_token: refreshToken,
     },

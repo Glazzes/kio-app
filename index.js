@@ -28,12 +28,13 @@ import {mainRoot, onBoardingRoot} from './src/navigation/roots';
 import {OnBoardingScreens} from './src/onboarding/screens';
 import GenericFileDetails from './src/home/files/details/GenericFileDetails';
 import emitter from './src/shared/emitter';
-import axios from 'axios';
 import {mmkv} from './src/store/mmkv';
 import {axiosInstance} from './src/shared/requests/axiosInstance';
 import authState from './src/store/authStore';
-import {apiUsersMeUrl} from './src/shared/requests/contants';
-import {HOST as host} from '@env';
+import {
+  apiAuthTokenIntrospectUrl,
+  apiUsersMeUrl,
+} from './src/shared/requests/contants';
 import {
   FileOptionsSheet,
   PictureInPictureVideo,
@@ -144,7 +145,7 @@ Navigation.events().registerAppLaunchedListener(async () => {
 
   const tokens = JSON.parse(tokenString);
   try {
-    await axios.post(`${host}/api/v1/auth/introspect`, undefined, {
+    await axiosInstance.post(apiAuthTokenIntrospectUrl, undefined, {
       params: {
         refresh_token: tokens.refreshToken,
       },

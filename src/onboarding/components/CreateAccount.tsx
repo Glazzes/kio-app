@@ -14,15 +14,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {impactAsync, ImpactFeedbackStyle} from 'expo-haptics';
 import {withKeyboard} from '../../shared/hoc';
 import {NotificationType} from '../../enums/notification';
-import axios, {AxiosResponse} from 'axios';
-import {
-  apiUsersExistsUrl,
-  apiUsersUrl,
-  host,
-} from '../../shared/requests/contants';
+import {AxiosResponse} from 'axios';
+import {apiUsersExistsUrl, apiUsersUrl} from '../../shared/requests/contants';
 import Button from '../../shared/components/Button';
 import {UserExists} from '../../shared/types';
 import {displayToast, genericErrorMessage} from '../../shared/toast';
+import {axiosInstance} from '../../shared/requests/axiosInstance';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
@@ -64,15 +61,12 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
     const newTimer = setTimeout(async () => {
       try {
-        const {data} = await axios.get<UserExists>(
-          `${host}${apiUsersExistsUrl}`,
-          {
-            params: {
-              username: text.toLocaleLowerCase(),
-              email: text.toLocaleLowerCase(),
-            },
+        const {data} = await axiosInstance.get<UserExists>(apiUsersExistsUrl, {
+          params: {
+            username: text.toLocaleLowerCase(),
+            email: text.toLocaleLowerCase(),
           },
-        );
+        });
 
         setFieldErrors(err => {
           if (data.existsByUsername && field === 'username') {
@@ -85,9 +79,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
           return {...err};
         });
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
     }, 1000);
 
     setTimer(newTimer);
@@ -100,7 +92,7 @@ const CreateAccount: NavigationFunctionComponent = ({componentId}) => {
 
   const createAccount = async () => {
     try {
-      await axios.post(`${host}${apiUsersUrl}`, info.current);
+      await axiosInstance.post(apiUsersUrl, info.current);
 
       displayToast({
         title: 'Account created',

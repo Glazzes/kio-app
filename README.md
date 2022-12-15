@@ -1,5 +1,7 @@
 ## Kio mobile app
 
+> **WARNING :warning:**: This is an android only application, because i do not have access to IOS devices
+
 ### About
 
 Kio mobile app is a [React Native](https://reactnative.dev/) based application and a file manager application that works along with my [Kio backend project](https://github.com/Glazzes/kio).
@@ -27,6 +29,16 @@ Here are so features!
 - Recursion, cloud file maganers handle files just the same way as your computer file system would, so making changes to folders or deleting them will cascade these actions to all inner folder and files
 - Animations, all gestures and animations have been created by hand, for instance pinc to zoom, image cropper features and scrollable bottom sheet features
 - Skia, grasp the basics of how to paint items on skia canvas thanks to [React native skia](https://shopify.github.io/react-native-skia/)
+
+### How to run
+
+Change the value of `HOST`variable on `.env`file to whichever is the host and port where [kio backned](https://github.com/Glazzes/kio) is running (i.g http://192.168.42.33:8080) then type the following command on your terminal:
+
+```bash
+cd android && ./gradlew assembleRelease
+```
+
+Once the app has been compiled it will be located on `android/app/build/outputs/apk/release/app-release.apk`, install to your phisycal device or emulator and you're done.
 
 ### Footage
 

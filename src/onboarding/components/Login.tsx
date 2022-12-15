@@ -15,15 +15,15 @@ import {Screens} from '../../enums/screens';
 import {NotificationType} from '../../enums/notification';
 import {OnBoardingScreens} from '../screens';
 import {mmkv} from '../../store/mmkv';
-import axios from 'axios';
-import {TokenResponse} from '../../shared/types';
+import {TokenResponse, User} from '../../shared/types';
 import authState from '../../store/authStore';
 import {axiosInstance} from '../../shared/requests/axiosInstance';
 import {withKeyboard} from '../../shared/hoc';
 import {mainRoot} from '../../navigation/roots';
 import RNBootSplash from 'react-native-bootsplash';
-import {host} from '../../shared/requests/contants';
 import Button from '../../shared/components/Button';
+import {apiAuthLogin, apiUsersMeUrl} from '../../shared/requests/contants';
+import {displayToast, failedLoginMessage} from '../../shared/toast';
 
 const {width} = Dimensions.get('window');
 const {statusBarHeight} = Navigation.constantsSync();
@@ -59,15 +59,15 @@ const Login: NavigationFunctionComponent = ({componentId}) => {
 
   const signIn = async () => {
     try {
-      const {data}: {data: TokenResponse} = await axios.post(
-        `${host}/api/v1/auth/login`,
+      const {data} = await axiosInstance.post<TokenResponse>(
+        apiAuthLogin,
         login.current,
       );
 
       authState.tokens = data;
       mmkv.set('tokens', JSON.stringify(data));
 
-      const {data: user} = await axiosInstance.get('/api/v1/users/me');
+      const {data: user} = await axiosInstance.get<User>(apiUsersMeUrl);
       authState.user = user;
 
       Navigation.setRoot(mainRoot);
@@ -83,17 +83,7 @@ const Login: NavigationFunctionComponent = ({componentId}) => {
         },
       });
     } catch (e) {
-      Navigation.showOverlay({
-        component: {
-          name: Screens.TOAST,
-          passProps: {
-            title: 'Failed Login',
-            message:
-              'You provided invalid credentials, invalid username or password',
-            type: NotificationType.ERROR,
-          },
-        },
-      });
+      displayToast(failedLoginMessage);
     }
   };
 
